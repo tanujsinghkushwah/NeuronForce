@@ -22,7 +22,9 @@ from app.database import SessionLocal, engine, Base
 from app.models import (
     Contact, Deal, Activity, Task, AIAgentTask, AnalyticsSnapshot,
     CalendarEvent, LeadStatus, DealStage, Priority, TaskStatus,
-    ActivityType, AgentTaskType, AgentTaskStatus, User, OAuthAccount, UserSession
+    ActivityType, AgentTaskType, AgentTaskStatus, User, OAuthAccount, UserSession,
+    Ticket, TicketMessage, TicketStatus, TicketPriority, TicketCategory,
+    Campaign, CampaignStatus, CampaignType
 )
 
 
@@ -81,14 +83,340 @@ def seed_users(db):
     print("✅ Seeded initial Google OAuth users")
 
 
+def seed_tickets(db):
+    """Seed initial Service Cloud support cases & tickets."""
+    if db.query(Ticket).count() > 0:
+        return
+
+    now = datetime.now(timezone.utc)
+    c1 = db.query(Contact).filter(Contact.email == "sarah.chen@techcorp.io").first()
+    c2 = db.query(Contact).filter(Contact.email == "marcus.johnson@innovateinc.com").first()
+    c3 = db.query(Contact).filter(Contact.email == "elena.rodriguez@globalretail.com").first()
+
+    tickets_data = [
+        {
+            "ticket_number": "TKT-0001",
+            "title": "API Rate Limiting exceeded during bulk contact sync",
+            "description": "We are experiencing 429 Too Many Requests errors when syncing our 50k customer records via the REST API integration.",
+            "status": TicketStatus.IN_PROGRESS,
+            "priority": TicketPriority.CRITICAL,
+            "category": TicketCategory.TECHNICAL,
+            "contact_id": c1.id if c1 else None,
+            "assigned_to": "Alex Rivera",
+            "reporter_name": "Sarah Chen",
+            "reporter_email": "sarah.chen@techcorp.io",
+            "sla_due_at": now + timedelta(hours=2),
+            "first_response_at": now - timedelta(hours=1),
+            "sentiment": "frustrated",
+            "ai_triage": {
+                "urgency_score": 9,
+                "sentiment": "frustrated",
+                "category": "technical",
+                "priority": "critical",
+                "escalate": True,
+                "estimated_resolution_hours": 3,
+            },
+            "ai_suggested_response": "Hi Sarah, our engineering team has temporarily elevated your API quota limit to 5,000 req/min while we investigate the batch pipeline bottleneck.",
+            "tags": ["api", "rate-limit", "enterprise-sla"],
+            "messages": [
+                {
+                    "author_name": "Sarah Chen",
+                    "author_email": "sarah.chen@techcorp.io",
+                    "body": "Hi team, our bulk sync failed at 3:15 AM with HTTP 429. This is blocking our morning data replication pipeline.",
+                    "is_internal": False,
+                    "created_at": now - timedelta(hours=3),
+                },
+                {
+                    "author_name": "Alex Rivera",
+                    "author_email": "alex.rivera@neuronforce.ai",
+                    "body": "Hi Sarah, thank you for alerting us. I have confirmed the rate limiter triggered and am temporarily lifting the throttle for your tenant key.",
+                    "is_internal": False,
+                    "created_at": now - timedelta(hours=1),
+                },
+                {
+                    "author_name": "AI Agentforce",
+                    "author_email": "ai@neuronforce.ai",
+                    "body": "AI Triage Note: Customer is on Enterprise tier with $120k ARR deal in pipeline. Recommend priority escalation to RevOps infrastructure lead.",
+                    "is_internal": True,
+                    "is_ai_generated": True,
+                    "created_at": now - timedelta(hours=1, minutes=5),
+                }
+            ]
+        },
+        {
+            "ticket_number": "TKT-0002",
+            "title": "Billing invoice discrepancy for Q3 enterprise seats",
+            "description": "Invoice #INV-2026-89 shows 25 seats billed instead of contracted 20 seats.",
+            "status": TicketStatus.OPEN,
+            "priority": TicketPriority.HIGH,
+            "category": TicketCategory.BILLING,
+            "contact_id": c2.id if c2 else None,
+            "assigned_to": "Sarah Jenkins",
+            "reporter_name": "Marcus Johnson",
+            "reporter_email": "marcus.johnson@innovateinc.com",
+            "sla_due_at": now + timedelta(hours=3),
+            "sentiment": "neutral",
+            "ai_triage": {
+                "urgency_score": 7,
+                "sentiment": "neutral",
+                "category": "billing",
+                "priority": "high",
+                "escalate": False,
+                "estimated_resolution_hours": 4,
+            },
+            "ai_suggested_response": "Hi Marcus, I reviewed your contract terms and verified the 5 seat variance. I have issued a credit memo of $1,250 and reissued the revised invoice.",
+            "tags": ["billing", "invoice", "refund"],
+            "messages": [
+                {
+                    "author_name": "Marcus Johnson",
+                    "author_email": "marcus.johnson@innovateinc.com",
+                    "body": "Our accounts payable team noticed that invoice INV-2026-89 charged for 25 licenses, but order form OF-881 specifies 20. Please issue an adjusted invoice.",
+                    "is_internal": False,
+                    "created_at": now - timedelta(hours=2),
+                }
+            ]
+        },
+        {
+            "ticket_number": "TKT-0003",
+            "title": "SSO SAML configuration assistance for Okta",
+            "description": "Need guidance configuring Okta SAML 2.0 metadata and attribute mapping for user provisioning.",
+            "status": TicketStatus.RESOLVED,
+            "priority": TicketPriority.MEDIUM,
+            "category": TicketCategory.ONBOARDING,
+            "contact_id": c3.id if c3 else None,
+            "assigned_to": "Jordan Lee",
+            "reporter_name": "Elena Rodriguez",
+            "reporter_email": "elena.rodriguez@globalretail.com",
+            "sla_due_at": now - timedelta(hours=5),
+            "first_response_at": now - timedelta(hours=10),
+            "resolved_at": now - timedelta(hours=2),
+            "sentiment": "positive",
+            "ai_triage": {
+                "urgency_score": 4,
+                "sentiment": "positive",
+                "category": "onboarding",
+                "priority": "medium",
+                "escalate": False,
+                "estimated_resolution_hours": 2,
+            },
+            "tags": ["sso", "saml", "okta"],
+            "messages": [
+                {
+                    "author_name": "Elena Rodriguez",
+                    "author_email": "elena.rodriguez@globalretail.com",
+                    "body": "We are completing our Okta integration and need the ACS URL and entity ID for our workspace domain.",
+                    "is_internal": False,
+                    "created_at": now - timedelta(hours=12),
+                },
+                {
+                    "author_name": "Jordan Lee",
+                    "author_email": "jordan.lee@neuronforce.ai",
+                    "body": "Hi Elena, here is our Okta metadata guide and domain configuration values. Let us know if you need a quick screen share.",
+                    "is_internal": False,
+                    "created_at": now - timedelta(hours=10),
+                },
+                {
+                    "author_name": "Elena Rodriguez",
+                    "author_email": "elena.rodriguez@globalretail.com",
+                    "body": "That worked perfectly! All our 140 users successfully federated. Thank you!",
+                    "is_internal": False,
+                    "created_at": now - timedelta(hours=2),
+                }
+            ]
+        },
+        {
+            "ticket_number": "TKT-0004",
+            "title": "Custom field export missing in CSV download",
+            "description": "When exporting contacts view with custom tags and industry filters, custom metadata columns are empty.",
+            "status": TicketStatus.OPEN,
+            "priority": TicketPriority.LOW,
+            "category": TicketCategory.BUG,
+            "assigned_to": "Alex Rivera",
+            "reporter_name": "David Kim",
+            "reporter_email": "david.kim@apexfinancial.com",
+            "sla_due_at": now + timedelta(hours=48),
+            "sentiment": "neutral",
+            "ai_triage": {
+                "urgency_score": 3,
+                "sentiment": "neutral",
+                "category": "bug",
+                "priority": "low",
+                "escalate": False,
+                "estimated_resolution_hours": 12,
+            },
+            "tags": ["csv-export", "ui", "data-export"],
+            "messages": [
+                {
+                    "author_name": "David Kim",
+                    "author_email": "david.kim@apexfinancial.com",
+                    "body": "Exporting contact tables to CSV currently omits JSON tags column.",
+                    "is_internal": False,
+                    "created_at": now - timedelta(hours=6),
+                }
+            ]
+        },
+    ]
+
+    for t_data in tickets_data:
+        msgs = t_data.pop("messages", [])
+        ticket = Ticket(**t_data)
+        db.add(ticket)
+        db.flush()
+
+        for m_data in msgs:
+            msg = TicketMessage(ticket_id=ticket.id, **m_data)
+            db.add(msg)
+
+    db.commit()
+    print("✅ Seeded Service Cloud support tickets")
+
+
+def seed_campaigns(db):
+    """Seed initial Marketing Cloud email campaigns & journeys."""
+    if db.query(Campaign).count() > 0:
+        return
+
+    now = datetime.now(timezone.utc)
+    campaigns_data = [
+        {
+            "name": "Q4 Enterprise AI Transformation Webinar",
+            "type": CampaignType.EMAIL,
+            "status": CampaignStatus.ACTIVE,
+            "description": "Exclusive invitation to VP and C-level revenue leaders exploring AI-driven sales orchestration.",
+            "subject": "Exclusive Invite: Scaling Revenue Operations with Autonomous AI Agents",
+            "preview_text": "Join 500+ RevOps executives on Nov 12 for live pipeline automation benchmarks.",
+            "body_html": "<p>Hi {{first_name}},</p><p>Enterprise sales teams are eliminating 80% of manual CRM data entry using autonomous agents.</p><p><a href='#'>Register for the live briefing &rarr;</a></p>",
+            "body_text": "Hi {{first_name}},\n\nEnterprise sales teams are eliminating 80% of manual CRM data entry using autonomous agents.\n\nRegister for the live briefing: https://neuronforce.ai/webinar-q4",
+            "from_name": "Alex Rivera",
+            "from_email": "alex.rivera@neuronforce.ai",
+            "audience_filter": {"industry": "Technology", "lead_status": "qualified"},
+            "recipient_count": 1240,
+            "sent_at": now - timedelta(days=2),
+            "emails_sent": 1240,
+            "emails_delivered": 1215,
+            "emails_opened": 476,
+            "emails_clicked": 148,
+            "emails_bounced": 25,
+            "emails_unsubscribed": 3,
+            "open_rate": 0.3918,
+            "click_rate": 0.1218,
+            "conversion_rate": 0.052,
+            "revenue_attributed": 48500.0,
+            "ai_score": 94,
+            "ai_insights": {
+                "strengths": ["Personalized subject line", "High executive engagement", "Above-benchmark open rate (+14%)"],
+                "recommendation": "Deploy automated 48-hour follow-up to attendees who clicked the registration link."
+            },
+            "tags": ["webinar", "q4-pipeline", "enterprise", "c-level"]
+        },
+        {
+            "name": "Re-engagement: Closed-Lost Pipeline Nurture",
+            "type": CampaignType.NURTURE_SEQUENCE,
+            "status": CampaignStatus.COMPLETED,
+            "description": "Automated nurture campaign for deals marked closed-lost in the past 6 months.",
+            "subject": "What's new in NeuronForce 2.0: Real-time autonomous pipeline intelligence",
+            "preview_text": "See how our new release addresses integration bottlenecks.",
+            "body_html": "<p>Hi {{first_name}},</p><p>We recently shipped our Gemini-powered Agentforce layer with automatic SLA triaging and 1-click quoting.</p>",
+            "body_text": "Hi {{first_name}},\n\nWe recently shipped our Gemini-powered Agentforce layer with automatic SLA triaging and 1-click quoting.",
+            "from_name": "Sarah Jenkins",
+            "from_email": "sarah.jenkins@neuronforce.ai",
+            "audience_filter": {"lead_status": "contacted"},
+            "recipient_count": 480,
+            "sent_at": now - timedelta(days=14),
+            "completed_at": now - timedelta(days=7),
+            "emails_sent": 480,
+            "emails_delivered": 472,
+            "emails_opened": 142,
+            "emails_clicked": 41,
+            "emails_bounced": 8,
+            "emails_unsubscribed": 2,
+            "open_rate": 0.3008,
+            "click_rate": 0.0869,
+            "conversion_rate": 0.041,
+            "revenue_attributed": 24000.0,
+            "ai_score": 87,
+            "ai_insights": {
+                "strengths": ["Strong value proposition for previous evaluators"],
+                "recommendation": "Add customer case study video link in body to boost click-through by ~18%."
+            },
+            "tags": ["nurture", "re-engagement", "closed-lost"]
+        },
+        {
+            "name": "Spring 2026 Product Release: Autonomous Agentforce",
+            "type": CampaignType.ANNOUNCEMENT,
+            "status": CampaignStatus.SCHEDULED,
+            "description": "Global announcement for general availability of autonomous AI agent workflows.",
+            "subject": "Announcing NeuronForce Agentforce: AI that doesn't just suggest — it executes",
+            "preview_text": "Next-generation autonomous revenue orchestration is now live.",
+            "body_html": "<p>Meet Agentforce: The first AI sales platform with real-time Gemini reasoning and self-healing pipelines.</p>",
+            "body_text": "Meet Agentforce: The first AI sales platform with real-time Gemini reasoning and self-healing pipelines.",
+            "from_name": "NeuronForce Team",
+            "from_email": "product@neuronforce.ai",
+            "audience_filter": {},
+            "recipient_count": 3500,
+            "scheduled_at": now + timedelta(days=3),
+            "ai_score": 92,
+            "ai_insights": {
+                "strengths": ["Compelling hook", "Clear product positioning"],
+                "recommendation": "Set up A/B subject line test between product-led vs. outcome-led headline."
+            },
+            "ab_test_enabled": True,
+            "ab_variant_subject": "How top revenue teams are automating 65% of customer workflows with AI",
+            "tags": ["product-launch", "announcement", "agentforce"]
+        },
+        {
+            "name": "Mid-Market Growth Plan: 20% Annual Upgrade",
+            "type": CampaignType.PROMOTIONAL,
+            "status": CampaignStatus.ACTIVE,
+            "description": "Targeted upgrade incentives for mid-market monthly accounts switching to annual billing.",
+            "subject": "Upgrade your team's pipeline velocity: Save 20% on Annual Pro",
+            "preview_text": "Lock in your 2026 pricing and unlock unlimited AI agent tasks.",
+            "body_html": "<p>Hi {{first_name}},</p><p>Switch to Annual Pro today and get unlimited Agentforce execution plus dedicated SLA support.</p>",
+            "body_text": "Hi {{first_name}},\n\nSwitch to Annual Pro today and get unlimited Agentforce execution plus dedicated SLA support.",
+            "from_name": "Jordan Lee",
+            "from_email": "jordan.lee@neuronforce.ai",
+            "audience_filter": {"industry": "Finance"},
+            "recipient_count": 860,
+            "sent_at": now - timedelta(days=5),
+            "emails_sent": 860,
+            "emails_delivered": 845,
+            "emails_opened": 358,
+            "emails_clicked": 134,
+            "emails_bounced": 15,
+            "emails_unsubscribed": 4,
+            "open_rate": 0.4237,
+            "click_rate": 0.1586,
+            "conversion_rate": 0.082,
+            "revenue_attributed": 64200.0,
+            "ai_score": 96,
+            "ai_insights": {
+                "strengths": ["High conversion rate", "Clear ROI proposition", "Strong click-to-open ratio"],
+                "recommendation": "Expand audience segment to Healthcare and Retail verticals."
+            },
+            "tags": ["promotional", "upgrade", "annual-plan"]
+        }
+    ]
+
+    for c_data in campaignss_data if "campaignss_data" in locals() else campaigns_data:
+        campaign = Campaign(**c_data)
+        db.add(campaign)
+
+    db.commit()
+    print("✅ Seeded Marketing Cloud campaigns")
+
+
 def seed_database(db):
     """Populate the database with realistic demo data."""
     # Ensure users exist
     seed_users(db)
 
+    # Ensure Service Cloud and Marketing Cloud are populated
+    seed_tickets(db)
+    seed_campaigns(db)
+
     # Check if contact data already exists
     if db.query(Contact).count() > 0:
-        print("ℹ️  Database already seeded — skipping.")
+        print("ℹ️  Database already seeded — skipping contacts/deals.")
         return
 
     # --- CONTACTS ---

@@ -51,6 +51,10 @@ class Settings:
         self.FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
         self.BACKEND_URL: str = os.getenv("BACKEND_URL", "http://localhost:8000")
 
+        # Google Gemini AI Configuration
+        self.GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+        self.GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+
         # Optional Firebase Configuration
         self.FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "")
 

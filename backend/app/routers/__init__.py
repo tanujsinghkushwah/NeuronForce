@@ -14,6 +14,8 @@ from app.routers.calendar import router as calendar_router
 from app.routers.analytics import router as analytics_router
 from app.routers.settings import router as settings_router
 from app.routers.auth import router as auth_router
+from app.routers.tickets import router as tickets_router
+from app.routers.campaigns import router as campaigns_router
 
 all_routers = [
     dashboard_router,
@@ -25,6 +27,8 @@ all_routers = [
     analytics_router,
     settings_router,
     auth_router,
+    tickets_router,
+    campaigns_router,
 ]
 
 
