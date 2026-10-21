@@ -20,7 +20,8 @@ import {
   Filter,
   RefreshCw,
   Plus,
-  PlayCircle
+  PlayCircle,
+  Briefcase
 } from 'lucide-react';
 import {
   AreaChart,
@@ -241,24 +242,19 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* AI Efficiency */}
-          <div className="glass-panel p-5 rounded-2xl relative overflow-hidden border-indigo-500/30 bg-gradient-to-br from-indigo-950/40 via-slate-900/60 to-slate-900/40 group hover:border-indigo-500/50 transition-all">
+          {/* Avg Deal Size */}
+          <div className="glass-panel p-5 rounded-2xl relative overflow-hidden group hover:border-cyan-500/30 transition-all">
             <div className="flex items-center justify-between text-slate-400 mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider text-cyan-300 flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                AI Decisions Today
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-300 flex items-center justify-center">
-                <Zap className="w-4 h-4" />
+              <span className="text-xs font-semibold uppercase tracking-wider">Avg Deal Size</span>
+              <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                <Briefcase className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-3xl font-extrabold text-white tracking-tight flex items-baseline gap-2">
-              <span>{stats?.ai_tasks_today || 0}</span>
-              <span className="text-xs text-slate-400 font-normal">tasks</span>
+            <div className="text-3xl font-extrabold text-white tracking-tight">
+              ${((stats?.avg_deal_size || 0) / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k
             </div>
-            <div className="flex items-center justify-between text-xs mt-2">
-              <span className="text-slate-400">Total AI Spend:</span>
-              <span className="text-emerald-400 font-bold">${stats?.ai_cost_today?.toFixed(4) || '0.0000'}</span>
+            <div className="flex items-center gap-1.5 text-xs text-cyan-300 mt-2 font-medium">
+              <span>{stats?.total_deals || 0} lifetime opportunities</span>
             </div>
           </div>
         </div>

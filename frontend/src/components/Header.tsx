@@ -42,13 +42,6 @@ export default function Header({
           />
         </div>
 
-        {/* AI Agent Spend Badge */}
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300 font-medium">
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-          <span>AI Cost Today:</span>
-          <span className="font-semibold text-white">$0.0412</span>
-        </div>
-
         {/* Action Button */}
         {onActionClick && (
           <div className="flex items-center gap-2">
