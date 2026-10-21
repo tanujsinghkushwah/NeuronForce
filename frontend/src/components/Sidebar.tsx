@@ -11,11 +11,11 @@ import {
   BarChart3,
   Calendar,
   Settings,
-  BrainCircuit,
   Zap,
   CheckCircle2,
   ChevronRight
 } from 'lucide-react';
+import NeuronForceLogo from './NeuronForceLogo';
 
 interface NavItem {
   name: string;
@@ -41,21 +41,9 @@ export default function Sidebar() {
   return (
     <aside className="w-64 border-r border-white/10 bg-[#0b101b]/95 backdrop-blur-xl flex flex-col h-screen sticky top-0 z-40 select-none">
       {/* Brand Header */}
-      <div className="h-16 px-5 flex items-center justify-between border-b border-white/10">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-            <BrainCircuit className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-base tracking-tight text-white group-hover:text-indigo-300 transition-colors">
-                Neuron<span className="text-indigo-400">Force</span>
-              </span>
-            </div>
-            <span className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground/80">
-              Next-Gen AI CRM
-            </span>
-          </div>
+      <div className="h-16 px-4 flex items-center justify-between border-b border-white/10">
+        <Link href="/" className="flex items-center">
+          <NeuronForceLogo size="md" />
         </Link>
         <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 font-medium">
           MVP

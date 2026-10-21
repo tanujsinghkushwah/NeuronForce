@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   title: 'NeuronForce | Autonomous AI-Powered CRM Platform',
   description:
     'A modern, high-performance alternative to Salesforce with transparent AI agents, sub-100ms latency, and clear cost/confidence observability.',
+  icons: {
+    icon: '/neuronforce-logo.svg',
+    shortcut: '/neuronforce-logo.svg',
+    apple: '/neuronforce-logo.svg',
+  },
 };
 
 export default function RootLayout({
