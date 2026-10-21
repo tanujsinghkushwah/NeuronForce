@@ -12,9 +12,12 @@ import {
   Calendar,
   Settings,
   Megaphone,
-  LifeBuoy
+  LifeBuoy,
+  Sun,
+  Moon
 } from 'lucide-react';
 import NeuronForceLogo from './NeuronForceLogo';
+import { useTheme } from '../context/ThemeContext';
 
 interface NavItem {
   name: string;
@@ -38,6 +41,7 @@ const navItems: NavItem[] = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
 
   return (
     <aside className="w-64 border-r border-white/10 bg-[#0b101b]/95 backdrop-blur-xl flex flex-col h-screen sticky top-0 z-40 select-none">
@@ -94,6 +98,49 @@ export default function Sidebar() {
             </Link>
           );
         })}
+      </div>
+
+      {/* Dark / Light Mode Toggle in Bottom Left */}
+      <div className="p-3 border-t border-white/10 mt-auto">
+        <div className="flex items-center justify-between p-1.5 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
+          <div className="flex items-center gap-2 pl-1.5 text-xs font-medium text-slate-300">
+            {theme === 'dark' ? (
+              <Moon className="w-3.5 h-3.5 text-indigo-400" />
+            ) : (
+              <Sun className="w-3.5 h-3.5 text-amber-500" />
+            )}
+            <span className="capitalize text-[11px]">{theme} Mode</span>
+          </div>
+
+          <div className="flex items-center bg-black/20 p-0.5 rounded-lg border border-white/5">
+            <button
+              id="theme-light-btn"
+              onClick={() => setTheme('light')}
+              title="Switch to Light Mode"
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-all cursor-pointer ${
+                theme === 'light'
+                  ? 'bg-amber-400 text-slate-900 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Sun className="w-3 h-3" />
+              <span>Light</span>
+            </button>
+            <button
+              id="theme-dark-btn"
+              onClick={() => setTheme('dark')}
+              title="Switch to Dark Mode"
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-all cursor-pointer ${
+                theme === 'dark'
+                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/40'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Moon className="w-3 h-3" />
+              <span>Dark</span>
+            </button>
+          </div>
+        </div>
       </div>
     </aside>
   );

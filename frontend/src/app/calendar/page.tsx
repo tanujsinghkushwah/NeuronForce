@@ -1,26 +1,44 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Header from '../../components/Header';
 import { api } from '../../lib/api';
 import { CalendarEvent } from '../../types/crm';
+import TimelineView from '../../components/calendar/TimelineView';
+import CardsView from '../../components/calendar/CardsView';
+import EventDetailModal from '../../components/calendar/EventDetailModal';
+import ScheduleModal from '../../components/calendar/ScheduleModal';
 import {
   Calendar as CalendarIcon,
-  Clock,
+  LayoutGrid,
+  Rows3,
   Plus,
-  Users,
-  Video,
-  MapPin,
-  Trash2,
   ChevronLeft,
   ChevronRight,
-  Sparkles
+  Sparkles,
 } from 'lucide-react';
 
 export default function CalendarPage() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+
+  // View mode: 'timeline' (Google Calendar style) or 'cards' (card grid)
+  const [activeView, setActiveView] = useState<'timeline' | 'cards'>('timeline');
+
+  // Timeline sub-mode: 'week' (7-day timeline) or 'day' (1-day timeline)
+  const [timelineSubMode, setTimelineSubMode] = useState<'week' | 'day'>('week');
+
+  // Active anchor date for calendar navigation (stable initial value for prerender, updated on mount)
+  const [currentDate, setCurrentDate] = useState<Date>(() => new Date('2026-10-22T00:00:00'));
+
+  useEffect(() => {
+    setCurrentDate(new Date());
+  }, []);
+
+  // Modals state
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+
   const [form, setForm] = useState({
     title: '',
     start_time: '',
@@ -28,14 +46,51 @@ export default function CalendarPage() {
     location: 'Zoom Meeting',
     event_type: 'meeting',
     attendees: 'alex@neuronforce.ai, customer@acme.com',
-    color: '#6366f1'
+    color: '#6366f1',
   });
 
   const openNewEventModal = () => {
-    const start = new Date(Date.now() + 86400000).toISOString().slice(0, 16);
-    const end = new Date(Date.now() + 90000000).toISOString().slice(0, 16);
-    setForm(f => ({ ...f, start_time: start, end_time: end }));
-    setShowModal(true);
+    const now = new Date();
+    // Default to next hour
+    const start = new Date(now);
+    start.setMinutes(0, 0, 0);
+    start.setHours(start.getHours() + 1);
+
+    const end = new Date(start);
+    end.setHours(end.getHours() + 1);
+
+    // Format local datetime string: YYYY-MM-DDTHH:mm
+    const toLocalISO = (d: Date) => {
+      const pad = (n: number) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    };
+
+    setForm((f) => ({
+      ...f,
+      start_time: toLocalISO(start),
+      end_time: toLocalISO(end),
+    }));
+    setShowScheduleModal(true);
+  };
+
+  const handleSlotClick = (date: Date, hour: number) => {
+    const start = new Date(date);
+    start.setHours(hour, 0, 0, 0);
+
+    const end = new Date(date);
+    end.setHours(hour + 1, 0, 0, 0);
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const toLocalISO = (d: Date) =>
+      `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+    setForm((f) => ({
+      ...f,
+      start_time: toLocalISO(start),
+      end_time: toLocalISO(end),
+      title: '',
+    }));
+    setShowScheduleModal(true);
   };
 
   const loadEvents = async () => {
@@ -59,7 +114,7 @@ export default function CalendarPage() {
           is_all_day: false,
           reminder_minutes: 15,
           created_at: '2026-10-20T10:00:00Z',
-          updated_at: '2026-10-20T10:00:00Z'
+          updated_at: '2026-10-20T10:00:00Z',
         },
         {
           id: 2,
@@ -74,7 +129,7 @@ export default function CalendarPage() {
           is_all_day: false,
           reminder_minutes: 15,
           created_at: '2026-10-20T11:00:00Z',
-          updated_at: '2026-10-20T11:00:00Z'
+          updated_at: '2026-10-20T11:00:00Z',
         },
         {
           id: 3,
@@ -89,8 +144,8 @@ export default function CalendarPage() {
           is_all_day: false,
           reminder_minutes: 15,
           created_at: '2026-10-20T12:00:00Z',
-          updated_at: '2026-10-20T12:00:00Z'
-        }
+          updated_at: '2026-10-20T12:00:00Z',
+        },
       ]);
     } finally {
       setLoading(false);
@@ -111,9 +166,9 @@ export default function CalendarPage() {
         location: form.location,
         event_type: form.event_type,
         color: form.color,
-        attendees: form.attendees.split(',').map(a => a.trim()).filter(Boolean)
+        attendees: form.attendees.split(',').map((a) => a.trim()).filter(Boolean),
       });
-      setShowModal(false);
+      setShowScheduleModal(false);
       loadEvents();
     } catch (err) {
       alert('Could not schedule event: ' + String(err));
@@ -123,11 +178,74 @@ export default function CalendarPage() {
   const handleDelete = async (id: number) => {
     try {
       await api.deleteCalendarEvent(id);
-      setEvents(events.filter(e => e.id !== id));
+      setEvents((prev) => prev.filter((e) => e.id !== id));
     } catch {
-      setEvents(events.filter(e => e.id !== id));
+      setEvents((prev) => prev.filter((e) => e.id !== id));
     }
   };
+
+  // Navigation handlers
+  const handleToday = () => {
+    setCurrentDate(new Date());
+  };
+
+  const handlePrev = () => {
+    setCurrentDate((prev) => {
+      const d = new Date(prev);
+      if (timelineSubMode === 'week') {
+        d.setDate(d.getDate() - 7);
+      } else {
+        d.setDate(d.getDate() - 1);
+      }
+      return d;
+    });
+  };
+
+  const handleNext = () => {
+    setCurrentDate((prev) => {
+      const d = new Date(prev);
+      if (timelineSubMode === 'week') {
+        d.setDate(d.getDate() + 7);
+      } else {
+        d.setDate(d.getDate() + 1);
+      }
+      return d;
+    });
+  };
+
+  // Format header range string with deterministic naming
+  const formattedDateRange = useMemo(() => {
+    const MONTH_NAMES = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    const WEEKDAY_NAMES = [
+      'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+    ];
+
+    if (timelineSubMode === 'day') {
+      const weekday = WEEKDAY_NAMES[currentDate.getDay()];
+      const month = MONTH_NAMES[currentDate.getMonth()];
+      return `${weekday}, ${month} ${currentDate.getDate()}, ${currentDate.getFullYear()}`;
+    }
+
+    // Week range: find Monday and Sunday
+    const d = new Date(currentDate);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(d.setDate(diff));
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    const mMonth = MONTH_NAMES[monday.getMonth()];
+    const sMonth = MONTH_NAMES[sunday.getMonth()];
+    const year = sunday.getFullYear();
+
+    if (mMonth === sMonth) {
+      return `${mMonth} ${monday.getDate()} – ${sunday.getDate()}, ${year}`;
+    }
+    return `${mMonth} ${monday.getDate()} – ${sMonth} ${sunday.getDate()}, ${year}`;
+  }, [currentDate, timelineSubMode]);
 
   return (
     <div className="flex-1 flex flex-col pb-12">
@@ -138,173 +256,143 @@ export default function CalendarPage() {
       />
 
       <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto w-full">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-white tracking-tight">
-              Upcoming Executive Engagements
-            </h2>
-            <p className="text-xs text-slate-400">
-              High-priority customer meetings linked directly to pipeline opportunities
-            </p>
+        {/* ── Top Controls & Switcher Toolbar ─────────────────────────── */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-panel p-4 rounded-2xl border border-white/10">
+          {/* Left: Date navigation controls */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleToday}
+              className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-all cursor-pointer shadow-sm"
+            >
+              Today
+            </button>
+
+            <div className="flex items-center bg-white/5 rounded-xl border border-white/10 p-0.5">
+              <button
+                onClick={handlePrev}
+                title="Previous"
+                className="p-1.5 text-slate-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleNext}
+                title="Next"
+                className="p-1.5 text-slate-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 pl-2">
+              <CalendarIcon className="w-4 h-4 text-indigo-400" />
+              <span className="text-sm font-bold text-white tracking-tight">
+                {formattedDateRange}
+              </span>
+            </div>
           </div>
 
-          <button
-            onClick={openNewEventModal}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Schedule Meeting</span>
-          </button>
-        </div>
-
-        {/* Events Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {events.map((evt) => (
-            <div
-              key={evt.id}
-              className="glass-panel p-5 rounded-2xl border border-white/10 flex flex-col justify-between hover:border-indigo-500/30 transition-all group"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span
-                    className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border"
-                    style={{
-                      borderColor: evt.color,
-                      color: evt.color,
-                      backgroundColor: `${evt.color}15`
-                    }}
-                  >
-                    {evt.event_type}
-                  </span>
-                  <button
-                    onClick={() => handleDelete(evt.id)}
-                    className="text-slate-500 hover:text-rose-400 p-1 rounded-md transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                <h4 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors mb-2">
-                  {evt.title}
-                </h4>
-
-                {evt.description && (
-                  <p className="text-xs text-slate-400 leading-relaxed mb-4">
-                    {evt.description}
-                  </p>
-                )}
+          {/* Right: View mode toggles & Action */}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Timeline Sub-mode: Week vs Day (only visible when in Timeline View) */}
+            {activeView === 'timeline' && (
+              <div className="flex items-center bg-black/25 p-1 rounded-xl border border-white/10">
+                <button
+                  onClick={() => setTimelineSubMode('week')}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    timelineSubMode === 'week'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Week
+                </button>
+                <button
+                  onClick={() => setTimelineSubMode('day')}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    timelineSubMode === 'day'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Day
+                </button>
               </div>
+            )}
 
-              <div className="space-y-2 pt-3 border-t border-white/5 text-xs text-slate-300">
-                <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                  <Clock className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>{new Date(evt.start_time).toLocaleString()}</span>
-                </div>
+            {/* Primary View Switcher: Timeline vs Cards */}
+            <div className="flex items-center bg-black/25 p-1 rounded-xl border border-white/10">
+              <button
+                onClick={() => setActiveView('timeline')}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  activeView === 'timeline'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Google Calendar Timeline View"
+              >
+                <Rows3 className="w-3.5 h-3.5" />
+                <span>Timeline</span>
+              </button>
 
-                {evt.location && (
-                  <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                    <Video className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>{evt.location}</span>
-                  </div>
-                )}
-
-                {evt.attendees && evt.attendees.length > 0 && (
-                  <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                    {evt.attendees.map((att, idx) => (
-                      <span key={idx} className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-white/5">
-                        {att}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <button
+                onClick={() => setActiveView('cards')}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  activeView === 'cards'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Cards Grid View"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>Cards</span>
+              </button>
             </div>
-          ))}
+
+            {/* Schedule Meeting Button */}
+            <button
+              onClick={openNewEventModal}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Schedule</span>
+            </button>
+          </div>
         </div>
+
+        {/* ── Main View Area ─────────────────────────────────────────── */}
+        {activeView === 'timeline' ? (
+          <TimelineView
+            events={events}
+            currentDate={currentDate}
+            viewMode={timelineSubMode}
+            onSelectEvent={(evt) => setSelectedEvent(evt)}
+            onSlotClick={handleSlotClick}
+          />
+        ) : (
+          <CardsView
+            events={events}
+            onSelectEvent={(evt) => setSelectedEvent(evt)}
+            onDeleteEvent={handleDelete}
+          />
+        )}
       </div>
 
-      {/* New Event Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-dropdown w-full max-w-md p-6 rounded-2xl border border-white/20 animate-in fade-in zoom-in-95 duration-200 text-xs">
-            <h3 className="text-lg font-bold text-white mb-1">Schedule Engagement</h3>
-            <p className="text-slate-400 mb-4">Add a customer meeting, demo, or contract review session.</p>
+      {/* ── Event Details Modal ──────────────────────────────────────── */}
+      <EventDetailModal
+        event={selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+        onDelete={handleDelete}
+      />
 
-            <form onSubmit={handleCreate} className="space-y-3.5">
-              <div>
-                <label className="block font-medium text-slate-300 mb-1">Meeting Title</label>
-                <input
-                  required
-                  type="text"
-                  placeholder="e.g. Solution Demo & Architecture Walkthrough"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full h-9 px-3 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-medium text-slate-300 mb-1">Start Time</label>
-                  <input
-                    required
-                    type="datetime-local"
-                    value={form.start_time}
-                    onChange={(e) => setForm({ ...form, start_time: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium text-slate-300 mb-1">End Time</label>
-                  <input
-                    required
-                    type="datetime-local"
-                    value={form.end_time}
-                    onChange={(e) => setForm({ ...form, end_time: e.target.value })}
-                    className="w-full h-9 px-3 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-300 mb-1">Location / Video Link</label>
-                <input
-                  type="text"
-                  value={form.location}
-                  onChange={(e) => setForm({ ...form, location: e.target.value })}
-                  className="w-full h-9 px-3 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-300 mb-1">Attendees (comma separated)</label>
-                <input
-                  type="text"
-                  value={form.attendees}
-                  onChange={(e) => setForm({ ...form, attendees: e.target.value })}
-                  className="w-full h-9 px-3 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-xl text-slate-400 hover:text-white cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 cursor-pointer"
-                >
-                  Save Meeting
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* ── Schedule Meeting Modal ───────────────────────────────────── */}
+      <ScheduleModal
+        show={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        onSubmit={handleCreate}
+        form={form}
+        setForm={setForm}
+      />
     </div>
   );
 }
