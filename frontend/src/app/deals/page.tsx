@@ -13,7 +13,7 @@ import {
   TrendingUp,
   Building,
   Sparkles,
-  ArrowRight,
+  GripVertical,
   MoreHorizontal,
   ChevronRight,
   CheckCircle2,
@@ -97,35 +97,67 @@ export default function DealsPage() {
     loadPipeline();
   }, []);
 
-  const handleMoveStage = async (dealId: number, currentStage: DealStage) => {
-    const stageOrder: DealStage[] = ['prospecting', 'qualification', 'proposal', 'negotiation', 'closed_won'];
-    const currentIndex = stageOrder.indexOf(currentStage);
-    if (currentIndex === -1 || currentIndex === stageOrder.length - 1) return;
+  const [draggedDeal, setDraggedDeal] = useState<{ id: number; fromStage: DealStage } | null>(null);
+  const [dragOverStage, setDragOverStage] = useState<DealStage | null>(null);
 
-    const nextStage = stageOrder[currentIndex + 1];
-    const nextProb = nextStage === 'closed_won' ? 100 : (currentIndex + 2) * 20;
+  const handleDropOnStage = async (targetStage: DealStage) => {
+    if (!draggedDeal) return;
+    const { id: dealId, fromStage } = draggedDeal;
+    setDragOverStage(null);
+    setDraggedDeal(null);
 
-    try {
-      await api.updateDeal(dealId, { stage: nextStage, probability: nextProb });
-      loadPipeline();
-    } catch {
-      // Optimistic local update
-      if (pipeline) {
-        const stages = { ...pipeline.stages };
-        let movedDeal: any = null;
-        for (const k in stages) {
-          const idx = stages[k].findIndex(d => d.id === dealId);
-          if (idx !== -1) {
-            movedDeal = { ...stages[k][idx], stage: nextStage, probability: nextProb };
-            stages[k].splice(idx, 1);
-            break;
-          }
-        }
-        if (movedDeal && stages[nextStage]) {
-          stages[nextStage].push(movedDeal);
-          setPipeline({ ...pipeline, stages });
+    if (fromStage === targetStage) return;
+
+    const probMap: Record<DealStage, number> = {
+      prospecting: 10,
+      qualification: 25,
+      proposal: 50,
+      negotiation: 75,
+      closed_won: 100,
+      closed_lost: 0
+    };
+    const newProb = probMap[targetStage] ?? 25;
+
+    // Optimistic local update
+    if (pipeline) {
+      const nextStages = { ...pipeline.stages };
+      let movedItem: any = null;
+      for (const k in nextStages) {
+        const idx = nextStages[k].findIndex(d => d.id === dealId);
+        if (idx !== -1) {
+          movedItem = { ...nextStages[k][idx], stage: targetStage, probability: newProb };
+          nextStages[k] = nextStages[k].filter(d => d.id !== dealId);
+          break;
         }
       }
+      if (movedItem) {
+        if (!nextStages[targetStage]) nextStages[targetStage] = [];
+        nextStages[targetStage] = [movedItem, ...nextStages[targetStage]];
+
+        let totalVal = 0;
+        let weightedVal = 0;
+        for (const k in nextStages) {
+          for (const d of nextStages[k]) {
+            if (k !== 'closed_won' && k !== 'closed_lost') {
+              totalVal += d.value || 0;
+              weightedVal += ((d.value || 0) * (d.probability || 0)) / 100;
+            }
+          }
+        }
+        setPipeline({
+          stages: nextStages,
+          total_value: totalVal,
+          weighted_value: Math.round(weightedVal)
+        });
+      }
+    }
+
+    try {
+      await api.updateDeal(dealId, { stage: targetStage, probability: newProb });
+      loadPipeline();
+    } catch (err) {
+      console.error('Failed to update deal stage:', err);
+      loadPipeline();
     }
   };
 
@@ -203,7 +235,25 @@ export default function DealsPage() {
             return (
               <div
                 key={st.key}
-                className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-md flex flex-col max-h-[800px]"
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = 'move';
+                  if (dragOverStage !== st.key) setDragOverStage(st.key);
+                }}
+                onDragLeave={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                    setDragOverStage(null);
+                  }
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleDropOnStage(st.key);
+                }}
+                className={`rounded-2xl border transition-all flex flex-col max-h-[800px] ${
+                  dragOverStage === st.key && draggedDeal?.fromStage !== st.key
+                    ? 'border-indigo-400/80 bg-indigo-950/40 shadow-xl shadow-indigo-500/10 ring-2 ring-indigo-500/40'
+                    : 'border-white/10 bg-slate-900/60 backdrop-blur-md'
+                }`}
               >
                 {/* Column Header */}
                 <div className={`p-3.5 border-b border-white/10 rounded-t-2xl flex items-center justify-between ${st.color}`}>
@@ -224,65 +274,78 @@ export default function DealsPage() {
 
                 {/* Deal Cards Container */}
                 <div className="p-3 space-y-3 overflow-y-auto flex-1 min-h-[300px]">
+                  {dragOverStage === st.key && draggedDeal?.fromStage !== st.key && (
+                    <div className="p-3.5 rounded-xl border-2 border-dashed border-indigo-400/60 bg-indigo-500/15 text-center text-xs text-indigo-300 font-semibold animate-pulse">
+                      Drop here to move to {st.label}
+                    </div>
+                  )}
+
                   {stageDeals.length === 0 ? (
                     <div className="py-12 text-center text-xs text-slate-400 border border-dashed border-white/10 rounded-xl">
                       No deals in {st.label.toLowerCase()}
                     </div>
                   ) : (
-                    stageDeals.map((deal) => (
-                      <div
-                        key={deal.id}
-                        className="glass-panel-interactive p-3.5 rounded-xl border border-white/10 space-y-2.5 group cursor-pointer"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <h4 className="text-xs font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-2">
-                            {deal.title}
-                          </h4>
-                          {deal.priority === 'critical' && (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold uppercase">
-                              HOT
+                    stageDeals.map((deal) => {
+                      const isDraggingThis = draggedDeal?.id === deal.id;
+                      return (
+                        <div
+                          key={deal.id}
+                          draggable={true}
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData('text/plain', String(deal.id));
+                            e.dataTransfer.effectAllowed = 'move';
+                            setDraggedDeal({ id: deal.id, fromStage: st.key });
+                          }}
+                          onDragEnd={() => {
+                            setDraggedDeal(null);
+                            setDragOverStage(null);
+                          }}
+                          className={`glass-panel-interactive p-3.5 rounded-xl border border-white/10 space-y-2.5 group cursor-grab active:cursor-grabbing transition-all ${
+                            isDraggingThis ? 'opacity-40 scale-[0.98] border-indigo-500 ring-2 ring-indigo-500/30' : ''
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 className="text-xs font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-2">
+                              {deal.title}
+                            </h4>
+                            <div className="flex items-center gap-1 shrink-0">
+                              {deal.priority === 'critical' && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold uppercase">
+                                  HOT
+                                </span>
+                              )}
+                              <GripVertical className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300" />
+                            </div>
+                          </div>
+
+                          {deal.company && (
+                            <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
+                              <Building className="w-3 h-3 text-slate-400" />
+                              <span>{deal.company}</span>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between pt-1">
+                            <span className="text-sm font-extrabold text-white">
+                              ${Number(deal.value).toLocaleString()}
                             </span>
-                          )}
-                        </div>
 
-                        {deal.company && (
-                          <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
-                            <Building className="w-3 h-3 text-slate-400" />
-                            <span>{deal.company}</span>
+                            <div className="flex items-center gap-1 text-[11px] font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/20">
+                              <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
+                              <span>{deal.ai_win_probability ? `${Math.round(deal.ai_win_probability * 100)}%` : `${deal.probability}%`}</span>
+                            </div>
                           </div>
-                        )}
 
-                        <div className="flex items-center justify-between pt-1">
-                          <span className="text-sm font-extrabold text-white">
-                            ${Number(deal.value).toLocaleString()}
-                          </span>
-
-                          <div className="flex items-center gap-1 text-[11px] font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/20">
-                            <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
-                            <span>{deal.ai_win_probability ? `${Math.round(deal.ai_win_probability * 100)}%` : `${deal.probability}%`}</span>
+                          {/* Owner & Drag Info */}
+                          <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[10px] text-slate-400">
+                            <span>{deal.owner || 'Unassigned'}</span>
+                            <span className="text-[9px] text-slate-500 group-hover:text-indigo-400 transition-colors">
+                              Drag to move
+                            </span>
                           </div>
                         </div>
-
-                        {/* Owner & Progress Control */}
-                        <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[10px] text-slate-400">
-                          <span>{deal.owner || 'Unassigned'}</span>
-
-                          {st.key !== 'closed_won' && st.key !== 'closed_lost' && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleMoveStage(deal.id, st.key);
-                              }}
-                              title="Advance to next stage"
-                              className="p-1 rounded-md bg-white/5 hover:bg-indigo-600 text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1"
-                            >
-                              <span>Next</span>
-                              <ArrowRight className="w-3 h-3" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </div>
