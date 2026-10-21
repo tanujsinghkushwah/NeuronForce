@@ -3,6 +3,7 @@ NeuronForce - AI-Powered CRM Platform Backend
 FastAPI application with comprehensive REST API endpoints.
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -26,15 +27,27 @@ from .schemas import (
     CalendarEventCreate, CalendarEventResponse,
     DashboardStats, PipelineView
 )
-from .seed_data import seed_database
+from scripts.seed_data import seed_database
 
 # Create tables
 Base.metadata.create_all(bind=engine)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager: seed database on startup."""
+    db = next(get_db())
+    try:
+        seed_database(db)
+    finally:
+        db.close()
+    yield
+
 
 app = FastAPI(
     title="NeuronForce API",
     description="AI-Powered CRM Platform - Alternative to Salesforce",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 # CORS - allow Next.js frontend
@@ -45,16 +58,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def startup_event():
-    """Initialize database with seed data on startup."""
-    db = next(get_db())
-    try:
-        seed_database(db)
-    finally:
-        db.close()
 
 
 # ===================== DASHBOARD =====================

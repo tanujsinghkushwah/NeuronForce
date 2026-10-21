@@ -1,11 +1,25 @@
+#!/usr/bin/env python3
 """
-NeuronForce Seed Data
-Realistic demo data for the CRM platform.
+NeuronForce Seed Script
+Run this standalone to populate the database with realistic demo data.
+
+Usage:
+    cd neuronforce/backend
+    python -m scripts.seed_data
+    # OR directly:
+    ./venv/bin/python scripts/seed_data.py
 """
+
+import sys
+import os
+
+# Add parent directory to path so we can import from app/
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import random
 from datetime import datetime, timezone, timedelta
-from .models import (
+from app.database import SessionLocal, engine, Base
+from app.models import (
     Contact, Deal, Activity, Task, AIAgentTask, AnalyticsSnapshot,
     CalendarEvent, LeadStatus, DealStage, Priority, TaskStatus,
     ActivityType, AgentTaskType, AgentTaskStatus
@@ -17,6 +31,7 @@ def seed_database(db):
 
     # Check if data already exists
     if db.query(Contact).count() > 0:
+        print("ℹ️  Database already seeded — skipping.")
         return
 
     # --- CONTACTS ---
@@ -97,7 +112,7 @@ def seed_database(db):
 
     contacts = []
     now = datetime.now(timezone.utc)
-    for i, cd in enumerate(contacts_data):
+    for cd in contacts_data:
         cd["last_contacted"] = now - timedelta(days=random.randint(0, 30))
         cd["created_at"] = now - timedelta(days=random.randint(30, 180))
         cd["updated_at"] = now - timedelta(days=random.randint(0, 10))
@@ -174,7 +189,7 @@ def seed_database(db):
     contact_deal_mapping = {0: [0], 1: [1], 2: [2], 3: [3], 4: [4], 5: [5], 7: [6], 8: [7], 9: [8], 6: [9]}
 
     deals = []
-    for i, dd in enumerate(deals_data):
+    for dd in deals_data:
         dd["created_at"] = now - timedelta(days=random.randint(15, 120))
         dd["updated_at"] = now - timedelta(days=random.randint(0, 7))
         deal = Deal(**dd)
@@ -208,7 +223,7 @@ def seed_database(db):
         activity = Activity(
             type=atype,
             subject=subject,
-            description=f"Auto-generated activity: {subject} with {contact.first_name} {contact.last_name}",
+            description=f"Activity: {subject} with {contact.first_name} {contact.last_name}",
             contact_id=contact.id,
             deal_id=deal.id if deal else None,
             duration_minutes=random.randint(5, 60) if atype in [ActivityType.CALL, ActivityType.MEETING] else None,
@@ -258,7 +273,7 @@ def seed_database(db):
          "triggered_by": "automation"},
         {"task_type": AgentTaskType.EMAIL_DRAFT, "status": AgentTaskStatus.COMPLETED,
          "input_data": {"contact_id": 2, "context": "follow_up_proposal", "tone": "professional"},
-         "output_data": {"subject": "Following Up: Innovate Inc Partnership Proposal", "body": "Dear Marcus,\n\nI hope this message finds you well. I wanted to follow up on our recent discussion regarding the SaaS migration project...", "alternatives": 3},
+         "output_data": {"subject": "Following Up: Innovate Inc Partnership Proposal", "body": "Dear Marcus,\n\nI hope this message finds you well...", "alternatives": 3},
          "confidence_score": 0.87, "cost_estimate": 0.008, "actual_cost": 0.0072, "latency_ms": 1840,
          "triggered_by": "user"},
         {"task_type": AgentTaskType.DEAL_ANALYSIS, "status": AgentTaskStatus.COMPLETED,
@@ -268,12 +283,12 @@ def seed_database(db):
          "triggered_by": "user"},
         {"task_type": AgentTaskType.CHURN_PREDICTION, "status": AgentTaskStatus.COMPLETED,
          "input_data": {"customer_segment": "enterprise", "time_horizon": "90_days"},
-         "output_data": {"at_risk_accounts": [{"company": "CloudOps Platform", "churn_probability": 0.35, "signals": ["Decreased usage", "Support ticket spike"]}, {"company": "CyberGuard Security", "churn_probability": 0.62, "signals": ["No login in 30 days", "Contract renewal approaching"]}], "total_revenue_at_risk": 501000},
+         "output_data": {"at_risk_accounts": [{"company": "CloudOps Platform", "churn_probability": 0.35, "signals": ["Decreased usage", "Support ticket spike"]}], "total_revenue_at_risk": 501000},
          "confidence_score": 0.79, "cost_estimate": 0.025, "actual_cost": 0.022, "latency_ms": 4500,
          "triggered_by": "schedule"},
         {"task_type": AgentTaskType.FORECAST, "status": AgentTaskStatus.COMPLETED,
          "input_data": {"period": "Q4_2026", "model": "ensemble"},
-         "output_data": {"predicted_revenue": 2850000, "confidence_interval": [2420000, 3280000], "key_drivers": ["HealthTech deal close", "TechCorp expansion", "New pipeline from conference leads"], "risk_adjusted_forecast": 2650000},
+         "output_data": {"predicted_revenue": 2850000, "confidence_interval": [2420000, 3280000], "key_drivers": ["HealthTech deal close", "TechCorp expansion"], "risk_adjusted_forecast": 2650000},
          "confidence_score": 0.76, "cost_estimate": 0.05, "actual_cost": 0.045, "latency_ms": 8900,
          "triggered_by": "schedule"},
         {"task_type": AgentTaskType.MEETING_SUMMARY, "status": AgentTaskStatus.RUNNING,
@@ -309,9 +324,6 @@ def seed_database(db):
         db.add(snapshot)
 
     # --- CALENDAR EVENTS ---
-    event_types = ["meeting", "call", "demo", "follow_up"]
-    event_colors = {"meeting": "#6366f1", "call": "#10b981", "demo": "#f59e0b", "follow_up": "#ef4444"}
-
     calendar_events = [
         {"title": "TechCorp Contract Negotiation", "description": "Final contract terms discussion with Sarah Chen",
          "start_time": now + timedelta(days=1, hours=2), "end_time": now + timedelta(days=1, hours=3),
@@ -351,4 +363,15 @@ def seed_database(db):
         db.add(event)
 
     db.commit()
-    print("✅ Database seeded with demo data!")
+    print("✅ Database seeded with NeuronForce demo data!")
+
+
+if __name__ == "__main__":
+    print("🚀 Seeding NeuronForce database...")
+    Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    try:
+        seed_database(db)
+    finally:
+        db.close()
+    print("Done!")

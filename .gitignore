@@ -20,6 +20,7 @@ backend/*.sqlite3
 *.db
 *.sqlite
 *.sqlite3
+.pytest_cache/
 
 # Node / Frontend
 frontend/node_modules/

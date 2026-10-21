@@ -3,7 +3,7 @@ NeuronForce Pydantic Schemas
 Request/Response models for the API.
 """
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
@@ -90,8 +90,7 @@ class ContactResponse(ContactBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Deal Schemas ---
@@ -135,8 +134,7 @@ class DealResponse(DealBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Activity Schemas ---
@@ -160,8 +158,7 @@ class ActivityResponse(ActivityBase):
     completed_at: Optional[datetime] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Task Schemas ---
@@ -185,8 +182,7 @@ class TaskResponse(TaskBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- AI Agent Schemas ---
@@ -211,8 +207,7 @@ class AIAgentTaskResponse(BaseModel):
     created_at: datetime
     completed_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Calendar Schemas ---
@@ -240,8 +235,7 @@ class CalendarEventResponse(CalendarEventBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Analytics Schemas ---
