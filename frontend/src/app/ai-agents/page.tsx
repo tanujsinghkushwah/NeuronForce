@@ -22,7 +22,9 @@ import {
   ChevronRight,
   Code2,
   Terminal,
-  Activity
+  Activity,
+  LifeBuoy,
+  Megaphone
 } from 'lucide-react';
 
 interface AgentDefinition {
@@ -103,6 +105,37 @@ const AGENTS: AgentDefinition[] = [
     latencyEstimate: '~1100ms',
     defaultInput: { meeting_title: 'Stark Industries Security Review', duration_mins: 45 },
     color: 'from-amber-600 to-orange-500'
+  },
+  {
+    type: 'ticket_triage',
+    name: 'Service Cloud Triage Agent',
+    category: 'Service Automation',
+    description: 'Autonomous case classification, SLA urgency prediction, customer sentiment, and rapid response drafting.',
+    icon: LifeBuoy,
+    costEstimate: '~$0.005',
+    latencyEstimate: '~400ms',
+    defaultInput: {
+      ticket_title: 'API Rate Limiting exceeded during bulk sync',
+      customer_tier: 'enterprise',
+      urgency: 'high',
+      issue_text: 'HTTP 429 received when syncing batch contacts'
+    },
+    color: 'from-blue-600 to-cyan-500'
+  },
+  {
+    type: 'campaign_optimize',
+    name: 'Marketing Campaign Optimizer',
+    category: 'Marketing Intelligence',
+    description: 'Predicts email open & click-through rates, scores subject line hooks, and suggests high-converting A/B variants.',
+    icon: Megaphone,
+    costEstimate: '~$0.006',
+    latencyEstimate: '~500ms',
+    defaultInput: {
+      subject: 'Exclusive Invite: Scaling Revenue Operations with Autonomous AI Agents',
+      preview_text: 'Join 500+ RevOps executives for live pipeline automation benchmarks',
+      target_segment: 'VP of Engineering / RevOps'
+    },
+    color: 'from-pink-600 to-rose-500'
   }
 ];
 

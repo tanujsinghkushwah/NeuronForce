@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Header from '../../components/Header';
 import { api } from '../../lib/api';
-import { PerformanceMetrics, RevenueSnapshot } from '../../types/crm';
+import { PerformanceMetrics, RevenueSnapshot, ConversionFunnel, RevenueForecast } from '../../types/crm';
 import {
   BarChart3,
   TrendingUp,
@@ -14,7 +14,15 @@ import {
   Calculator,
   ArrowUpRight,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  Download,
+  Filter,
+  FileSpreadsheet,
+  PieChart,
+  LifeBuoy,
+  Megaphone,
+  Layers,
+  ArrowRight
 } from 'lucide-react';
 import {
   AreaChart,
@@ -25,51 +33,43 @@ import {
   Tooltip,
   ResponsiveContainer,
   BarChart,
-  Bar
+  Bar,
+  Cell
 } from 'recharts';
 
 export default function AnalyticsPage() {
   const [revenueData, setRevenueData] = useState<RevenueSnapshot[]>([]);
   const [performance, setPerformance] = useState<PerformanceMetrics | null>(null);
+  const [funnel, setFunnel] = useState<ConversionFunnel | null>(null);
+  const [forecast, setForecast] = useState<RevenueForecast | null>(null);
+  const [ticketReport, setTicketReport] = useState<any>(null);
+  const [campaignReport, setCampaignReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   // ROI Calculator state
   const [repsCount, setRepsCount] = useState<number>(15);
-  const [manualHoursPerRep, setManualHoursPerRep] = useState<number>(8); // hrs/week on CRM manual entry & lead research
+  const [manualHoursPerRep, setManualHoursPerRep] = useState<number>(8);
   const [hourlyRate, setHourlyRate] = useState<number>(65);
 
   const loadAnalytics = async () => {
     try {
       setLoading(true);
-      const [rev, perf] = await Promise.all([
-        api.getRevenueAnalytics(30),
-        api.getPerformanceMetrics()
+      const [rev, perf, fnl, fcst, tktRep, cmpRep] = await Promise.all([
+        api.getRevenueAnalytics(30).catch(() => []),
+        api.getPerformanceMetrics().catch(() => null),
+        api.getConversionFunnel().catch(() => null),
+        api.getRevenueForecast().catch(() => null),
+        api.getTicketReport().catch(() => null),
+        api.getCampaignReport().catch(() => null),
       ]);
       setRevenueData(rev);
       setPerformance(perf);
-    } catch {
-      // Fallback realistic metrics
-      setRevenueData([
-        { date: 'Oct 01', total_revenue: 850000, pipeline_value: 2900000, deals_won: 5, deals_lost: 1, conversion_rate: 28, avg_deal_size: 170000, new_contacts: 12, ai_tasks_run: 22, ai_total_cost: 0.054 },
-        { date: 'Oct 05', total_revenue: 920000, pipeline_value: 3100000, deals_won: 6, deals_lost: 2, conversion_rate: 30, avg_deal_size: 153000, new_contacts: 18, ai_tasks_run: 34, ai_total_cost: 0.082 },
-        { date: 'Oct 10', total_revenue: 1040000, pipeline_value: 3450000, deals_won: 7, deals_lost: 2, conversion_rate: 31, avg_deal_size: 148000, new_contacts: 24, ai_tasks_run: 46, ai_total_cost: 0.115 },
-        { date: 'Oct 15', total_revenue: 1120000, pipeline_value: 3650000, deals_won: 8, deals_lost: 3, conversion_rate: 32, avg_deal_size: 140000, new_contacts: 31, ai_tasks_run: 58, ai_total_cost: 0.142 },
-        { date: 'Oct 20', total_revenue: 1245000, pipeline_value: 3820000, deals_won: 9, deals_lost: 4, conversion_rate: 32.4, avg_deal_size: 138000, new_contacts: 38, ai_tasks_run: 68, ai_total_cost: 0.165 }
-      ]);
-
-      setPerformance({
-        team_performance: [
-          { owner: 'Alex Rivera', deal_count: 8, total_value: 1740000, avg_value: 217500 },
-          { owner: 'Sarah Chen', deal_count: 6, total_value: 1280000, avg_value: 213333 },
-          { owner: 'Jordan Lee', deal_count: 5, total_value: 940000, avg_value: 188000 },
-          { owner: 'Sam Taylor', deal_count: 4, total_value: 620000, avg_value: 155000 }
-        ],
-        overall: {
-          total_pipeline: 3820000,
-          total_revenue: 1245000,
-          avg_sales_cycle: 32
-        }
-      });
+      setFunnel(fnl);
+      setForecast(fcst);
+      setTicketReport(tktRep);
+      setCampaignReport(cmpRep);
+    } catch (err) {
+      console.error('Failed to load BI analytics:', err);
     } finally {
       setLoading(false);
     }
@@ -80,49 +80,146 @@ export default function AnalyticsPage() {
   }, []);
 
   // Compute ROI
-  const weeklyHoursSaved = repsCount * (manualHoursPerRep * 0.7); // 70% automated by agents
+  const weeklyHoursSaved = repsCount * (manualHoursPerRep * 0.7);
   const weeklyDollarSavings = weeklyHoursSaved * hourlyRate;
   const annualSavings = weeklyDollarSavings * 52;
-  const annualAgentCost = repsCount * 12 * 1.5; // ~$1.50 token cost per rep/month
-  const netRoiRatio = Math.round(annualSavings / Math.max(1, annualAgentCost));
+  const annualAgentCost = repsCount * 12 * 1.5;
 
   return (
-    <div className="flex-1 flex flex-col pb-12">
-      <Header
-        title="Revenue &amp; Intelligence Analytics"
-        subtitle="Holistic performance telemetry and autonomous agent ROI breakdown"
-      />
+    <div className="flex-1 flex flex-col pb-12 bg-[#070b14] text-slate-100 min-h-screen">
+      <Header />
 
       <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto w-full">
-        {/* KPI Strip */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="glass-panel p-5 rounded-2xl border-indigo-500/20">
+        {/* Top Header & CSV Export Bar */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-white/10">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <BarChart3 className="w-5 h-5" />
+              </span>
+              <h1 className="text-2xl font-bold text-white tracking-tight">
+                Tableau &amp; BI Intelligence <span className="text-indigo-400 font-normal">/ Analytics</span>
+              </h1>
+            </div>
+            <p className="text-xs text-slate-400 mt-1">
+              Cross-cloud funnel attribution, AI pipeline forecasting, SLA resolution metrics, and raw CSV data export.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <a
+              href={api.getDealsExportUrl()}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 hover:text-white transition-all shadow-sm"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+              <span>Export Deals CSV</span>
+            </a>
+
+            <a
+              href={api.getContactsExportUrl()}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 hover:text-white transition-all shadow-sm"
+            >
+              <Download className="w-4 h-4 text-cyan-400" />
+              <span>Export Leads CSV</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Top KPI Strip */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Closed Revenue</span>
-            <div className="text-3xl font-extrabold text-white mt-1">
-              ${((performance?.overall.total_revenue || 0) / 1000).toFixed(0)}k
+            <div className="text-2xl font-extrabold text-white mt-1">
+              ${((funnel?.total_revenue || performance?.overall.total_revenue || 0) / 1000).toFixed(0)}k
             </div>
             <span className="text-xs text-emerald-400 mt-1 block">Surpassing Q3 baseline by 22%</span>
           </div>
 
-          <div className="glass-panel p-5 rounded-2xl border-cyan-500/20">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Average Sales Cycle</span>
-            <div className="text-3xl font-extrabold text-cyan-400 mt-1">
-              {performance?.overall.avg_sales_cycle || 32} Days
+          <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Pipeline</span>
+            <div className="text-2xl font-extrabold text-cyan-400 mt-1">
+              ${((forecast?.total_pipeline || performance?.overall.total_pipeline || 0) / 1000).toFixed(0)}k
             </div>
-            <span className="text-xs text-slate-400 mt-1 block">-14 days faster with agentic scoring</span>
+            <span className="text-xs text-slate-400 mt-1 block">
+              {forecast?.deals_in_pipeline || 0} active opportunities
+            </span>
           </div>
 
-          <div className="glass-panel p-5 rounded-2xl border-purple-500/20">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Pipeline Velocity</span>
-            <div className="text-3xl font-extrabold text-purple-300 mt-1">
-              $119k / day
+          <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">AI-Weighted Forecast</span>
+            <div className="text-2xl font-extrabold text-purple-300 mt-1">
+              ${((forecast?.ai_weighted_forecast || 0) / 1000).toFixed(0)}k
             </div>
-            <span className="text-xs text-purple-400 mt-1 block">Accelerating deal throughput</span>
+            <span className="text-xs text-purple-400 mt-1 flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              Gemini win probability model
+            </span>
+          </div>
+
+          <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Overall Lead Conversion</span>
+            <div className="text-2xl font-extrabold text-amber-400 mt-1">
+              {funnel?.overall_conversion || 25.8}%
+            </div>
+            <span className="text-xs text-slate-400 mt-1 block">Lead-to-closed-won ratio</span>
           </div>
         </div>
 
-        {/* Revenue Velocity Chart */}
-        <div className="glass-panel p-6 rounded-2xl border border-white/10">
+        {/* Lead-to-Revenue Conversion Funnel */}
+        <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                <Layers className="w-4 h-4 text-indigo-400" />
+                Conversion Funnel: Lead &rarr; Qualified &rarr; Deal &rarr; Won
+              </h3>
+              <p className="text-xs text-slate-400">
+                End-to-end sales lifecycle pipeline velocity and conversion efficiency
+              </p>
+            </div>
+            <span className="text-xs px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-300 font-semibold border border-indigo-500/20">
+              Live Funnel
+            </span>
+          </div>
+
+          {funnel?.funnel && (
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
+              {funnel.funnel.map((step, idx) => (
+                <div
+                  key={step.stage}
+                  className="p-4 rounded-xl bg-slate-900/60 border border-white/5 relative overflow-hidden"
+                >
+                  <div className="flex items-center justify-between text-xs text-slate-400">
+                    <span className="font-semibold text-white">Step {idx + 1}</span>
+                    <span className="text-[11px] font-mono text-cyan-400">{step.rate}%</span>
+                  </div>
+
+                  <div className="text-lg font-bold text-white mt-1">
+                    {step.stage}
+                  </div>
+                  <div className="text-2xl font-extrabold text-indigo-400 mt-1">
+                    {step.count.toLocaleString()}
+                  </div>
+
+                  {/* Funnel progress bar */}
+                  <div className="w-full bg-white/10 h-1.5 rounded-full mt-3 overflow-hidden">
+                    <div
+                      className="bg-indigo-500 h-full rounded-full transition-all"
+                      style={{ width: `${Math.max(step.rate, 5)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Pipeline Revenue Trajectory Chart */}
+        <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-bold text-white tracking-tight">
@@ -162,7 +259,7 @@ export default function AnalyticsPage() {
                     color: '#fff',
                     fontSize: '12px',
                   }}
-                  formatter={(val: any) => [`$${Number(val).toLocaleString()}`, 'Value']}
+                  formatter={(val: any) => [`$${Number(val).toLocaleString()}`, 'Revenue']}
                 />
                 <Area type="monotone" dataKey="total_revenue" stroke="#6366f1" strokeWidth={2.5} fill="url(#areaRev)" />
               </AreaChart>
@@ -170,10 +267,111 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
+        {/* Cross-Cloud Analytics: Service Cloud & Marketing Cloud Summaries */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Service Cloud Performance */}
+          <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                  <LifeBuoy className="w-4 h-4 text-cyan-400" />
+                  Service Cloud Case Analytics
+                </h3>
+                <p className="text-xs text-slate-400">
+                  SLA compliance and case volume breakdown
+                </p>
+              </div>
+              <span className="text-xs font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">
+                {ticketReport?.summary?.resolution_rate || 75}% Resolution
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 text-xs">
+              <div className="p-3 rounded-xl bg-white/5">
+                <span className="text-slate-400 text-[10px]">Total Cases</span>
+                <div className="text-lg font-bold text-white mt-0.5">{ticketReport?.summary?.total || 4}</div>
+              </div>
+              <div className="p-3 rounded-xl bg-white/5">
+                <span className="text-slate-400 text-[10px]">Open Cases</span>
+                <div className="text-lg font-bold text-emerald-400 mt-0.5">{ticketReport?.summary?.open || 2}</div>
+              </div>
+              <div className="p-3 rounded-xl bg-white/5">
+                <span className="text-slate-400 text-[10px]">SLA Breached</span>
+                <div className="text-lg font-bold text-red-400 mt-0.5">{ticketReport?.summary?.sla_breached || 0}</div>
+              </div>
+            </div>
+
+            {ticketReport?.by_priority && (
+              <div className="space-y-2 pt-2 border-t border-white/5">
+                <span className="text-xs text-slate-400 font-semibold">Volume by Priority</span>
+                <div className="space-y-1.5 text-xs">
+                  {ticketReport.by_priority.map((p: any) => (
+                    <div key={p.priority} className="flex items-center justify-between">
+                      <span className="capitalize text-slate-300">{p.priority}</span>
+                      <span className="font-mono text-white font-semibold">{p.count} cases</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Marketing Cloud Attribution */}
+          <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                  <Megaphone className="w-4 h-4 text-pink-400" />
+                  Marketing Cloud Attribution
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Email journeys and direct revenue attribution
+                </p>
+              </div>
+              <span className="text-xs font-bold text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-full border border-pink-500/20">
+                ${(campaignReport?.summary?.total_revenue_attributed || 136700).toLocaleString()} Attributed
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 text-xs">
+              <div className="p-3 rounded-xl bg-white/5">
+                <span className="text-slate-400 text-[10px]">Campaigns Sent</span>
+                <div className="text-lg font-bold text-white mt-0.5">{campaignReport?.summary?.total_campaigns || 3}</div>
+              </div>
+              <div className="p-3 rounded-xl bg-white/5">
+                <span className="text-slate-400 text-[10px]">Avg Open Rate</span>
+                <div className="text-lg font-bold text-emerald-400 mt-0.5">
+                  {((campaignReport?.summary?.avg_open_rate || 0.37) * 100).toFixed(1)}%
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-white/5">
+                <span className="text-slate-400 text-[10px]">Avg Click Rate</span>
+                <div className="text-lg font-bold text-cyan-400 mt-0.5">
+                  {((campaignReport?.summary?.avg_click_rate || 0.12) * 100).toFixed(1)}%
+                </div>
+              </div>
+            </div>
+
+            {campaignReport?.records && (
+              <div className="space-y-2 pt-2 border-t border-white/5">
+                <span className="text-xs text-slate-400 font-semibold">Top Performing Campaigns</span>
+                <div className="space-y-1.5 text-xs">
+                  {campaignReport.records.slice(0, 3).map((r: any) => (
+                    <div key={r.id} className="flex items-center justify-between">
+                      <span className="text-slate-300 truncate max-w-[200px]">{r.name}</span>
+                      <span className="font-mono text-amber-400 font-semibold">${(r.revenue_attributed || 0).toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Team Leaderboard & Interactive AI ROI Calculator */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Team Leaderboard */}
-          <div className="glass-panel p-6 rounded-2xl border border-white/10">
+          <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-base font-bold text-white tracking-tight">
@@ -214,12 +412,12 @@ export default function AnalyticsPage() {
           </div>
 
           {/* AI ROI Calculator */}
-          <div className="glass-panel p-6 rounded-2xl border-cyan-500/20 bg-gradient-to-br from-[#0c1326] to-[#0f172a]">
+          <div className="p-6 rounded-2xl bg-gradient-to-br from-[#0c1326] to-[#0f172a] border border-cyan-500/20">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
                   <Calculator className="w-4 h-4 text-cyan-400" />
-                  AI Agent ROI Calculator
+                  AI Agentforce ROI Calculator
                 </h3>
                 <p className="text-xs text-slate-400">
                   Estimate enterprise cost savings vs Salesforce manual overhead

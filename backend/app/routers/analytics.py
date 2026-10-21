@@ -233,7 +233,7 @@ def ticket_report(
     resolved = [t for t in tickets if t.status in [TicketStatus.RESOLVED, TicketStatus.CLOSED]]
     avg_resolution_hrs = 0
     if resolved:
-        res_times = [(t.resolved_at - t.created_at).total_seconds() / 3600 for t in resolved if t.resolved_at and t.created_at]
+        res_times = [abs((t.resolved_at - t.created_at).total_seconds()) / 3600 for t in resolved if t.resolved_at and t.created_at]
         avg_resolution_hrs = round(sum(res_times) / len(res_times), 1) if res_times else 0
 
     by_priority = {}

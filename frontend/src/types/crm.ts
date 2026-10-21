@@ -328,3 +328,168 @@ export interface UserSession {
   last_active_at: string;
 }
 
+// ─── Service Cloud (Support Tickets & Cases) ──────────────────────────────────
+
+export type TicketStatus = 'open' | 'in_progress' | 'pending_customer' | 'resolved' | 'closed';
+export type TicketPriority = 'low' | 'medium' | 'high' | 'critical';
+export type TicketCategory = 'bug' | 'billing' | 'feature_request' | 'technical' | 'general' | 'onboarding';
+
+export interface TicketMessage {
+  id: number;
+  author_name: string;
+  author_email?: string | null;
+  body: string;
+  is_internal: boolean;
+  is_ai_generated: boolean;
+  created_at: string;
+}
+
+export interface Ticket {
+  id: number;
+  ticket_number: string;
+  title: string;
+  description?: string | null;
+  status: TicketStatus;
+  priority: TicketPriority;
+  category: TicketCategory;
+  assigned_to?: string | null;
+  reporter_name?: string | null;
+  reporter_email?: string | null;
+  contact_id?: number | null;
+  deal_id?: number | null;
+  sla_due_at?: string | null;
+  sla_breached?: boolean;
+  first_response_at?: string | null;
+  resolved_at?: string | null;
+  ai_triage: {
+    urgency_score?: number;
+    sentiment?: string;
+    category?: string;
+    priority?: string;
+    suggested_response?: string;
+    resolution_steps?: string[];
+    escalate?: boolean;
+    estimated_resolution_hours?: number;
+    is_real_ai?: boolean;
+  };
+  sentiment?: string | null;
+  ai_suggested_response?: string | null;
+  tags: string[];
+  internal_notes?: string | null;
+  messages: TicketMessage[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TicketStats {
+  total: number;
+  open: number;
+  in_progress: number;
+  resolved: number;
+  critical: number;
+  sla_breached: number;
+  resolution_rate: number;
+  by_category: Array<{ category: string; count: number }>;
+  by_priority: Array<{ priority: string; count: number }>;
+}
+
+// ─── Marketing Cloud (Campaigns & Email Marketing) ───────────────────────────
+
+export type CampaignStatus = 'draft' | 'scheduled' | 'active' | 'paused' | 'completed' | 'cancelled';
+export type CampaignType = 'email' | 'sms' | 'nurture_sequence' | 'announcement' | 'promotional';
+
+export interface Campaign {
+  id: number;
+  name: string;
+  type: CampaignType;
+  status: CampaignStatus;
+  description?: string | null;
+  subject?: string | null;
+  preview_text?: string | null;
+  body_html?: string | null;
+  body_text?: string | null;
+  from_name: string;
+  from_email: string;
+  audience_filter: Record<string, any>;
+  recipient_count: number;
+  scheduled_at?: string | null;
+  sent_at?: string | null;
+  completed_at?: string | null;
+  emails_sent: number;
+  emails_delivered: number;
+  emails_opened: number;
+  emails_clicked: number;
+  emails_bounced: number;
+  emails_unsubscribed: number;
+  open_rate: number;
+  click_rate: number;
+  conversion_rate: number;
+  revenue_attributed: number;
+  ai_score?: number | null;
+  ai_insights: {
+    strengths?: string[];
+    improvements?: string[];
+    optimal_send_time?: string;
+    predicted_open_rate?: number;
+    predicted_click_rate?: number;
+    ab_test_suggestion?: string;
+    recommendation?: string;
+    is_real_ai?: boolean;
+  };
+  ab_test_enabled: boolean;
+  ab_variant_subject?: string | null;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CampaignStats {
+  total: number;
+  active: number;
+  completed: number;
+  draft: number;
+  total_emails_sent: number;
+  total_revenue_attributed: number;
+  avg_open_rate: number;
+  avg_click_rate: number;
+}
+
+export interface CampaignTemplate {
+  id: string;
+  name: string;
+  type: CampaignType;
+  subject: string;
+  preview_text: string;
+  body_html: string;
+  body_text: string;
+  suggested_audience: Record<string, any>;
+}
+
+// ─── BI Reports, Funnel & Forecast ──────────────────────────────────────────
+
+export interface FunnelStage {
+  stage: string;
+  count: number;
+  rate: number;
+}
+
+export interface ConversionFunnel {
+  funnel: FunnelStage[];
+  total_revenue: number;
+  overall_conversion: number;
+}
+
+export interface RevenueForecast {
+  total_pipeline: number;
+  weighted_forecast: number;
+  ai_weighted_forecast: number;
+  deals_in_pipeline: number;
+  avg_probability: number;
+  by_stage: Array<{
+    stage: string;
+    count: number;
+    value: number;
+    weighted_value: number;
+  }>;
+}
+

@@ -13,7 +13,9 @@ import {
   Settings,
   Zap,
   CheckCircle2,
-  ChevronRight
+  ChevronRight,
+  Megaphone,
+  LifeBuoy
 } from 'lucide-react';
 import NeuronForceLogo from './NeuronForceLogo';
 
@@ -30,7 +32,9 @@ const navItems: NavItem[] = [
   { name: 'Contacts', href: '/contacts', icon: Users },
   { name: 'Deals Pipeline', href: '/deals', icon: Kanban },
   { name: 'AI Agents', href: '/ai-agents', icon: Sparkles, badge: 'Active', aiHighlight: true },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { name: 'Campaigns', href: '/campaigns', icon: Megaphone, badge: 'Marketing' },
+  { name: 'Service Cases', href: '/tickets', icon: LifeBuoy, badge: 'SLA' },
+  { name: 'Analytics & BI', href: '/analytics', icon: BarChart3 },
   { name: 'Calendar', href: '/calendar', icon: Calendar },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
