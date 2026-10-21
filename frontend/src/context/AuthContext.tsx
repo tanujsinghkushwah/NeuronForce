@@ -3,12 +3,15 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User, GoogleAuthPayload } from '../types/crm';
 import { api } from '../lib/api';
+import { signInWithGoogleFirebase, isFirebaseConfigured } from '../lib/firebase';
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isFirebaseAvailable: boolean;
+  signInWithGoogleSSO: () => Promise<User>;
   loginWithGoogle: (payload: GoogleAuthPayload) => Promise<User>;
   loginWithDemoAccount: (demoUser: { email: string; full_name: string; avatar_url?: string; role?: string }) => Promise<User>;
   logout: () => Promise<void>;
@@ -26,6 +29,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function initAuth() {
       try {
+        // 1. Check for SSO token redirect parameter from Google OAuth callback
+        if (typeof window !== 'undefined') {
+          const urlParams = new URLSearchParams(window.location.search);
+          const ssoToken = urlParams.get('sso_token');
+          if (ssoToken) {
+            localStorage.setItem('neuronforce_token', ssoToken);
+            setToken(ssoToken);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            try {
+              const verifiedUser = await api.getMe();
+              setUser(verifiedUser);
+              localStorage.setItem('neuronforce_user', JSON.stringify(verifiedUser));
+              setIsLoading(false);
+              return;
+            } catch (err) {
+              console.warn('SSO token verification failed:', err);
+            }
+          }
+        }
+
         const storedToken = localStorage.getItem('neuronforce_token');
         const storedUser = localStorage.getItem('neuronforce_user');
 
@@ -125,6 +148,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const signInWithGoogleSSO = useCallback(async (): Promise<User> => {
+    setIsLoading(true);
+    try {
+      if (isFirebaseConfigured()) {
+        const firebaseUser = await signInWithGoogleFirebase();
+        const res = await api.googleAuth({
+          credential: firebaseUser.idToken,
+          email: firebaseUser.email || '',
+          full_name: firebaseUser.displayName || '',
+          avatar_url: firebaseUser.photoURL || undefined,
+          sub: firebaseUser.uid,
+        });
+        localStorage.setItem('neuronforce_token', res.access_token);
+        localStorage.setItem('neuronforce_user', JSON.stringify(res.user));
+        setToken(res.access_token);
+        setUser(res.user);
+        return res.user;
+      } else {
+        throw new Error('FIREBASE_CONFIG_REQUIRED');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -132,6 +180,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token,
         isLoading,
         isAuthenticated: !!user && !!token,
+        isFirebaseAvailable: isFirebaseConfigured(),
+        signInWithGoogleSSO,
         loginWithGoogle,
         loginWithDemoAccount,
         logout,

@@ -16,7 +16,7 @@ export default function Header({
   subtitle = 'Real-time sales telemetry, AI agents, and pipeline velocity',
   onActionClick
 }: HeaderProps) {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, signInWithGoogleSSO, isFirebaseAvailable } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -181,7 +181,17 @@ export default function Header({
           ) : (
             <div className="pl-2 border-l border-white/10">
               <button
-                onClick={() => setShowAuthModal(true)}
+                onClick={async () => {
+                  if (isFirebaseAvailable) {
+                    try {
+                      await signInWithGoogleSSO();
+                      return;
+                    } catch (e) {
+                      console.log('Firebase SSO popup cancelled or fallback needed', e);
+                    }
+                  }
+                  setShowAuthModal(true);
+                }}
                 className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
               >
                 <GoogleIcon className="w-4 h-4" />

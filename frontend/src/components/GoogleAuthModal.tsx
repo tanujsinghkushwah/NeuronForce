@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, ShieldCheck, CheckCircle2, UserCheck, Sparkles, ArrowRight, Loader2 } from 'lucide-react';
+import { X, ShieldCheck, CheckCircle2, ArrowRight, Loader2, UserPlus, ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface GoogleAuthModalProps {
@@ -33,280 +33,245 @@ export function GoogleIcon({ className = 'w-5 h-5' }: { className?: string }) {
   );
 }
 
+const GOOGLE_SSO_PROFILES = [
+  {
+    email: 'alex.rivera@neuronforce.ai',
+    full_name: 'Alex Rivera',
+    role: 'revops_lead',
+    roleLabel: 'RevOps Lead',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
+  },
+  {
+    email: 'sarah.jenkins@neuronforce.ai',
+    full_name: 'Sarah Jenkins',
+    role: 'admin',
+    roleLabel: 'Platform Admin',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SarahJ',
+  },
+  {
+    email: 'jordan.lee@neuronforce.ai',
+    full_name: 'Jordan Lee',
+    role: 'sales_rep',
+    roleLabel: 'Enterprise Sales Rep',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan',
+  },
+];
+
 export default function GoogleAuthModal({
   isOpen,
   onClose,
-  defaultMode = 'signin',
 }: GoogleAuthModalProps) {
   const { loginWithGoogle, loginWithDemoAccount } = useAuth();
-  const [mode, setMode] = useState<'signin' | 'signup'>(defaultMode);
+  const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
+  const [showCustomInput, setShowCustomInput] = useState(false);
   const [customEmail, setCustomEmail] = useState('');
-  const [customName, setCustomName] = useState('');
-  const [selectedRole, setSelectedRole] = useState<'sales_rep' | 'revops_lead' | 'admin'>('sales_rep');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   if (!isOpen) return null;
 
+  const handleSelectGoogleProfile = async (profile: (typeof GOOGLE_SSO_PROFILES)[0]) => {
+    setSelectedEmail(profile.email);
+    setIsSubmitting(true);
+    setErrorMessage('');
+
+    try {
+      await loginWithDemoAccount({
+        email: profile.email,
+        full_name: profile.full_name,
+        role: profile.role,
+        avatar_url: profile.avatar,
+      });
+      onClose();
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Google SSO sign-in failed');
+    } finally {
+      setIsSubmitting(false);
+      setSelectedEmail(null);
+    }
+  };
+
   const handleCustomGoogleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customEmail) {
-      setErrorMessage('Please enter an email address');
-      return;
-    }
+    if (!customEmail) return;
 
     setIsSubmitting(true);
     setErrorMessage('');
 
     try {
       const generatedSub = `google_${customEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
-      const name = customName.trim() || customEmail.split('@')[0].replace(/[._]/g, ' ');
+      const name = customEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 
       await loginWithGoogle({
         email: customEmail,
         full_name: name,
         avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${customEmail}`,
         sub: generatedSub,
-        role: selectedRole,
+        role: 'sales_rep',
       });
-
       onClose();
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to authenticate with Google');
+      setErrorMessage(err.message || 'Failed to authenticate Google account');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDemoSelect = async (demo: { email: string; full_name: string; role: string; avatar: string }) => {
-    setIsSubmitting(true);
-    setErrorMessage('');
-
-    try {
-      await loginWithDemoAccount({
-        email: demo.email,
-        full_name: demo.full_name,
-        role: demo.role,
-        avatar_url: demo.avatar,
-      });
-      onClose();
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to authenticate');
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleLiveGoogleSSORedirect = () => {
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+    window.location.href = `${backendUrl}/api/auth/google/login`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+      {/* Dialog Surface */}
       <div
-        className="glass-panel w-full max-w-md rounded-2xl border border-white/15 bg-[#0e1424]/95 p-6 shadow-2xl relative overflow-hidden"
+        className="glass-panel w-full max-w-[420px] rounded-3xl border border-white/15 bg-[#0d1322]/95 p-6 shadow-2xl relative overflow-hidden text-slate-200"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Glow Effects */}
-        <div className="absolute -top-20 -left-20 w-44 h-44 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -right-20 w-44 h-44 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
+        {/* Ambient Top Glow */}
+        <div className="absolute -top-24 -left-20 w-52 h-52 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-20 w-52 h-52 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
 
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+          className="absolute top-5 right-5 p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-md">
-            <GoogleIcon className="w-6 h-6" />
+        {/* Google SSO Header */}
+        <div className="flex flex-col items-center text-center pt-2 pb-5 border-b border-white/10">
+          <div className="w-12 h-12 rounded-2xl bg-white shadow-lg flex items-center justify-center mb-3">
+            <GoogleIcon className="w-7 h-7" />
           </div>
-          <div>
-            <h3 className="text-lg font-bold text-white tracking-tight">
-              {mode === 'signin' ? 'Sign In with Google' : 'Create Account with Google'}
-            </h3>
-            <p className="text-xs text-slate-400">
-              NeuronForce Autonomous Sales Cloud
-            </p>
-          </div>
-        </div>
-
-        {/* Mode Switch Tabs */}
-        <div className="grid grid-cols-2 gap-1 p-1 bg-white/5 rounded-xl border border-white/10 mb-5">
-          <button
-            type="button"
-            onClick={() => setMode('signin')}
-            className={`py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              mode === 'signin'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode('signup')}
-            className={`py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              mode === 'signup'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Sign Up
-          </button>
+          <h3 className="text-base font-bold text-white tracking-tight">
+            Sign in with Google SSO
+          </h3>
+          <p className="text-xs text-slate-400 mt-1">
+            Choose an account to continue to <span className="text-white font-medium">NeuronForce</span>
+          </p>
         </div>
 
         {errorMessage && (
-          <div className="mb-4 p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-            <span>{errorMessage}</span>
+          <div className="my-3 p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs">
+            {errorMessage}
           </div>
         )}
 
-        {/* One-Click Google Enterprise Logins */}
-        <div className="space-y-2 mb-5">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">
-            {mode === 'signin' ? 'Quick Sign-In with Demo Account:' : 'Pre-configured Profiles:'}
-          </span>
-
-          <div className="grid grid-cols-1 gap-2">
-            {[
-              {
-                email: 'alex.rivera@neuronforce.ai',
-                full_name: 'Alex Rivera',
-                role: 'revops_lead',
-                roleLabel: 'RevOps Lead',
-                avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
-              },
-              {
-                email: 'sarah.jenkins@neuronforce.ai',
-                full_name: 'Sarah Jenkins',
-                role: 'admin',
-                roleLabel: 'Platform Admin',
-                avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SarahJ',
-              },
-              {
-                email: 'jordan.lee@neuronforce.ai',
-                full_name: 'Jordan Lee',
-                role: 'sales_rep',
-                roleLabel: 'Enterprise Sales Rep',
-                avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan',
-              },
-            ].map((demo) => (
+        {/* 1-Click Google Accounts Chooser */}
+        <div className="py-4 space-y-2">
+          {GOOGLE_SSO_PROFILES.map((profile) => {
+            const isThisLoading = isSubmitting && selectedEmail === profile.email;
+            return (
               <button
-                key={demo.email}
+                key={profile.email}
                 type="button"
                 disabled={isSubmitting}
-                onClick={() => handleDemoSelect(demo)}
-                className="w-full flex items-center justify-between p-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-indigo-600/20 hover:border-indigo-500/40 text-left transition-all group cursor-pointer"
+                onClick={() => handleSelectGoogleProfile(profile)}
+                className="w-full flex items-center justify-between p-3 rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.08] hover:border-indigo-400/40 text-left transition-all group cursor-pointer active:scale-[0.99] disabled:opacity-50"
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <img
-                    src={demo.avatar}
-                    alt={demo.full_name}
-                    className="w-7 h-7 rounded-full bg-slate-800 border border-white/10 shrink-0"
-                  />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="relative">
+                    <img
+                      src={profile.avatar}
+                      alt={profile.full_name}
+                      className="w-9 h-9 rounded-full bg-slate-800 border border-white/20 shrink-0 object-cover"
+                    />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-white rounded-full flex items-center justify-center shadow-xs">
+                      <GoogleIcon className="w-2.5 h-2.5" />
+                    </div>
+                  </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-white group-hover:text-indigo-300 truncate">
-                      {demo.full_name}
+                    <p className="text-xs font-semibold text-white group-hover:text-indigo-200 truncate">
+                      {profile.full_name}
                     </p>
-                    <p className="text-[10px] text-slate-400 truncate">{demo.email}</p>
+                    <p className="text-[11px] text-slate-400 truncate">{profile.email}</p>
                   </div>
                 </div>
-                <span className="text-[10px] font-medium text-slate-400 px-2 py-0.5 rounded-md bg-white/5 shrink-0 group-hover:bg-indigo-500/20 group-hover:text-indigo-200">
-                  {demo.roleLabel}
-                </span>
+
+                <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                  {isThisLoading ? (
+                    <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
+                  ) : (
+                    <span className="text-[10px] font-semibold text-slate-400 px-2 py-0.5 rounded-md bg-white/5 border border-white/5 group-hover:bg-indigo-500/20 group-hover:text-indigo-200 group-hover:border-indigo-500/30 transition-colors">
+                      {profile.roleLabel}
+                    </span>
+                  )}
+                </div>
               </button>
-            ))}
-          </div>
-        </div>
+            );
+          })}
 
-        {/* Divider */}
-        <div className="relative flex items-center justify-center my-4">
-          <div className="border-t border-white/10 w-full" />
-          <span className="bg-[#0e1424] px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-            Or Use Custom Google Account
-          </span>
-        </div>
-
-        {/* Custom Email Form */}
-        <form onSubmit={handleCustomGoogleSubmit} className="space-y-3">
-          <div>
-            <label className="block text-[11px] font-medium text-slate-300 mb-1">
-              Google Email Address
-            </label>
-            <div className="relative">
-              <input
-                type="email"
-                required
-                placeholder="name@company.com or name@gmail.com"
-                value={customEmail}
-                onChange={(e) => setCustomEmail(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-              />
-            </div>
-          </div>
-
-          {mode === 'signup' && (
-            <>
-              <div>
-                <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                  Full Name
-                </label>
+          {/* Use Another Google Account Toggle */}
+          {!showCustomInput ? (
+            <button
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => setShowCustomInput(true)}
+              className="w-full flex items-center gap-3 p-3 rounded-2xl border border-dashed border-white/15 hover:border-indigo-400/50 hover:bg-white/[0.04] text-left transition-all text-slate-300 hover:text-white cursor-pointer"
+            >
+              <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
+                <UserPlus className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-medium">Use another Google account</span>
+            </button>
+          ) : (
+            <form onSubmit={handleCustomGoogleSubmit} className="pt-2 space-y-2">
+              <div className="relative">
                 <input
-                  type="text"
-                  placeholder="e.g. Elena Rostova"
-                  value={customName}
-                  onChange={(e) => setCustomName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  type="email"
+                  required
+                  autoFocus
+                  placeholder="Enter your Google email (e.g. user@gmail.com)"
+                  value={customEmail}
+                  onChange={(e) => setCustomEmail(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
-
-              <div>
-                <label className="block text-[11px] font-medium text-slate-300 mb-1">
-                  Assigned Workspace Role
-                </label>
-                <select
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value as any)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#131b2e] border border-white/10 text-white text-xs focus:outline-none focus:border-indigo-500"
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !customEmail}
+                  className="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  <option value="sales_rep">Enterprise Sales Rep</option>
-                  <option value="revops_lead">RevOps Lead</option>
-                  <option value="admin">Platform Administrator</option>
-                </select>
+                  {isSubmitting ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <>
+                      <span>Continue with Google SSO</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCustomInput(false)}
+                  className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
               </div>
-            </>
+            </form>
           )}
+        </div>
 
+        {/* Live OAuth Redirect (Optional direct Google consent redirect) */}
+        <div className="pt-2 pb-1">
           <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white text-xs font-bold shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50"
+            type="button"
+            onClick={handleLiveGoogleSSORedirect}
+            className="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Authenticating with Google...</span>
-              </>
-            ) : (
-              <>
-                <GoogleIcon className="w-4 h-4" />
-                <span>
-                  {mode === 'signin' ? 'Sign In with Google' : 'Create Google Account'}
-                </span>
-                <ArrowRight className="w-3.5 h-3.5 ml-1" />
-              </>
-            )}
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span>Launch Google OAuth Authorization Flow</span>
           </button>
-        </form>
+        </div>
 
-        {/* Security Footer */}
-        <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-between text-[10px] text-slate-500">
-          <div className="flex items-center gap-1.5 text-slate-400">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Google OIDC 256-Bit JWT</span>
-          </div>
-          <span className="text-slate-500">NeuronForce Security</span>
+        {/* Google SSO Consent & Privacy Notice */}
+        <div className="mt-4 pt-3 border-t border-white/10 text-[10px] text-slate-500 leading-relaxed text-center">
+          To continue, Google will share your verified name, email address, language preference, and profile picture with NeuronForce.
         </div>
       </div>
     </div>
