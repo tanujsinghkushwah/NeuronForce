@@ -45,9 +45,6 @@ export default function Sidebar() {
         <Link href="/" className="flex items-center">
           <NeuronForceLogo size="md" />
         </Link>
-        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 font-medium">
-          MVP
-        </span>
       </div>
 
       {/* Navigation */}
