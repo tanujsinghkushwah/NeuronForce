@@ -7,11 +7,9 @@ as a CP system under CAP theorem (consistency + partition tolerance).
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
-import os
+from app.config import settings
 
-# For MVP, use SQLite. For production, swap to PostgreSQL:
-# DATABASE_URL = "postgresql://user:password@localhost:5432/neuronforce"
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./neuronforce.db")
+DATABASE_URL = settings.DATABASE_URL
 
 engine = create_engine(
     DATABASE_URL,

@@ -22,11 +22,13 @@ from app.models.session import UserSession
 
 logger = logging.getLogger(__name__)
 
+from app.config import settings
+
 # Security configuration
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "neuronforce-enterprise-jwt-secret-key-prod-2026")
-JWT_ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "10080"))  # 7 days
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+JWT_SECRET_KEY = settings.JWT_SECRET_KEY
+JWT_ALGORITHM = settings.JWT_ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
+GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
 
 # Bearer scheme for Swagger UI & API headers
 bearer_security = HTTPBearer(auto_error=False)

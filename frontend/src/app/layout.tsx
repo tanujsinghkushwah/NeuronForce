@@ -26,8 +26,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark h-full">
-      <body className={`${inter.variable} bg-[#090d16] text-slate-100 min-h-screen flex antialiased selection:bg-indigo-500/30 selection:text-indigo-200`}>
+    <html lang="en" className="dark h-full" suppressHydrationWarning>
+      <body
+        className={`${inter.variable} bg-[#090d16] text-slate-100 min-h-screen flex antialiased selection:bg-indigo-500/30 selection:text-indigo-200`}
+        suppressHydrationWarning
+      >
         <AuthProvider>
           <Sidebar />
           <main className="flex-1 min-w-0 flex flex-col relative overflow-y-auto">

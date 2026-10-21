@@ -25,11 +25,13 @@ from app.auth import (
     GOOGLE_CLIENT_ID
 )
 
+from app.config import settings
+
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
+FRONTEND_URL = settings.FRONTEND_URL
+BACKEND_URL = settings.BACKEND_URL
 
 
 @router.get("/google/login")
