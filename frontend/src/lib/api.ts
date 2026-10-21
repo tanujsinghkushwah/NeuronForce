@@ -9,7 +9,8 @@ import {
   Activity, Task,
   AIAgentTask, AIAgentStats,
   CalendarEvent, DashboardStats,
-  RevenueSnapshot, PerformanceMetrics, AppSettings
+  RevenueSnapshot, PerformanceMetrics, AppSettings,
+  User, AuthResponse, GoogleAuthPayload, UserSession
 } from '../types/crm';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
@@ -17,9 +18,13 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 async function fetcher<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
   try {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('neuronforce_token') : null;
+    const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
     const res = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders,
         ...(options?.headers || {}),
       },
       ...options,
@@ -160,4 +165,17 @@ export const api = {
 
   // Settings
   getSettings: () => fetcher<AppSettings>('/settings'),
+
+  // Authentication & Google Sign-In
+  googleAuth: (data: GoogleAuthPayload) => fetcher<AuthResponse>('/auth/google', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  getMe: () => fetcher<User>('/auth/me'),
+  logout: () => fetcher<{ message: string; status: string }>('/auth/logout', {
+    method: 'POST',
+  }),
+  getSessions: () => fetcher<UserSession[]>('/auth/sessions'),
+  getDemoAccounts: () => fetcher<Array<{ id: number; email: string; full_name: string; avatar_url: string; role: string }>>('/auth/demo-accounts'),
 };
+

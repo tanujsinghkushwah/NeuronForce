@@ -262,3 +262,57 @@ class PipelineView(BaseModel):
     stages: Dict[str, List[DealResponse]]
     total_value: float
     weighted_value: float
+
+
+# --- Auth & User Schemas ---
+class UserBase(BaseModel):
+    email: str
+    full_name: str
+    avatar_url: Optional[str] = None
+    role: Optional[str] = "sales_rep"
+
+
+class UserCreate(UserBase):
+    pass
+
+
+class UserResponse(UserBase):
+    id: int
+    is_active: bool
+    is_verified: bool
+    last_login_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GoogleAuthRequest(BaseModel):
+    credential: Optional[str] = None
+    email: Optional[str] = None
+    full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    sub: Optional[str] = None
+    role: Optional[str] = "sales_rep"
+
+
+class AuthResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    user: UserResponse
+
+
+class SessionResponse(BaseModel):
+    id: int
+    user_id: int
+    session_token: str
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    expires_at: datetime
+    is_revoked: bool
+    created_at: datetime
+    last_active_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+

@@ -4,7 +4,7 @@ FastAPI application with comprehensive REST API endpoints.
 """
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
@@ -16,7 +16,8 @@ import time
 from .database import engine, get_db, Base
 from .models import (
     Contact, Deal, Activity, Task, AIAgentTask, AnalyticsSnapshot,
-    CalendarEvent, DealStage, AgentTaskStatus, AgentTaskType
+    CalendarEvent, DealStage, AgentTaskStatus, AgentTaskType,
+    User, OAuthAccount, UserSession
 )
 from .schemas import (
     ContactCreate, ContactUpdate, ContactResponse,
@@ -25,7 +26,15 @@ from .schemas import (
     TaskCreate, TaskResponse,
     AIAgentTaskCreate, AIAgentTaskResponse,
     CalendarEventCreate, CalendarEventResponse,
-    DashboardStats, PipelineView
+    DashboardStats, PipelineView,
+    GoogleAuthRequest, AuthResponse, UserResponse, SessionResponse
+)
+from .auth import (
+    verify_google_id_token,
+    authenticate_or_register_google_user,
+    get_current_user,
+    get_optional_current_user,
+    ACCESS_TOKEN_EXPIRE_MINUTES
 )
 from scripts.seed_data import seed_database
 
@@ -698,3 +707,116 @@ def get_settings():
 def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "version": "1.0.0", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+
+# ============================================================================
+# AUTHENTICATION & GOOGLE SIGN-IN
+# ============================================================================
+
+@app.post("/api/auth/google", response_model=AuthResponse, tags=["Auth"])
+async def google_auth(
+    auth_req: GoogleAuthRequest,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Sign up or log in using Google OAuth credentials.
+    Separates User entity, OAuth provider account, and active UserSession.
+    """
+    client_ip = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent")
+
+    profile = {}
+    if auth_req.credential:
+        profile = await verify_google_id_token(auth_req.credential)
+    else:
+        if not auth_req.email:
+            raise HTTPException(
+                status_code=400,
+                detail="Either Google credential token or email must be provided"
+            )
+        profile = {
+            "sub": auth_req.sub or f"google_{auth_req.email}",
+            "email": auth_req.email,
+            "name": auth_req.full_name or auth_req.email.split("@")[0].capitalize(),
+            "picture": auth_req.avatar_url or f"https://api.dicebear.com/7.x/avataaars/svg?seed={auth_req.email}",
+            "email_verified": True,
+            "raw": {"source": "direct_google_auth"}
+        }
+
+    user, session, token = authenticate_or_register_google_user(
+        db=db,
+        profile=profile,
+        role_preference=auth_req.role,
+        ip_address=client_ip,
+        user_agent=user_agent
+    )
+
+    return AuthResponse(
+        access_token=token,
+        token_type="bearer",
+        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        user=UserResponse.model_validate(user)
+    )
+
+
+@app.get("/api/auth/me", response_model=UserResponse, tags=["Auth"])
+def get_current_user_profile(
+    current_user: User = Depends(get_current_user)
+):
+    """Get the currently authenticated user profile from Bearer token."""
+    return UserResponse.model_validate(current_user)
+
+
+@app.post("/api/auth/logout", tags=["Auth"])
+def logout_current_user(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Log out current user and revoke their active session."""
+    raw_header = request.headers.get("Authorization", "")
+    token = raw_header[7:].strip() if raw_header.startswith("Bearer ") else None
+
+    if token:
+        from .auth import decode_access_token
+        payload = decode_access_token(token)
+        if payload and "session_id" in payload:
+            session = db.query(UserSession).filter(UserSession.id == payload["session_id"]).first()
+            if session:
+                session.is_revoked = True
+                db.commit()
+
+    return {"message": "Successfully logged out", "status": "success"}
+
+
+@app.get("/api/auth/sessions", response_model=List[SessionResponse], tags=["Auth"])
+def get_user_sessions(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all active sessions for the authenticated user."""
+    sessions = (
+        db.query(UserSession)
+        .filter(UserSession.user_id == current_user.id, UserSession.is_revoked == False)
+        .order_by(desc(UserSession.last_active_at))
+        .all()
+    )
+    return [SessionResponse.model_validate(s) for s in sessions]
+
+
+@app.get("/api/auth/demo-accounts", tags=["Auth"])
+def list_demo_accounts(db: Session = Depends(get_db)):
+    """List available pre-seeded Google accounts for one-click testing."""
+    users = db.query(User).filter(User.is_active == True).limit(5).all()
+    return [
+        {
+            "id": u.id,
+            "email": u.email,
+            "full_name": u.full_name,
+            "avatar_url": u.avatar_url,
+            "role": u.role
+        }
+        for u in users
+    ]
+

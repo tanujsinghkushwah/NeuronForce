@@ -286,3 +286,45 @@ export interface AppSettings {
     probability: number;
   }>;
 }
+
+export interface User {
+  id: number;
+  email: string;
+  full_name: string;
+  avatar_url?: string | null;
+  role: 'admin' | 'revops_lead' | 'sales_rep' | 'viewer' | string;
+  is_active: boolean;
+  is_verified: boolean;
+  last_login_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  user: User;
+}
+
+export interface GoogleAuthPayload {
+  credential?: string;
+  email?: string;
+  full_name?: string;
+  avatar_url?: string;
+  sub?: string;
+  role?: string;
+}
+
+export interface UserSession {
+  id: number;
+  user_id: number;
+  session_token: string;
+  ip_address?: string | null;
+  user_agent?: string | null;
+  expires_at: string;
+  is_revoked: boolean;
+  created_at: string;
+  last_active_at: string;
+}
+

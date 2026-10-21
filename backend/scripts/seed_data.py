@@ -22,14 +22,71 @@ from app.database import SessionLocal, engine, Base
 from app.models import (
     Contact, Deal, Activity, Task, AIAgentTask, AnalyticsSnapshot,
     CalendarEvent, LeadStatus, DealStage, Priority, TaskStatus,
-    ActivityType, AgentTaskType, AgentTaskStatus
+    ActivityType, AgentTaskType, AgentTaskStatus, User, OAuthAccount, UserSession
 )
+
+
+def seed_users(db):
+    """Seed initial Google OAuth linked user accounts."""
+    if db.query(User).count() > 0:
+        return
+
+    users_data = [
+        {
+            "email": "alex.rivera@neuronforce.ai",
+            "full_name": "Alex Rivera",
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
+            "role": "revops_lead",
+            "google_sub": "google_alex_rivera_101",
+        },
+        {
+            "email": "sarah.jenkins@neuronforce.ai",
+            "full_name": "Sarah Jenkins",
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=SarahJ",
+            "role": "admin",
+            "google_sub": "google_sarah_jenkins_102",
+        },
+        {
+            "email": "jordan.lee@neuronforce.ai",
+            "full_name": "Jordan Lee",
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan",
+            "role": "sales_rep",
+            "google_sub": "google_jordan_lee_103",
+        },
+    ]
+
+    for u_info in users_data:
+        user = User(
+            email=u_info["email"],
+            full_name=u_info["full_name"],
+            avatar_url=u_info["avatar_url"],
+            role=u_info["role"],
+            is_active=True,
+            is_verified=True,
+            last_login_at=datetime.now(timezone.utc),
+        )
+        db.add(user)
+        db.flush()
+
+        oauth_acc = OAuthAccount(
+            user_id=user.id,
+            provider="google",
+            provider_user_id=u_info["google_sub"],
+            email=u_info["email"],
+            raw_claims={"email": u_info["email"], "name": u_info["full_name"], "email_verified": True},
+        )
+        db.add(oauth_acc)
+
+    db.commit()
+    print("✅ Seeded initial Google OAuth users")
 
 
 def seed_database(db):
     """Populate the database with realistic demo data."""
+    # Ensure users exist
+    seed_users(db)
 
-    # Check if data already exists
+    # Check if contact data already exists
     if db.query(Contact).count() > 0:
         print("ℹ️  Database already seeded — skipping.")
         return
