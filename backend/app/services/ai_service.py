@@ -1,37 +1,104 @@
 """
 NeuronForce Real AI Inference Service
-Integrates Google Gemini API for real AI inference.
+Integrates OpenRouter API for real AI inference across models (Claude, Llama, Gemini, GPT-4o, etc.)
+configured via OPENROUTER_MODEL environment variable.
 Falls back gracefully to deterministic simulation when API key is unavailable.
 """
 
+import json
 import logging
 import random
 import time
 from typing import Any, Dict, Optional
+import httpx
 
 from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Try to import Google Gemini SDK
-try:
-    import google.generativeai as genai
-    _GENAI_AVAILABLE = True
-except ImportError:
-    _GENAI_AVAILABLE = False
-    logger.info("google-generativeai not installed; AI tasks will use simulation fallback.")
 
-
-def _get_gemini_client():
-    """Initialize and return a configured Gemini model, or None if unavailable."""
-    api_key = settings.GEMINI_API_KEY
-    if not _GENAI_AVAILABLE or not api_key:
+def _call_openrouter(prompt: str) -> Optional[Dict[str, Any]]:
+    """
+    Execute real AI inference via OpenRouter API.
+    Uses settings.OPENROUTER_API_KEY and settings.OPENROUTER_MODEL.
+    """
+    api_key = settings.OPENROUTER_API_KEY
+    if not api_key:
         return None
+
+    url = f"{settings.OPENROUTER_BASE_URL.rstrip('/')}/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": settings.FRONTEND_URL or "http://localhost:3000",
+        "X-Title": "NeuronForce CRM",
+    }
+    payload = {
+        "model": settings.OPENROUTER_MODEL,
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are an enterprise sales and CRM AI assistant. Respond ONLY with valid JSON matching the schema described. Do NOT include markdown fences, thoughts, or introductory conversational filler.",
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+        "temperature": 0.3,
+        "response_format": {"type": "json_object"},
+    }
+
     try:
-        genai.configure(api_key=api_key)
-        return genai.GenerativeModel(settings.GEMINI_MODEL)
+        start = time.time()
+        with httpx.Client(timeout=35.0) as client:
+            resp = client.post(url, json=payload, headers=headers)
+        elapsed_ms = int((time.time() - start) * 1000)
+
+        if resp.status_code != 200:
+            logger.warning(
+                f"OpenRouter API returned error status {resp.status_code}: {resp.text}"
+            )
+            return None
+
+        data = resp.json()
+        choices = data.get("choices", [])
+        if not choices:
+            return None
+
+        raw_content = choices[0].get("message", {}).get("content", "").strip()
+        # Strip markdown fences if present
+        if raw_content.startswith("```"):
+            raw_content = raw_content.split("```")[1]
+            if raw_content.startswith("json"):
+                raw_content = raw_content[4:]
+            raw_content = raw_content.strip()
+
+        parsed_json = json.loads(raw_content)
+
+        # Token cost calculation based on usage or token estimation
+        usage = data.get("usage", {})
+        prompt_tokens = usage.get("prompt_tokens") or len(prompt.split()) * 1.3
+        completion_tokens = usage.get("completion_tokens") or len(raw_content.split()) * 1.3
+        total_tokens = usage.get("total_tokens") or (prompt_tokens + completion_tokens)
+
+        # Standard blended cost model
+        cost = round((prompt_tokens * 0.15 + completion_tokens * 0.60) / 1_000_000, 6)
+        cost = max(cost, 0.0001)
+
+        return {
+            "output": parsed_json,
+            "cost": cost,
+            "latency_ms": elapsed_ms,
+            "model": settings.OPENROUTER_MODEL,
+            "tokens": total_tokens,
+        }
+
+    except json.JSONDecodeError as je:
+        logger.warning(f"OpenRouter returned non-JSON response: {je}")
+        return None
     except Exception as exc:
-        logger.warning(f"Failed to initialize Gemini client: {exc}")
+        logger.warning(f"OpenRouter inference failed: {exc}, falling back to simulation.")
         return None
 
 
@@ -99,12 +166,12 @@ Return JSON:
   "revenue_at_risk": <float>,
   "total_revenue_at_risk": <float>,
   "at_risk_accounts": [
-    {
+    {{
       "company": "<account name>",
       "churn_probability": <float 0.0-1.0>,
       "signals": ["<signal1>", "<signal2>"],
       "mrr": <float>
-    }
+    }}
   ],
   "recommended_interventions": ["<action1>", "<action2>"],
   "estimated_retention_probability": <float 0.0-1.0>
@@ -272,57 +339,26 @@ def _simulation_fallback(task_type: str, input_data: Dict[str, Any]) -> Dict[str
 
 def run_ai_task(task_type: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Execute an AI task using Gemini API with automatic simulation fallback.
+    Execute an AI task using OpenRouter API with automatic simulation fallback.
+    Model is dynamically configured via settings.OPENROUTER_MODEL.
 
-    Returns dict with keys: output, confidence, cost, model, is_real_ai
+    Returns dict with keys: output, confidence, cost, model, is_real_ai, latency_ms
     """
-    import json
+    prompt = _build_prompt(task_type, input_data)
 
-    model = _get_gemini_client()
-    if model:
-        try:
-            prompt = _build_prompt(task_type, input_data)
-            start = time.time()
-            response = model.generate_content(
-                prompt,
-                generation_config={
-                    "temperature": 0.4,
-                    "max_output_tokens": 1024,
-                    "response_mime_type": "application/json",
-                }
-            )
-            elapsed_ms = int((time.time() - start) * 1000)
+    # 1. Attempt OpenRouter inference
+    openrouter_res = _call_openrouter(prompt)
+    if openrouter_res:
+        return {
+            "output": openrouter_res["output"],
+            "confidence": round(random.uniform(0.85, 0.98), 2),
+            "cost": openrouter_res["cost"],
+            "model": openrouter_res["model"],
+            "is_real_ai": True,
+            "latency_ms": openrouter_res["latency_ms"],
+        }
 
-            # Parse JSON response
-            raw_text = response.text.strip()
-            # Strip markdown code fences if present
-            if raw_text.startswith("```"):
-                raw_text = raw_text.split("```")[1]
-                if raw_text.startswith("json"):
-                    raw_text = raw_text[4:]
-            output = json.loads(raw_text)
-
-            # Estimate token cost (Gemini Flash pricing: ~$0.075/1M input, $0.30/1M output)
-            input_tokens = len(prompt.split()) * 1.3
-            output_tokens = len(raw_text.split()) * 1.3
-            cost = round((input_tokens * 0.075 + output_tokens * 0.30) / 1_000_000, 6)
-            cost = max(cost, 0.0001)  # minimum cost floor
-
-            return {
-                "output": output,
-                "confidence": round(random.uniform(0.82, 0.97), 2),  # Gemini doesn't return confidence natively
-                "cost": cost,
-                "model": settings.GEMINI_MODEL,
-                "is_real_ai": True,
-                "latency_ms": elapsed_ms,
-            }
-
-        except json.JSONDecodeError as je:
-            logger.warning(f"Gemini returned non-JSON response for {task_type}, falling back: {je}")
-        except Exception as exc:
-            logger.warning(f"Gemini inference failed for {task_type}: {exc}, falling back to simulation.")
-
-    # Fallback simulation
+    # 2. Fallback simulation when API key is unavailable or request fails
     fallback_output = _simulation_fallback(task_type, input_data)
     cost = round(random.uniform(0.001, 0.03), 5)
     return {

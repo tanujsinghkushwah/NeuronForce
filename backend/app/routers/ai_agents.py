@@ -103,8 +103,8 @@ def get_ai_stats(db: Session = Depends(get_db)):
         "total_cost": round(total_cost, 4),
         "avg_latency_ms": round(avg_latency, 0),
         "avg_confidence": round(avg_confidence, 2),
-        "ai_model": settings.GEMINI_MODEL,
-        "real_ai_enabled": bool(settings.GEMINI_API_KEY),
+        "ai_model": settings.OPENROUTER_MODEL,
+        "real_ai_enabled": bool(settings.OPENROUTER_API_KEY),
         "cost_by_type": [
             {
                 "type": c[0].value if hasattr(c[0], 'value') else c[0],

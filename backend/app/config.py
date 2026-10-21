@@ -51,7 +51,16 @@ class Settings:
         self.FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
         self.BACKEND_URL: str = os.getenv("BACKEND_URL", "http://localhost:8000")
 
-        # Google Gemini AI Configuration
+        # OpenRouter AI Configuration
+        self.OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
+        self.OPENROUTER_MODEL: str = os.getenv(
+            "OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct"
+        )
+        self.OPENROUTER_BASE_URL: str = os.getenv(
+            "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"
+        )
+
+        # Optional Legacy Gemini AI Configuration (for backward compatibility)
         self.GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
         self.GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 

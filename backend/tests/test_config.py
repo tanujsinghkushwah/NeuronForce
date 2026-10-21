@@ -16,6 +16,9 @@ def test_default_settings():
     assert isinstance(settings.cors_origins, list)
     assert len(settings.cors_origins) >= 1
     assert "http://localhost:3000" in settings.cors_origins
+    assert hasattr(settings, "OPENROUTER_MODEL")
+    assert hasattr(settings, "OPENROUTER_API_KEY")
+    assert settings.OPENROUTER_BASE_URL.startswith("https://openrouter.ai")
 
 
 def test_cors_origins_property(monkeypatch):
@@ -30,7 +33,11 @@ def test_environment_override(monkeypatch):
     monkeypatch.setenv("ENVIRONMENT", "staging")
     monkeypatch.setenv("JWT_SECRET_KEY", "custom-test-secret-key-123")
     monkeypatch.setenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
+    monkeypatch.setenv("OPENROUTER_MODEL", "anthropic/claude-3.5-sonnet")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-test-key-999")
     s = Settings()
     assert s.ENVIRONMENT == "staging"
     assert s.JWT_SECRET_KEY == "custom-test-secret-key-123"
     assert s.ACCESS_TOKEN_EXPIRE_MINUTES == 60
+    assert s.OPENROUTER_MODEL == "anthropic/claude-3.5-sonnet"
+    assert s.OPENROUTER_API_KEY == "sk-or-test-key-999"

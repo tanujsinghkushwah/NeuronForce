@@ -38,7 +38,7 @@ export default function SettingsPage() {
           forecast_model: 'Ensemble Bayesian',
           max_daily_budget: 10.0,
           confidence_threshold: 0.75,
-          model_provider: 'Multi-Model (Gemini 1.5 Pro / Flash & Claude 3.5)',
+          model_provider: 'OpenRouter Multi-Model (Claude 3.5, Llama 3.3, GPT-4o, Gemini 2.0)',
           cost_optimization: true
         },
         notifications: {

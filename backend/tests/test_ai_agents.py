@@ -91,3 +91,61 @@ def test_ai_agent_stats_and_filtering(client):
     assert "cost_efficiency" in stats
     assert "roi_estimate" in stats["cost_efficiency"]
     assert "time_saved_hours" in stats["cost_efficiency"]
+    assert "ai_model" in stats
+
+
+def test_openrouter_inference_and_dynamic_model(client, monkeypatch):
+    """Test that OpenRouter API is called with custom OPENROUTER_MODEL and processed properly."""
+    import httpx
+    from app.config import settings
+
+    custom_model = "anthropic/claude-3.5-sonnet"
+    monkeypatch.setattr(settings, "OPENROUTER_API_KEY", "sk-or-test-mock-key")
+    monkeypatch.setattr(settings, "OPENROUTER_MODEL", custom_model)
+
+    mock_response_data = {
+        "id": "gen-test-12345",
+        "model": custom_model,
+        "choices": [
+            {
+                "message": {
+                    "role": "assistant",
+                    "content": '{"score": 96, "tier": "hot", "factors": ["High engagement", "Decision maker"], "recommendation": "Book demo today", "icp_match": 0.95}'
+                },
+                "finish_reason": "stop"
+            }
+        ],
+        "usage": {
+            "prompt_tokens": 150,
+            "completion_tokens": 60,
+            "total_tokens": 210
+        }
+    }
+
+    recorded_requests = []
+    orig_post = httpx.Client.post
+
+    def mock_post(self, url, *args, **kwargs):
+        if "openrouter.ai" in str(url):
+            recorded_requests.append({"url": str(url), "json": kwargs.get("json"), "headers": kwargs.get("headers")})
+            req = httpx.Request("POST", str(url))
+            return httpx.Response(200, json=mock_response_data, request=req)
+        return orig_post(self, url, *args, **kwargs)
+
+    monkeypatch.setattr(httpx.Client, "post", mock_post)
+
+    payload = {
+        "task_type": "lead_scoring",
+        "input_data": {"contact_name": "Satya Nadella", "company": "Microsoft"}
+    }
+    response = client.post("/api/ai-agents/tasks", json=payload)
+    assert response.status_code == 200
+    task = response.json()
+    assert task["task_type"] == "lead_scoring"
+    assert task["output_data"]["score"] == 96
+    assert task["output_data"]["_meta"]["model"] == custom_model
+    assert task["output_data"]["_meta"]["is_real_ai"] is True
+    assert len(recorded_requests) == 1
+    assert recorded_requests[0]["json"]["model"] == custom_model
+    assert "Bearer sk-or-test-mock-key" in recorded_requests[0]["headers"]["Authorization"]
+

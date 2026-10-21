@@ -346,14 +346,25 @@ export default function AIAgentsPage() {
         <div className="glass-panel p-6 rounded-2xl border-indigo-500/30 bg-gradient-to-br from-[#0c1224] via-slate-900/90 to-[#0c1224]">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1">
-                  <Terminal className="w-3 h-3 text-cyan-400" />
-                  Live Agent Console
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5 font-mono">
+                  <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+                  Model: {stats?.ai_model || 'meta-llama/llama-3.3-70b-instruct'}
                 </span>
-                <span className="text-xs text-slate-400">Interactive Execution with Real-Time Observability</span>
+                <span className="text-xs text-slate-400">
+                  {stats?.real_ai_enabled ? (
+                    <span className="text-emerald-400 font-semibold flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      OpenRouter Live
+                    </span>
+                  ) : (
+                    <span className="text-cyan-400 font-medium">
+                      Simulation Mode (Set OPENROUTER_API_KEY for live OpenRouter API)
+                    </span>
+                  )}
+                </span>
               </div>
-              <h3 className="text-xl font-bold text-white mt-1">
+              <h3 className="text-xl font-bold text-white mt-1.5">
                 Trigger Autonomous Sales Agent
               </h3>
             </div>

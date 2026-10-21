@@ -177,6 +177,8 @@ export interface AIAgentStats {
     roi_estimate: number;
     time_saved_hours: number;
   };
+  ai_model?: string;
+  real_ai_enabled?: boolean;
 }
 
 export interface CalendarEvent {
