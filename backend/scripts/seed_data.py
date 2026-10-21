@@ -405,14 +405,62 @@ def seed_campaigns(db):
     print("✅ Seeded Marketing Cloud campaigns")
 
 
+def seed_analytics_snapshots(db, force: bool = False):
+    """Seed comprehensive 180-day (6-month) revenue trajectory and telemetry snapshots."""
+    existing_count = db.query(AnalyticsSnapshot).count()
+    if existing_count >= 60 and not force:
+        return
+
+    if existing_count > 0:
+        db.query(AnalyticsSnapshot).delete()
+        db.flush()
+
+    now = datetime.now(timezone.utc)
+    start_revenue = 185000.0
+    end_revenue = 520000.0
+    total_days = 180
+
+    for i in range(total_days):
+        date = now - timedelta(days=total_days - 1 - i)
+        progress = i / float(total_days - 1) if total_days > 1 else 1.0
+        base_revenue = start_revenue + (end_revenue - start_revenue) * (progress ** 1.25)
+        if i == total_days - 1:
+            rev = end_revenue
+        else:
+            rev = round(base_revenue + random.uniform(-1500, 1500), 2)
+
+        base_pipeline = 1800000.0 + 550000.0 * (progress ** 0.8)
+        pipe_val = round(base_pipeline + random.uniform(-40000, 40000), 2)
+
+        snapshot = AnalyticsSnapshot(
+            date=date,
+            total_revenue=rev,
+            deals_won=1 if i in [25, 60, 95, 130, 165, 179] else 0,
+            deals_lost=1 if i in [45, 115] else 0,
+            new_contacts=random.randint(1, 6),
+            active_deals=random.randint(6, 11),
+            pipeline_value=pipe_val,
+            conversion_rate=round(random.uniform(35.0, 52.0), 1),
+            avg_deal_size=round(random.uniform(180000, 520000), 2),
+            ai_tasks_run=random.randint(8, 28),
+            ai_total_cost=round(random.uniform(0.04, 0.35), 4),
+            created_at=date,
+        )
+        db.add(snapshot)
+
+    db.commit()
+    print(f"✅ Seeded {total_days} daily analytics snapshots for revenue trajectory")
+
+
 def seed_database(db):
     """Populate the database with realistic demo data."""
     # Ensure users exist
     seed_users(db)
 
-    # Ensure Service Cloud and Marketing Cloud are populated
+    # Ensure Service Cloud, Marketing Cloud, and Analytics Snapshots are populated
     seed_tickets(db)
     seed_campaigns(db)
+    seed_analytics_snapshots(db)
 
     # Check if contact data already exists
     if db.query(Contact).count() > 0:
@@ -690,23 +738,7 @@ def seed_database(db):
         db.add(ai_task)
 
     # --- ANALYTICS SNAPSHOTS ---
-    for i in range(30):
-        date = now - timedelta(days=29 - i)
-        snapshot = AnalyticsSnapshot(
-            date=date,
-            total_revenue=random.uniform(80000, 150000) + (i * 3000),
-            deals_won=random.randint(0, 3),
-            deals_lost=random.randint(0, 2),
-            new_contacts=random.randint(1, 8),
-            active_deals=random.randint(5, 12),
-            pipeline_value=random.uniform(1500000, 3500000),
-            conversion_rate=random.uniform(15, 35),
-            avg_deal_size=random.uniform(100000, 300000),
-            ai_tasks_run=random.randint(5, 25),
-            ai_total_cost=random.uniform(0.05, 0.50),
-            created_at=date,
-        )
-        db.add(snapshot)
+    seed_analytics_snapshots(db)
 
     # --- CALENDAR EVENTS ---
     calendar_events = [

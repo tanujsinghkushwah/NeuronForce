@@ -279,7 +279,14 @@ export default function DashboardPage() {
 
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={stats?.revenue_trend || []} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <AreaChart
+                  data={(stats?.revenue_trend || []).map((item) => ({
+                    ...item,
+                    month: item.month || ((item as any).date ? new Date((item as any).date).toLocaleDateString(undefined, { month: 'short' }) : 'N/A'),
+                    revenue: item.revenue ?? (item as any).total_revenue ?? 0,
+                  }))}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
                   <defs>
                     <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
@@ -311,6 +318,7 @@ export default function DashboardPage() {
                     strokeWidth={2.5}
                     fillOpacity={1}
                     fill="url(#revenueGrad)"
+                    activeDot={{ r: 6, fill: '#818cf8', stroke: '#fff', strokeWidth: 2 }}
                   />
                 </AreaChart>
               </ResponsiveContainer>

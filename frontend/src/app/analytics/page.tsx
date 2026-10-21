@@ -244,7 +244,17 @@ export default function AnalyticsPage() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="date" stroke="#64748b" fontSize={11} tickLine={false} />
+                <XAxis
+                  dataKey="date"
+                  stroke="#64748b"
+                  fontSize={11}
+                  tickLine={false}
+                  tickFormatter={(str) => {
+                    if (!str) return '';
+                    const d = new Date(str);
+                    return !isNaN(d.getTime()) ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : str;
+                  }}
+                />
                 <YAxis
                   stroke="#64748b"
                   fontSize={11}
