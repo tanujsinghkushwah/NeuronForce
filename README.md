@@ -22,22 +22,34 @@ The project is structured as a clean monorepo:
 
 ```
 neuronforce/
-├── frontend/               # Next.js 15 + TypeScript + Tailwind CSS
+├── frontend/               # Next.js 16 + TypeScript + Tailwind CSS 4
 │   ├── src/
-│   │   └── app/            # App Router pages and layouts
-│   ├── package.json        # Dependencies (Recharts, Lucide, date-fns)
+│   │   ├── app/            # App Router: Dashboard (/), Contacts, Deals, AI Agents, Analytics, Calendar, Settings
+│   │   ├── components/     # UI Shell (Sidebar, Header)
+│   │   ├── lib/            # Centralized API client (api.ts)
+│   │   └── types/          # Full TypeScript domain contracts (crm.ts)
+│   ├── package.json        # Dependencies (Recharts, Lucide React, clsx)
 │   └── ...
 ├── backend/                # FastAPI + Python 3.14 + SQLAlchemy 2.1
 │   ├── app/
-│   │   ├── __init__.py     # Package init
-│   │   ├── database.py     # SQLAlchemy engine, session management, CP rationale
+│   │   ├── database.py     # SQLAlchemy 2.0 DeclarativeBase, session manager, CP rationale
 │   │   ├── models.py       # 7 core data models (Contacts, Deals, Activities, Tasks, AI, Analytics, Calendar)
-│   │   ├── schemas.py      # Pydantic v2 schemas for all requests and responses
-│   │   ├── seed_data.py    # Realistic enterprise demo dataset
-│   │   └── main.py         # 25+ REST endpoints with CORS and auto-seeding
+│   │   ├── schemas.py      # Pydantic v2 schemas with ConfigDict
+│   │   └── main.py         # 25+ REST endpoints with CORS, lifespan handler
+│   ├── scripts/
+│   │   └── seed_data.py    # Standalone runnable enterprise demo dataset seed script
+│   ├── tests/              # Comprehensive Pytest test suite (22 unit tests)
+│   │   ├── conftest.py     # Isolated in-memory SQLite fixtures & TestClient
+│   │   ├── test_health_and_dashboard.py
+│   │   ├── test_contacts.py
+│   │   ├── test_deals.py
+│   │   ├── test_activities_and_tasks.py
+│   │   ├── test_ai_agents.py
+│   │   └── test_calendar_analytics_settings.py
 │   ├── neuronforce.db      # SQLite database (auto-created on startup)
-│   └── venv/               # Python virtual environment (ignored in git)
+│   └── requirements.txt    # Backend dependencies including pytest & httpx
 ├── .gitignore              # Monorepo-wide ignore rules
+├── PLAN.md                 # Architecture roadmap & specifications
 └── README.md               # Project documentation
 ```
 
@@ -58,6 +70,12 @@ pip install -r requirements.txt  # or: pip install fastapi uvicorn sqlalchemy ps
 
 # Run backend development server
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+# Run standalone database seeder (optional, runs on startup)
+python -m scripts.seed_data
+
+# Run full backend unit test suite (22 tests)
+pytest -v tests
 ```
 - API Swagger Documentation: `http://localhost:8000/docs`
 - Health check: `http://localhost:8000/api/health`
