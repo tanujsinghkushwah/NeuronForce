@@ -1,0 +1,25 @@
+# Caddyfile: Reverse proxy configuration for NeuronForce
+# Replace :80 with your domain (e.g. crm.example.com) for automated SSL / HTTPS.
+:80 {
+    # Compress responses
+    encode gzip zstd
+
+    # Route backend API calls directly to FastAPI
+    handle /api/* {
+        reverse_proxy backend:8000
+    }
+
+    # Route OpenAPI docs
+    handle /docs* {
+        reverse_proxy backend:8000
+    }
+
+    handle /openapi.json {
+        reverse_proxy backend:8000
+    }
+
+    # Route everything else to Next.js frontend
+    handle {
+        reverse_proxy frontend:3000
+    }
+}
