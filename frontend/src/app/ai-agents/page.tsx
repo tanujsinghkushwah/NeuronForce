@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Header from '../../components/Header';
 import { api } from '../../lib/api';
 import { AIAgentStats, AIAgentTask } from '../../types/crm';
+import AgentInputForm from '../../components/ai-agents/AgentInputForm';
+import AgentOutputView from '../../components/ai-agents/AgentOutputView';
 import {
   Sparkles,
   Zap,
@@ -427,52 +429,18 @@ export default function AIAgentsPage() {
 
             {/* Input & Live Console View (8 Cols) */}
             <div className="lg:col-span-8 flex flex-col space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-1.5 text-xs">
-                  <span className="font-semibold text-slate-300 flex items-center gap-1.5">
-                    <Code2 className="w-3.5 h-3.5 text-indigo-400" />
-                    Agent Input Payload (JSON)
-                  </span>
-                  <span className="text-[10px] text-slate-400">
-                    Est: {selectedAgent.costEstimate} • {selectedAgent.latencyEstimate}
-                  </span>
-                </div>
-                <textarea
-                  rows={4}
-                  value={customInput}
-                  onChange={(e) => setCustomInput(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-slate-950 border border-white/10 font-mono text-xs text-cyan-300 focus:outline-none focus:border-indigo-500 transition-colors"
-                />
-              </div>
+              <AgentInputForm
+                agentType={selectedAgent.type}
+                agentName={selectedAgent.name}
+                costEstimate={selectedAgent.costEstimate}
+                latencyEstimate={selectedAgent.latencyEstimate}
+                jsonValue={customInput}
+                onChangeJson={(newJson) => setCustomInput(newJson)}
+              />
 
               {/* Execution Telemetry Result Card */}
               {executionResult && (
-                <div className="p-4 rounded-xl bg-slate-950/90 border border-indigo-500/40 text-xs space-y-3 animate-in fade-in duration-200">
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-white/10">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      <span className="font-bold text-white">Execution Complete</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-semibold uppercase">
-                        {executionResult.status}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3 text-[11px] font-mono">
-                      <span className="text-slate-400">Latency: <strong className="text-white">{executionResult.latency_ms}ms</strong></span>
-                      <span className="text-slate-400">Actual Cost: <strong className="text-emerald-400">${(executionResult.actual_cost || 0.002).toFixed(4)}</strong></span>
-                      <span className="text-slate-400">Confidence: <strong className="text-cyan-400">{Math.round((executionResult.confidence_score || 0.92) * 100)}%</strong></span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
-                      Synthesized Output Data
-                    </span>
-                    <pre className="p-3 rounded-lg bg-black/60 border border-white/5 font-mono text-[11px] text-slate-200 overflow-x-auto max-h-48 leading-relaxed">
-                      {JSON.stringify(executionResult.output_data, null, 2)}
-                    </pre>
-                  </div>
-                </div>
+                <AgentOutputView task={executionResult} />
               )}
             </div>
           </div>

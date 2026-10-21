@@ -143,6 +143,18 @@ html[data-theme="light"] [class*="bg-slate-900"] {
   color: #0f172a !important;
 }
 
+html.light [class*="bg-slate-800"],
+html[data-theme="light"] [class*="bg-slate-800"] {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+  color: #334155 !important;
+}
+
+html.light [class*="bg-slate-950"],
+html[data-theme="light"] [class*="bg-slate-950"] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
 /* Dim ambient glow in light mode */
 html.light .ambient-glow,
 html[data-theme="light"] .ambient-glow {
