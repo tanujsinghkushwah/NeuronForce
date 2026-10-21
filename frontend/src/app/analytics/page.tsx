@@ -86,7 +86,7 @@ export default function AnalyticsPage() {
   const annualAgentCost = repsCount * 12 * 1.5;
 
   return (
-    <div className="flex-1 flex flex-col pb-12 bg-[#070b14] text-slate-100 min-h-screen">
+    <div className="flex-1 flex flex-col pb-12 min-h-screen">
       <Header />
 
       <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto w-full">

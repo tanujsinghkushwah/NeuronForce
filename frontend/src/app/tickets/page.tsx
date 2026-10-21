@@ -188,7 +188,7 @@ export default function TicketsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-[#070b14] text-slate-100 overflow-x-hidden">
+    <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
       <Header />
 
       <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
