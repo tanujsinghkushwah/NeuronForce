@@ -83,3 +83,60 @@ def test_compound_prompt_contact_email_and_send_personalized_email():
     # 5. Verify synthesized reply contains both update and email body
     assert target_new_email in res["reply"]
     assert res["subagent_result"]["subject"] in res["reply"]
+
+
+def test_compound_prompt_create_contact_and_send_specialized_email():
+    """
+    Test user prompt:
+    'Create a new contact named Tanuj with email id: tanujsinghkushwah@gmail.com and then send specialized email promoting NeuronForce'
+    """
+    target_email = "tanujsinghkushwah@gmail.com"
+    prompt = f"Create a new contact named Tanuj with email id: {target_email} and then send specialized email promoting NeuronForce"
+
+    res = run_agent_orchestrator(prompt=prompt, session_id="test_create_and_email")
+
+    # 1. Verify orchestrator executed create_contact CRM action
+    assert res["tool_result"] is not None
+    assert res["tool_result"]["success"] is True
+    assert res["tool_result"]["contact"]["email"] == target_email
+    assert "Tanuj" in res["tool_result"]["contact"]["name"]
+
+    # 2. Verify subagent personalized email was drafted & dispatched/logged
+    assert res["subagent_result"] is not None, "subagent_result should not be None"
+    assert res["subagent_result"]["email_address"] == target_email
+    assert "subject" in res["subagent_result"]
+    assert "body" in res["subagent_result"]
+    assert res["subagent_result"]["dispatch_status"] is not None
+    assert res["subagent_result"]["dispatch_status"]["activity_id"] is not None
+
+    # 3. Verify graph_steps contains subagent_email_draft node for frontend visual flow
+    step_nodes = [s["node"] for s in res.get("graph_steps", [])]
+    assert (
+        "subagent_email_draft" in step_nodes
+    ), "subagent_email_draft node must be in graph steps"
+    assert res.get("target_subagent") == "email_draft"
+
+    # 4. Verify Contact and Activity in database
+    db = SessionLocal()
+    try:
+        contact = db.query(Contact).filter(Contact.email == target_email).first()
+        assert contact is not None
+        assert "Tanuj" in contact.first_name
+
+        activity = (
+            db.query(Activity)
+            .filter(
+                Activity.contact_id == contact.id,
+                Activity.type == ActivityType.EMAIL,
+            )
+            .order_by(Activity.id.desc())
+            .first()
+        )
+        assert activity is not None
+        assert target_email in activity.description
+    finally:
+        db.close()
+
+    # 5. Verify reply contains both confirmation and drafted email
+    assert target_email in res["reply"]
+    assert res["subagent_result"]["subject"] in res["reply"]

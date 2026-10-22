@@ -34,16 +34,23 @@ def create_contact(
         # Check if email exists
         existing = db.query(Contact).filter(Contact.email == email).first()
         if existing:
+            full_name = f"{existing.first_name} {existing.last_name}".strip()
+            comp_suffix = (
+                f" at {existing.company}"
+                if existing.company
+                and str(existing.company).lower() not in ("null", "none", "unassigned")
+                else ""
+            )
             return {
                 "success": True,
                 "action": "create_contact",
                 "contact": {
                     "id": existing.id,
-                    "name": f"{existing.first_name} {existing.last_name}",
+                    "name": full_name,
                     "email": existing.email,
-                    "company": existing.company,
+                    "company": existing.company or "",
                 },
-                "message": f"Contact with email '{email}' already exists ({existing.first_name} {existing.last_name} at {existing.company}).",
+                "message": f"Contact with email '{email}' already exists ({full_name}{comp_suffix}).",
             }
 
         matched_status = LeadStatus.NEW
@@ -55,13 +62,24 @@ def create_contact(
                 matched_status = s
                 break
 
+        clean_company = (
+            ""
+            if not company or str(company).lower() in ("null", "none", "unassigned")
+            else str(company).strip()
+        )
+        clean_title = (
+            ""
+            if not job_title or str(job_title).lower() in ("null", "none")
+            else str(job_title).strip()
+        )
+
         contact = Contact(
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            company=company,
-            job_title=job_title,
-            phone=phone,
+            first_name=first_name.strip(),
+            last_name=last_name.strip(),
+            email=email.strip(),
+            company=clean_company,
+            job_title=clean_title,
+            phone=phone.strip(),
             lead_status=matched_status,
             lead_score=lead_score,
             notes=notes or f"Created autonomously via Sales Agent Studio",
@@ -71,19 +89,27 @@ def create_contact(
         db.commit()
         db.refresh(contact)
 
+        full_name = f"{contact.first_name} {contact.last_name}".strip()
+        comp_suffix = f" at {contact.company}" if contact.company else ""
+        role_label = (
+            f" ({contact.job_title or 'Contact'}{comp_suffix})"
+            if (contact.job_title or comp_suffix)
+            else ""
+        )
+
         return {
             "success": True,
             "action": "create_contact",
             "contact": {
                 "id": contact.id,
-                "name": f"{contact.first_name} {contact.last_name}",
+                "name": full_name,
                 "email": contact.email,
-                "company": contact.company,
-                "job_title": contact.job_title,
+                "company": contact.company or "",
+                "job_title": contact.job_title or "",
                 "lead_status": contact.lead_status.value,
                 "lead_score": contact.lead_score,
             },
-            "message": f"Successfully added contact {contact.first_name} {contact.last_name} ({contact.job_title or 'Contact'} at {contact.company or 'Unassigned'}) with email {contact.email}.",
+            "message": f"Successfully added contact {full_name}{role_label} with email {contact.email}.",
         }
     except Exception as exc:
         db.rollback()
