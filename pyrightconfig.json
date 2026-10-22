@@ -1,0 +1,12 @@
+{
+  "include": [
+    "agents",
+    "backend"
+  ],
+  "extraPaths": [
+    "./backend",
+    "."
+  ],
+  "pythonVersion": "3.11",
+  "typeCheckingMode": "basic"
+}

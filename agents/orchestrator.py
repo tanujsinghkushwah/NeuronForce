@@ -36,7 +36,8 @@ from agents.tools.calendar_tools import schedule_meeting, update_meeting
 from agents.tools.deal_tools import create_deal, update_deal
 from agents.tools.contact_tools import create_contact, update_contact
 from agents.tools.campaign_tools import create_campaign
-from app.services.email_service import send_email_message
+from agents.tools.email_tools import send_email_message
+
 
 
 # ==============================================================================
@@ -252,7 +253,7 @@ def node_intent_router(state: AgentState) -> Dict[str, Any]:
 
     elapsed_ms = max(10, int((time.time() - start) * 1000))
     summary_text = (
-        f"Routed to {target_subagent.replace('_', ' ').title()} Sub-Agent"
+        f"Routed to {(target_subagent or 'agent').replace('_', ' ').title()} Sub-Agent"
         if intent == "subagent"
         else f"Routed to CRM Action: {action_type}"
         if intent == "crm_action"
@@ -514,9 +515,9 @@ def node_crm_action_executor(state: AgentState) -> Dict[str, Any]:
 
             # 2. Dispatch/send or log email via email service
             send_res = send_email_message(
-                to_email=contact_email,
-                subject=email_draft_res.get("subject", "NeuronForce Autonomous Sales Platform"),
-                body=email_draft_res.get("body", ""),
+                to_email=str(contact_email or ""),
+                subject=str(email_draft_res.get("subject") or "NeuronForce Autonomous Sales Platform"),
+                body=str(email_draft_res.get("body") or ""),
                 to_name=contact_name,
                 contact_id=contact_id
             )

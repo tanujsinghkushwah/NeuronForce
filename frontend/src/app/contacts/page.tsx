@@ -19,7 +19,9 @@ import {
   ExternalLink,
   ChevronRight,
   TrendingUp,
-  Award
+  Award,
+  Trash2,
+  RotateCw
 } from 'lucide-react';
 
 export default function ContactsPage() {
@@ -30,7 +32,9 @@ export default function ContactsPage() {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [scoringContactId, setScoringContactId] = useState<number | null>(null);
+  const [deletingContactId, setDeletingContactId] = useState<number | null>(null);
   const [scoreResult, setScoreResult] = useState<any | null>(null);
+
 
   const [form, setForm] = useState<ContactCreateInput>({
     first_name: '',
@@ -176,6 +180,24 @@ export default function ContactsPage() {
       setContacts(contacts.map(c => c.id === contact.id ? { ...c, lead_score: 94 } : c));
     } finally {
       setScoringContactId(null);
+    }
+  };
+
+  const handleDeleteContact = async (contactId: number, contactName: string) => {
+    if (!window.confirm(`Are you sure you want to delete ${contactName}? This action cannot be undone.`)) {
+      return;
+    }
+    setDeletingContactId(contactId);
+    try {
+      await api.deleteContact(contactId);
+      setContacts((prev) => prev.filter((c) => c.id !== contactId));
+      if (selectedContact?.id === contactId) {
+        setSelectedContact(null);
+      }
+    } catch (err) {
+      alert('Could not delete contact: ' + String(err));
+    } finally {
+      setDeletingContactId(null);
     }
   };
 
@@ -336,9 +358,22 @@ export default function ContactsPage() {
                           onClick={() => handleAIScore(contact)}
                           disabled={scoringContactId === contact.id}
                           className="px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                          title="Run AI Lead Score"
                         >
                           <Sparkles className={`w-3 h-3 ${scoringContactId === contact.id ? 'animate-spin' : ''}`} />
                           <span>{scoringContactId === contact.id ? 'Scoring...' : 'AI Score'}</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteContact(contact.id, `${contact.first_name} ${contact.last_name}`)}
+                          disabled={deletingContactId === contact.id}
+                          className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/20 hover:border-rose-500/40 transition-all cursor-pointer disabled:opacity-50"
+                          title="Delete Contact"
+                        >
+                          {deletingContactId === contact.id ? (
+                            <RotateCw className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3.5 h-3.5" />
+                          )}
                         </button>
                       </div>
                     </td>
@@ -445,10 +480,24 @@ export default function ContactsPage() {
             <div className="pt-4 border-t border-white/10 flex items-center gap-3">
               <button
                 onClick={() => handleAIScore(selectedContact)}
-                className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 cursor-pointer"
+                disabled={scoringContactId === selectedContact.id}
+                className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                <Sparkles className="w-4 h-4 text-cyan-300" />
-                <span>Re-score with AI</span>
+                <Sparkles className={`w-4 h-4 text-cyan-300 ${scoringContactId === selectedContact.id ? 'animate-spin' : ''}`} />
+                <span>{scoringContactId === selectedContact.id ? 'Scoring...' : 'Re-score with AI'}</span>
+              </button>
+              <button
+                onClick={() => handleDeleteContact(selectedContact.id, `${selectedContact.first_name} ${selectedContact.last_name}`)}
+                disabled={deletingContactId === selectedContact.id}
+                className="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                title="Delete Contact"
+              >
+                {deletingContactId === selectedContact.id ? (
+                  <RotateCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                <span>Delete</span>
               </button>
             </div>
           </div>
