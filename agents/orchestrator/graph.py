@@ -18,9 +18,9 @@ from agents.orchestrator.nodes import (
 from agents.orchestrator.routing import route_after_intent
 
 
-def build_orchestrator_graph():
+def build_orchestrator_graph() -> Any:
     """Build and compile the LangGraph StateGraph."""
-    builder: Any = StateGraph(AgentState)
+    builder: Any = StateGraph(AgentState)  # type: ignore
 
     # Add Nodes
     builder.add_node("prompt_ingestion", node_prompt_ingestion)

@@ -619,8 +619,10 @@ def node_crm_action_executor(state: AgentState) -> Dict[str, Any]:
         company = entities.get("company") or entities.get("subject") or prompt
         stage = entities.get("stage")
         raw_amount = entities.get("amount")
-        value = float(raw_amount) if raw_amount else None
-        tool_result = update_deal(deal_identifier=company, stage=stage, value=value)
+        deal_value: Optional[float] = float(raw_amount) if raw_amount else None
+        tool_result = update_deal(
+            deal_identifier=company, stage=stage, value=deal_value
+        )
 
     # 4. Create Contact Action
     elif action == "create_contact":

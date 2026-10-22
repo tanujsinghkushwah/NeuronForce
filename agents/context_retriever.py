@@ -39,6 +39,8 @@ def retrieve_crm_context(prompt: str) -> Dict[str, Any]:
     if not SessionLocal:
         return context
 
+    total_deals_count: int = 0
+    total_pipeline_val: float = 0.0
     db = SessionLocal()
     try:
         lower_prompt = prompt.lower()
@@ -204,11 +206,21 @@ def retrieve_crm_context(prompt: str) -> Dict[str, Any]:
         ]
 
         # Context summary string
-        c_names = [c["name"] for c in matching_contacts]
-        d_titles = [d["title"] for d in matching_deals]
+        c_names: list[str] = [
+            str(c.get("name", "")) for c in matching_contacts if c.get("name")
+        ]
+        d_titles: list[str] = [
+            str(d.get("title", "")) for d in matching_deals if d.get("title")
+        ]
+        formatted_val: str = f"{float(total_pipeline_val):,.2f}"
+        contacts_str: str = ", ".join(c_names[:3])
+        deals_str: str = ", ".join(d_titles[:2])
+        events_count: int = len(context.get("upcoming_events", []))
         context["summary"] = (
-            f"CRM Pipeline: {total_deals_count} active deals totaling ${total_pipeline_val:,.2f}. "
-            f"Found {len(matching_contacts)} contacts ({', '.join(c_names[:3])}), {len(matching_deals)} deals ({', '.join(d_titles[:2])}), {len(context['upcoming_events'])} calendar events."
+            f"CRM Pipeline: {total_deals_count} active deals totaling ${formatted_val}. "
+            f"Found {len(matching_contacts)} contacts ({contacts_str}), "
+            f"{len(matching_deals)} deals ({deals_str}), "
+            f"{events_count} calendar events."
         )
 
     except Exception as exc:
