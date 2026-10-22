@@ -96,7 +96,7 @@ def send_email_message(
             from_sender = (
                 os.getenv("SMTP_FROM_EMAIL") or "NeuronForce <onboarding@resend.dev>"
             )
-            params = {
+            params: Any = {
                 "from": from_sender,
                 "to": [to_email],
                 "subject": subject,

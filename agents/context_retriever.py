@@ -16,19 +16,11 @@ BACKEND_DIR = REPO_ROOT / "backend"
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-try:
-    from app.database import SessionLocal
-    from app.models.contact import Contact
-    from app.models.deal import Deal
-    from app.models.calendar import CalendarEvent
-    from app.models.campaign import Campaign
-except Exception as e:
-    # Graceful fallback if database models are loading in isolated mode
-    SessionLocal = None
-    Contact = None
-    Deal = None
-    CalendarEvent = None
-    Campaign = None
+from app.database import SessionLocal
+from app.models.contact import Contact
+from app.models.deal import Deal
+from app.models.calendar import CalendarEvent
+from app.models.campaign import Campaign
 
 
 def retrieve_crm_context(prompt: str) -> Dict[str, Any]:
@@ -146,14 +138,14 @@ def retrieve_crm_context(prompt: str) -> Dict[str, Any]:
 
         # Compute Aggregate Pipeline Metrics for general queries and analytics
         total_deals_count = len(all_deals)
-        total_pipeline_val = sum(float(d.value or 0) for d in all_deals)
+        total_pipeline_val = sum(float(getattr(d, "value", 0) or 0) for d in all_deals)
         deals_by_stage: Dict[str, Dict[str, Any]] = {}
         for d in all_deals:
             stg = d.stage.value if hasattr(d.stage, "value") else str(d.stage)
             if stg not in deals_by_stage:
                 deals_by_stage[stg] = {"count": 0, "total_value": 0.0}
             deals_by_stage[stg]["count"] += 1
-            deals_by_stage[stg]["total_value"] += float(d.value or 0)
+            deals_by_stage[stg]["total_value"] += float(getattr(d, "value", 0) or 0)
 
         context["pipeline_metrics"] = {
             "total_deals_count": total_deals_count,

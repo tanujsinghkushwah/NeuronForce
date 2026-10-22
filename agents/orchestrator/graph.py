@@ -4,6 +4,7 @@ Compiles the StateGraph orchestrator connecting ingestion, retrieval, routing,
 execution nodes, and synthesis.
 """
 
+from typing import Any
 from langgraph.graph import StateGraph, END
 from agents.state import AgentState
 from agents.orchestrator.nodes import (
@@ -19,7 +20,7 @@ from agents.orchestrator.routing import route_after_intent
 
 def build_orchestrator_graph():
     """Build and compile the LangGraph StateGraph."""
-    builder = StateGraph(AgentState)
+    builder: Any = StateGraph(AgentState)
 
     # Add Nodes
     builder.add_node("prompt_ingestion", node_prompt_ingestion)

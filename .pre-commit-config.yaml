@@ -27,9 +27,16 @@ repos:
       - id: check-added-large-files
         args: [--maxkb=2000]
 
-  # 3. Local hook for Frontend Build & Style
+  # 3. Local hooks for Typechecking & Frontend Validation
   - repo: local
     hooks:
+      - id: pyright-typecheck
+        name: pyright typecheck (agents/)
+        entry: npx --yes pyright agents
+        language: system
+        pass_filenames: false
+        files: ^agents/
+
       - id: frontend-style-build
         name: frontend typecheck & lint (frontend/)
         entry: bash -c "cd frontend && npm run build && npm run lint"

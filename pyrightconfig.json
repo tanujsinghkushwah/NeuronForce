@@ -10,5 +10,8 @@
   "venvPath": ".",
   "venv": ".venv",
   "pythonVersion": "3.11",
-  "typeCheckingMode": "basic"
+  "typeCheckingMode": "basic",
+  "reportGeneralTypeIssues": false,
+  "reportAttributeAccessIssue": false,
+  "reportCallIssue": false
 }

@@ -39,6 +39,27 @@ def setup_test_db(monkeypatch_session=None):
     Base.metadata.drop_all(bind=test_engine)
 
 
+@pytest.fixture(autouse=True)
+def mock_outbound_emails(monkeypatch):
+    """
+    Globally mock live email delivery (Resend API & SMTP) during pytest runs.
+    Prevents live outbound emails and avoids exhausting live API rate limits.
+    """
+    from unittest.mock import MagicMock
+    import resend
+    import smtplib
+
+    mock_resend_send = MagicMock(return_value={"id": "test_mocked_resend_id_12345"})
+    monkeypatch.setattr(resend.Emails, "send", mock_resend_send)
+
+    mock_smtp_inst = MagicMock()
+    mock_smtp_class = MagicMock(return_value=mock_smtp_inst)
+    mock_smtp_inst.__enter__.return_value = mock_smtp_inst
+    monkeypatch.setattr(smtplib, "SMTP", mock_smtp_class)
+
+    yield {"mock_resend_send": mock_resend_send, "mock_smtp_class": mock_smtp_class}
+
+
 @pytest.fixture
 def db_session():
     """Provides a clean, isolated database transaction for each test."""
