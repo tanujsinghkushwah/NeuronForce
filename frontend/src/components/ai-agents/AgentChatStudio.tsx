@@ -129,9 +129,9 @@ export default function AgentChatStudio({
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-[#080d1a] border border-indigo-500/20 rounded-2xl overflow-hidden shadow-xl">
+    <div className="agent-studio-pane flex flex-col h-full min-h-0 bg-[#080d1a] border border-indigo-500/20 rounded-2xl overflow-hidden shadow-xl">
       {/* Studio Header */}
-      <div className="p-4 px-5 border-b border-white/10 bg-slate-900/80 flex items-center justify-between flex-wrap gap-2 shrink-0">
+      <div className="agent-studio-header p-4 px-5 border-b border-white/10 bg-slate-900/80 flex items-center justify-between flex-wrap gap-2 shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-indigo-600/30">
             <Sparkles className="w-3.5 h-3.5" />
@@ -173,7 +173,7 @@ export default function AgentChatStudio({
       </div>
 
       {/* Quick Prompt Chips */}
-      <div className="p-2.5 px-4 bg-slate-950/70 border-b border-white/5 overflow-x-auto flex items-center gap-2 scrollbar-none shrink-0">
+      <div className="agent-quick-prompts p-2.5 px-4 bg-slate-950/70 border-b border-white/5 overflow-x-auto flex items-center gap-2 scrollbar-none shrink-0">
         <span className="text-[10px] uppercase font-bold text-slate-400 shrink-0">
           Quick Prompts:
         </span>
@@ -183,7 +183,7 @@ export default function AgentChatStudio({
             onClick={() => {
               setInputText(qp.prompt);
             }}
-            className="text-[11px] px-2.5 py-1 rounded-full bg-white/5 hover:bg-indigo-600/20 hover:text-indigo-300 hover:border-indigo-500/30 border border-white/10 text-slate-300 whitespace-nowrap transition-all cursor-pointer shrink-0"
+            className="agent-quick-prompt-btn text-[11px] px-2.5 py-1 rounded-full bg-white/5 hover:bg-indigo-600/20 hover:text-indigo-300 hover:border-indigo-500/30 border border-white/10 text-slate-300 whitespace-nowrap transition-all cursor-pointer shrink-0"
           >
             {qp.label}
           </button>
@@ -193,11 +193,11 @@ export default function AgentChatStudio({
       {/* Messages Timeline */}
       <div
         ref={chatScrollContainerRef}
-        className="flex-1 min-h-0 p-5 overflow-y-auto space-y-4"
+        className="agent-chat-timeline flex-1 min-h-0 p-5 overflow-y-auto space-y-4"
       >
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+            <div className="agent-empty-icon w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
               <Bot className="w-6 h-6 text-cyan-400" />
             </div>
             <h5 className="text-sm font-bold text-white">
@@ -215,7 +215,7 @@ export default function AgentChatStudio({
                     "Schedule a product demo with Sarah Chen for tomorrow at 2:00 PM",
                   )
                 }
-                className="p-2.5 rounded-xl bg-slate-900/80 border border-white/10 hover:border-indigo-500/40 text-left text-xs text-slate-300 transition-colors cursor-pointer group"
+                className="agent-sample-btn p-2.5 rounded-xl bg-slate-900/80 border border-white/10 hover:border-indigo-500/40 text-left text-xs text-slate-300 transition-colors cursor-pointer group"
               >
                 <div className="font-semibold text-white group-hover:text-indigo-300">
                   📅 Schedule Meeting
@@ -230,7 +230,7 @@ export default function AgentChatStudio({
                     "Create a $220,000 deal for Acme Corp in Proposal stage",
                   )
                 }
-                className="p-2.5 rounded-xl bg-slate-900/80 border border-white/10 hover:border-indigo-500/40 text-left text-xs text-slate-300 transition-colors cursor-pointer group"
+                className="agent-sample-btn p-2.5 rounded-xl bg-slate-900/80 border border-white/10 hover:border-indigo-500/40 text-left text-xs text-slate-300 transition-colors cursor-pointer group"
               >
                 <div className="font-semibold text-white group-hover:text-indigo-300">
                   💼 Create Deal
@@ -245,7 +245,7 @@ export default function AgentChatStudio({
                     "Score lead Elena Rostova from HyperScale for enterprise buyer intent",
                   )
                 }
-                className="p-2.5 rounded-xl bg-slate-900/80 border border-white/10 hover:border-indigo-500/40 text-left text-xs text-slate-300 transition-colors cursor-pointer group"
+                className="agent-sample-btn p-2.5 rounded-xl bg-slate-900/80 border border-white/10 hover:border-indigo-500/40 text-left text-xs text-slate-300 transition-colors cursor-pointer group"
               >
                 <div className="font-semibold text-white group-hover:text-indigo-300">
                   🎯 Lead Scoring
@@ -260,7 +260,7 @@ export default function AgentChatStudio({
                     "Draft a follow-up email to Sarah Chen regarding architecture review",
                   )
                 }
-                className="p-2.5 rounded-xl bg-slate-900/80 border border-white/10 hover:border-indigo-500/40 text-left text-xs text-slate-300 transition-colors cursor-pointer group"
+                className="agent-sample-btn p-2.5 rounded-xl bg-slate-900/80 border border-white/10 hover:border-indigo-500/40 text-left text-xs text-slate-300 transition-colors cursor-pointer group"
               >
                 <div className="font-semibold text-white group-hover:text-indigo-300">
                   ✉️ Draft Email
@@ -296,7 +296,7 @@ export default function AgentChatStudio({
 
                 <div className="flex flex-col space-y-2">
                   <div
-                    className={`p-4 rounded-2xl text-xs leading-relaxed ${
+                    className={`agent-message-bubble p-4 rounded-2xl text-xs leading-relaxed ${
                       msg.sender === "user"
                         ? "bg-indigo-600 text-white rounded-tr-none"
                         : "bg-slate-900/90 border border-indigo-500/20 text-slate-200 rounded-tl-none shadow-md"
@@ -365,7 +365,7 @@ export default function AgentChatStudio({
             <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-sm animate-pulse">
               <Bot className="w-3.5 h-3.5" />
             </div>
-            <div className="p-3.5 rounded-2xl rounded-tl-none bg-slate-900/90 border border-cyan-500/30 text-xs text-cyan-300 flex items-center gap-2">
+            <div className="agent-reasoning-banner p-3.5 rounded-2xl rounded-tl-none bg-slate-900/90 border border-cyan-500/30 text-xs text-cyan-300 flex items-center gap-2">
               <RotateCw className="w-3.5 h-3.5 animate-spin text-cyan-400" />
               <span>Agent reasoning through LangGraph nodes...</span>
             </div>
@@ -376,7 +376,7 @@ export default function AgentChatStudio({
       {/* Chat Input Bar */}
       <form
         onSubmit={handleSubmit}
-        className="p-3.5 px-4 bg-slate-900/90 border-t border-white/10 flex items-center gap-2 shrink-0"
+        className="agent-input-bar p-3.5 px-4 bg-slate-900/90 border-t border-white/10 flex items-center gap-2 shrink-0"
       >
         <textarea
           value={inputText}
@@ -384,7 +384,7 @@ export default function AgentChatStudio({
           onKeyDown={handleKeyDown}
           placeholder="Instruct the agent (e.g., 'Schedule meeting with Sarah Chen' or 'Score Elena Rostova')..."
           rows={1}
-          className="flex-1 bg-slate-950/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-none font-sans"
+          className="agent-input-textarea flex-1 bg-slate-950/80 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-none font-sans"
         />
         <button
           type="submit"
@@ -413,7 +413,7 @@ function ActionResultCard({ toolResult }: { toolResult: Record<string, any> }) {
   if (action === "schedule_meeting" && toolResult.event) {
     const e = toolResult.event;
     return (
-      <div className="p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between gap-3">
+      <div className="agent-action-card agent-action-meeting p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
             <Calendar className="w-4 h-4" />
@@ -445,7 +445,7 @@ function ActionResultCard({ toolResult }: { toolResult: Record<string, any> }) {
   ) {
     const d = toolResult.deal;
     return (
-      <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between gap-3">
+      <div className="agent-action-card agent-action-deal p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
             <Award className="w-4 h-4" />
@@ -479,7 +479,7 @@ function ActionResultCard({ toolResult }: { toolResult: Record<string, any> }) {
   ) {
     const c = toolResult.contact;
     return (
-      <div className="p-3 rounded-xl bg-blue-950/40 border border-blue-500/30 flex items-center justify-between gap-3">
+      <div className="agent-action-card agent-action-contact p-3 rounded-xl bg-blue-950/40 border border-blue-500/30 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
             <Users className="w-4 h-4" />
@@ -508,7 +508,7 @@ function ActionResultCard({ toolResult }: { toolResult: Record<string, any> }) {
   if (action === "create_campaign" && toolResult.campaign) {
     const cmp = toolResult.campaign;
     return (
-      <div className="p-3 rounded-xl bg-pink-950/40 border border-pink-500/30 flex items-center justify-between gap-3">
+      <div className="agent-action-card agent-action-campaign p-3 rounded-xl bg-pink-950/40 border border-pink-500/30 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center shrink-0">
             <Megaphone className="w-4 h-4" />
@@ -559,7 +559,7 @@ function SubagentResultCard({
     const dispatch = data.dispatch_status;
 
     return (
-      <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-500/30 space-y-2.5">
+      <div className="agent-subagent-card agent-subagent-email p-3 rounded-xl bg-purple-950/40 border border-purple-500/30 space-y-2.5">
         <div className="flex items-center justify-between">
           <span className="text-[10px] uppercase font-bold text-purple-300 flex items-center gap-1.5">
             <Mail className="w-3.5 h-3.5 text-purple-400" />
@@ -629,7 +629,7 @@ function SubagentResultCard({
   // Lead Scoring Widget
   if (data.score !== undefined && data.factors) {
     return (
-      <div className="p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between gap-4">
+      <div className="agent-subagent-card agent-subagent-lead p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between gap-4">
         <div>
           <span className="text-[10px] uppercase font-bold text-indigo-300 flex items-center gap-1 mb-1">
             <Zap className="w-3 h-3 text-cyan-400" />
@@ -656,7 +656,7 @@ function SubagentResultCard({
   // Churn Sentinel Widget
   if (data.at_risk_accounts || data.total_arr_at_risk) {
     return (
-      <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 space-y-1.5">
+      <div className="agent-subagent-card agent-subagent-churn p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 space-y-1.5">
         <div className="flex items-center justify-between">
           <span className="text-[10px] uppercase font-bold text-rose-300 flex items-center gap-1">
             <ShieldAlert className="w-3 h-3" />

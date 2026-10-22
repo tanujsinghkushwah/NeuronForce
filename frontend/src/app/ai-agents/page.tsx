@@ -205,7 +205,7 @@ export default function AIAgentsPage() {
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5 font-mono">
+                <span className="agent-model-badge px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5 font-mono">
                   <Terminal className="w-3.5 h-3.5 text-cyan-400" />
                   Model: {stats?.ai_model || "google/gemini-2.5-flash-lite"}
                 </span>
@@ -279,7 +279,7 @@ export default function AIAgentsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-white/10 bg-slate-900/60 text-slate-400 uppercase tracking-wider font-semibold">
+                <tr className="agent-table-head border-b border-white/10 bg-slate-900/60 text-slate-400 uppercase tracking-wider font-semibold">
                   <th className="py-3.5 pl-4">Task Type</th>
                   <th className="py-3.5">Triggered By</th>
                   <th className="py-3.5">Status</th>
@@ -300,7 +300,7 @@ export default function AIAgentsPage() {
                       {task.task_type.replace("_", " ").toUpperCase()}
                     </td>
                     <td className="py-3.5 text-slate-400">
-                      <span className="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] text-slate-300 font-mono">
+                      <span className="agent-trigger-badge px-2 py-0.5 rounded-md bg-slate-800 text-[10px] text-slate-300 font-mono">
                         {task.triggered_by}
                       </span>
                     </td>

@@ -102,9 +102,9 @@ export default function AgentGraphFlow({
   ].some((id) => getNodeState(id) !== "idle");
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-[#080d1a] border border-indigo-500/20 rounded-2xl overflow-hidden shadow-xl">
+    <div className="agent-graph-pane flex flex-col h-full min-h-0 bg-[#080d1a] border border-indigo-500/20 rounded-2xl overflow-hidden shadow-xl">
       {/* Top Header */}
-      <div className="p-3 px-4 border-b border-white/10 bg-slate-900/80 flex items-center justify-between flex-wrap gap-2 shrink-0">
+      <div className="agent-graph-header p-3 px-4 border-b border-white/10 bg-slate-900/80 flex items-center justify-between flex-wrap gap-2 shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-cyan-400">
             <GitFork className="w-4 h-4" />
@@ -145,7 +145,7 @@ export default function AgentGraphFlow({
       </div>
 
       {/* Main Graph Flow Canvas - Zero scroll layout: fits completely in single view */}
-      <div className="flex-1 min-h-0 p-3.5 flex flex-col justify-between overflow-hidden relative">
+      <div className="agent-graph-canvas flex-1 min-h-0 p-3.5 flex flex-col justify-between overflow-hidden relative">
         {/* Step 1: Request Understanding */}
         <div className="flex flex-col items-center">
           <NodeCard
@@ -224,7 +224,7 @@ export default function AgentGraphFlow({
         <div className="grid grid-cols-2 gap-3 max-w-xl mx-auto w-full">
           {/* Branch A: Specialized Agents */}
           <div
-            className={`p-2.5 rounded-xl transition-all border ${
+            className={`agent-branch-box agent-branch-specialized p-2.5 rounded-xl transition-all border ${
               isAnySubagentActive
                 ? "bg-indigo-950/40 border-indigo-400/50 shadow-md shadow-indigo-500/10"
                 : "bg-slate-900/40 border-white/5"
@@ -306,7 +306,7 @@ export default function AgentGraphFlow({
 
           {/* Branch B: CRM Action Tools */}
           <div
-            className={`p-2.5 rounded-xl transition-all border ${
+            className={`agent-branch-box agent-branch-actions p-2.5 rounded-xl transition-all border ${
               isAnyActionActive
                 ? "bg-cyan-950/40 border-cyan-400/50 shadow-md shadow-cyan-500/10"
                 : "bg-slate-900/40 border-white/5"
@@ -455,7 +455,7 @@ function NodeCard({
   return (
     <div
       onClick={onClick}
-      className={`w-full max-w-md p-2.5 px-3 rounded-xl border transition-all cursor-pointer relative group ${
+      className={`agent-node-card w-full max-w-md p-2.5 px-3 rounded-xl border transition-all cursor-pointer relative group ${
         isRunning
           ? "bg-indigo-950/70 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400"
           : isCompleted
@@ -540,7 +540,7 @@ function MicroAgentNode({
   return (
     <div
       onClick={onClick}
-      className={`py-1 px-2.5 rounded-lg border text-xs flex items-center justify-between transition-all cursor-pointer ${
+      className={`agent-micro-node py-1 px-2.5 rounded-lg border text-xs flex items-center justify-between transition-all cursor-pointer ${
         isRunning
           ? "bg-indigo-950/90 border-cyan-400 shadow-sm shadow-cyan-500/20 ring-1 ring-cyan-400 text-white"
           : isCompleted
@@ -568,9 +568,9 @@ function MicroAgentNode({
 
 function ConnectorLine({ active }: { active: boolean }) {
   return (
-    <div className="h-2 w-0.5 relative my-0.5 flex items-center justify-center shrink-0">
+    <div className="agent-connector-line h-2 w-0.5 relative my-0.5 flex items-center justify-center shrink-0">
       <div
-        className={`w-0.5 h-full transition-colors ${active ? "bg-gradient-to-b from-cyan-400 to-indigo-500" : "bg-slate-800"}`}
+        className={`agent-connector-bar w-0.5 h-full transition-colors ${active ? "bg-gradient-to-b from-cyan-400 to-indigo-500" : "bg-slate-800"}`}
       />
       {active && (
         <span className="absolute w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400 animate-pulse" />

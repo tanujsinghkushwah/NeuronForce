@@ -518,3 +518,433 @@ html.light .auth-guard-persona-btn div,
 html[data-theme="light"] .auth-guard-persona-btn div {
   color: #475569 !important;
 }
+
+/* ========================================================================= */
+/* AI AGENTS SECTION (STUDIO & REASONING FLOW) IN LIGHT MODE                 */
+/* ========================================================================= */
+
+/* Studio and Graph outer containers */
+html.light .agent-studio-pane,
+html.light .agent-graph-pane,
+html.light [class*="080d1a"],
+html[data-theme="light"] .agent-studio-pane,
+html[data-theme="light"] .agent-graph-pane,
+html[data-theme="light"] [class*="080d1a"] {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow:
+    0 4px 24px -2px rgba(0, 0, 0, 0.05),
+    0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Headers of both Studio & Graph */
+html.light .agent-studio-header,
+html.light .agent-graph-header,
+html[data-theme="light"] .agent-studio-header,
+html[data-theme="light"] .agent-graph-header {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07) !important;
+}
+
+html.light .agent-studio-header h4,
+html.light .agent-graph-header h4,
+html[data-theme="light"] .agent-studio-header h4,
+html[data-theme="light"] .agent-graph-header h4 {
+  color: #0f172a !important;
+}
+
+/* Quick Prompts bar & chips */
+html.light .agent-quick-prompts,
+html[data-theme="light"] .agent-quick-prompts {
+  background-color: #f8fafc !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+html.light .agent-quick-prompt-btn,
+html[data-theme="light"] .agent-quick-prompt-btn {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #334155 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light .agent-quick-prompt-btn:hover,
+html[data-theme="light"] .agent-quick-prompt-btn:hover {
+  background-color: #eef2ff !important;
+  border-color: rgba(99, 102, 241, 0.35) !important;
+  color: #4338ca !important;
+}
+
+/* Chat timeline container */
+html.light .agent-chat-timeline,
+html[data-theme="light"] .agent-chat-timeline {
+  background-color: #f8fafc !important;
+}
+
+/* Empty State elements */
+html.light .agent-empty-icon,
+html[data-theme="light"] .agent-empty-icon {
+  background-color: #eef2ff !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  color: #4f46e5 !important;
+}
+
+html.light .agent-empty-icon svg,
+html[data-theme="light"] .agent-empty-icon svg {
+  color: #4f46e5 !important;
+}
+
+html.light .agent-sample-btn,
+html[data-theme="light"] .agent-sample-btn {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  color: #334155 !important;
+}
+
+html.light .agent-sample-btn:hover,
+html[data-theme="light"] .agent-sample-btn:hover {
+  background-color: #ffffff !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.1) !important;
+}
+
+html.light .agent-sample-btn div:first-child,
+html[data-theme="light"] .agent-sample-btn div:first-child {
+  color: #0f172a !important;
+}
+
+html.light .agent-sample-btn:hover div:first-child,
+html[data-theme="light"] .agent-sample-btn:hover div:first-child {
+  color: #4f46e5 !important;
+}
+
+html.light .agent-sample-btn div:last-child,
+html[data-theme="light"] .agent-sample-btn div:last-child {
+  color: #64748b !important;
+}
+
+/* Chat Input Bar & Textarea */
+html.light .agent-input-bar,
+html[data-theme="light"] .agent-input-bar {
+  background-color: #ffffff !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light .agent-input-textarea,
+html[data-theme="light"] .agent-input-textarea {
+  background-color: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html.light .agent-input-textarea:focus,
+html[data-theme="light"] .agent-input-textarea:focus {
+  background-color: #ffffff !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15) !important;
+}
+
+html.light .agent-input-textarea::placeholder,
+html[data-theme="light"] .agent-input-textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Agent response bubble in chat */
+html.light .agent-message-bubble,
+html[data-theme="light"] .agent-message-bubble {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #1e293b !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light .agent-reasoning-banner,
+html[data-theme="light"] .agent-reasoning-banner {
+  background-color: #ecfeff !important;
+  border-color: rgba(6, 182, 212, 0.35) !important;
+  color: #0891b2 !important;
+}
+
+/* Action Result Cards in chat */
+html.light .agent-action-card,
+html[data-theme="light"] .agent-action-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light .agent-action-meeting,
+html[data-theme="light"] .agent-action-meeting {
+  background-color: #eef2ff !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+html.light .agent-action-deal,
+html.light [class*="bg-emerald-950"],
+html[data-theme="light"] .agent-action-deal,
+html[data-theme="light"] [class*="bg-emerald-950"] {
+  background-color: #ecfdf5 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+html.light .agent-action-contact,
+html.light [class*="bg-blue-950"],
+html[data-theme="light"] .agent-action-contact,
+html[data-theme="light"] [class*="bg-blue-950"] {
+  background-color: #eff6ff !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+html.light .agent-action-campaign,
+html[data-theme="light"] .agent-action-campaign {
+  background-color: #fdf2f8 !important;
+  border-color: rgba(236, 72, 153, 0.3) !important;
+}
+
+/* Subagent Result Cards in chat */
+html.light .agent-subagent-card,
+html[data-theme="light"] .agent-subagent-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light .agent-subagent-email,
+html.light [class*="bg-purple-950"],
+html[data-theme="light"] .agent-subagent-email,
+html[data-theme="light"] [class*="bg-purple-950"] {
+  background-color: #faf5ff !important;
+  border-color: rgba(168, 85, 247, 0.3) !important;
+}
+
+html.light .agent-subagent-email .font-sans,
+html[data-theme="light"] .agent-subagent-email .font-sans {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #334155 !important;
+}
+
+html.light .agent-subagent-lead,
+html[data-theme="light"] .agent-subagent-lead {
+  background-color: #f5f3ff !important;
+  border-color: rgba(129, 140, 248, 0.3) !important;
+}
+
+html.light .agent-subagent-churn,
+html.light [class*="bg-rose-950"],
+html[data-theme="light"] .agent-subagent-churn,
+html[data-theme="light"] [class*="bg-rose-950"] {
+  background-color: #fff1f2 !important;
+  border-color: rgba(244, 63, 94, 0.3) !important;
+}
+
+/* ───────────────────────────────────────────────────────────────────────── */
+/* REASONING GRAPH CANVAS & NODES                                            */
+/* ───────────────────────────────────────────────────────────────────────── */
+
+/* Graph Canvas */
+html.light .agent-graph-canvas,
+html[data-theme="light"] .agent-graph-canvas {
+  background-color: #f8fafc !important;
+}
+
+/* Graph Node Cards */
+html.light .agent-node-card,
+html[data-theme="light"] .agent-node-card {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light .agent-node-card:hover,
+html[data-theme="light"] .agent-node-card:hover {
+  background-color: #ffffff !important;
+  border-color: rgba(99, 102, 241, 0.35) !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.08) !important;
+}
+
+html.light .agent-node-card h5,
+html[data-theme="light"] .agent-node-card h5 {
+  color: #0f172a !important;
+}
+
+html.light .agent-node-card p,
+html[data-theme="light"] .agent-node-card p {
+  color: #64748b !important;
+}
+
+/* Running Node in Graph */
+html.light .agent-node-card[class*="ring-cyan-400"],
+html[data-theme="light"] .agent-node-card[class*="ring-cyan-400"] {
+  background-color: #eef2ff !important;
+  border-color: #06b6d4 !important;
+  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.15) !important;
+}
+
+/* Completed Node in Graph */
+html.light .agent-node-card[class*="border-emerald"],
+html[data-theme="light"] .agent-node-card[class*="border-emerald"] {
+  background-color: #ffffff !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08) !important;
+}
+
+/* Step Number Badge inside NodeCard */
+html.light .agent-node-card span[class*="Step"],
+html[data-theme="light"] .agent-node-card span[class*="Step"],
+html.light .agent-node-card [class*="bg-white/5"],
+html[data-theme="light"] .agent-node-card [class*="bg-white/5"] {
+  background-color: #f1f5f9 !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #475569 !important;
+}
+
+/* Connectors */
+html.light .agent-connector-bar,
+html[data-theme="light"] .agent-connector-bar {
+  background-color: #cbd5e1 !important;
+}
+
+html.light .agent-connector-bar[class*="from-cyan-400"],
+html[data-theme="light"] .agent-connector-bar[class*="from-cyan-400"] {
+  background: linear-gradient(to bottom, #06b6d4, #6366f1) !important;
+}
+
+/* Middle Dual-Branch Boxes (Specialized Agents & CRM Actions) */
+html.light .agent-branch-box,
+html[data-theme="light"] .agent-branch-box {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light .agent-branch-specialized[class*="bg-indigo-950"],
+html[data-theme="light"] .agent-branch-specialized[class*="bg-indigo-950"] {
+  background-color: #eef2ff !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
+}
+
+html.light .agent-branch-actions[class*="bg-cyan-950"],
+html[data-theme="light"] .agent-branch-actions[class*="bg-cyan-950"] {
+  background-color: #ecfeff !important;
+  border-color: rgba(6, 182, 212, 0.4) !important;
+}
+
+html.light .agent-branch-box > div:first-child,
+html[data-theme="light"] .agent-branch-box > div:first-child {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Micro Agent Node Items */
+html.light .agent-micro-node,
+html[data-theme="light"] .agent-micro-node {
+  background-color: #f8fafc !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  color: #475569 !important;
+}
+
+html.light .agent-micro-node:hover,
+html[data-theme="light"] .agent-micro-node:hover {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.14) !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light .agent-micro-node[class*="border-emerald"],
+html[data-theme="light"] .agent-micro-node[class*="border-emerald"] {
+  background-color: #f0fdf4 !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  color: #064e3b !important;
+}
+
+html.light .agent-micro-node[class*="ring-cyan-400"],
+html[data-theme="light"] .agent-micro-node[class*="ring-cyan-400"] {
+  background-color: #ecfeff !important;
+  border-color: #06b6d4 !important;
+  color: #0e7490 !important;
+}
+
+html.light .agent-micro-node span[class*="bg-slate-700"],
+html[data-theme="light"] .agent-micro-node span[class*="bg-slate-700"] {
+  background-color: #cbd5e1 !important;
+}
+
+/* Direct CRM Sync Pill */
+html.light .agent-branch-box [class*="bg-white/[0.02]"],
+html[data-theme="light"] .agent-branch-box [class*="bg-white/[0.02]"] {
+  background-color: #f1f5f9 !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+  color: #64748b !important;
+}
+
+/* Top Model Badge & Info on AI Agents Page */
+html.light .agent-model-badge,
+html[data-theme="light"] .agent-model-badge {
+  background-color: #eef2ff !important;
+  color: #4338ca !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+/* Audit Log Table Header & Trigger Badge */
+html.light .agent-table-head,
+html[data-theme="light"] .agent-table-head {
+  background-color: #f8fafc !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #475569 !important;
+}
+
+html.light .agent-trigger-badge,
+html[data-theme="light"] .agent-trigger-badge {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Coming Soon Agent Cards in Fleet */
+html.light .agent-coming-soon-card,
+html[data-theme="light"] .agent-coming-soon-card {
+  background-color: #f8fafc !important;
+  border: 1px dashed rgba(0, 0, 0, 0.12) !important;
+}
+
+html.light .agent-coming-soon-card [class*="bg-slate-800"],
+html[data-theme="light"] .agent-coming-soon-card [class*="bg-slate-800"] {
+  background-color: #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+/* Node Detail Modal in Light Mode */
+html.light .agent-node-modal,
+html[data-theme="light"] .agent-node-modal {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2) !important;
+}
+
+html.light .agent-modal-header,
+html[data-theme="light"] .agent-modal-header {
+  background-color: #f8fafc !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light .agent-modal-header h3,
+html[data-theme="light"] .agent-modal-header h3 {
+  color: #0f172a !important;
+}
+
+html.light .agent-modal-summary,
+html[data-theme="light"] .agent-modal-summary {
+  background-color: #f1f5f9 !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+  color: #334155 !important;
+}
+
+html.light .agent-modal-footer,
+html[data-theme="light"] .agent-modal-footer {
+  background-color: #f8fafc !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light .agent-modal-close-btn,
+html[data-theme="light"] .agent-modal-close-btn {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}

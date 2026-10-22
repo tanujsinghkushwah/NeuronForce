@@ -179,7 +179,7 @@ export default function AgentCardFleet({
             return (
               <div
                 key={agent.id}
-                className="p-5 rounded-2xl border border-white/5 bg-slate-950/40 opacity-40 filter grayscale-[40%] cursor-not-allowed select-none flex flex-col justify-between relative overflow-hidden"
+                className="agent-coming-soon-card p-5 rounded-2xl border border-white/5 bg-slate-950/40 opacity-40 filter grayscale-[40%] cursor-not-allowed select-none flex flex-col justify-between relative overflow-hidden"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
