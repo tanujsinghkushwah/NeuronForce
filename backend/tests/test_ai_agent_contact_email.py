@@ -15,6 +15,7 @@ from agents.tools.contact_tools import create_contact, update_contact
 def test_update_contact_email_and_info():
     """Verify update_contact correctly updates email address, company, and job title."""
     import uuid
+
     uid = uuid.uuid4().hex[:6]
     # Create test contact
     create_res = create_contact(
@@ -22,7 +23,7 @@ def test_update_contact_email_and_info():
         last_name=f"Automation{uid}",
         email=f"initial.test.{uid}@example.com",
         company="Initial Corp",
-        job_title="Lead Engineer"
+        job_title="Lead Engineer",
     )
     assert create_res["success"] is True
     contact_id = create_res["contact"]["id"]
@@ -33,7 +34,7 @@ def test_update_contact_email_and_info():
         identifier=str(contact_id),
         email=new_email,
         job_title="VP of Engineering",
-        lead_status="qualified"
+        lead_status="qualified",
     )
 
     assert update_res["success"] is True
@@ -44,10 +45,7 @@ def test_update_contact_email_and_info():
 
     # Verify search by first name also finds and updates email
     second_email = f"tanujsinghkushwah.verified.{uid}@gmail.com"
-    name_update_res = update_contact(
-        identifier=f"Automation{uid}",
-        email=second_email
-    )
+    name_update_res = update_contact(identifier=f"Automation{uid}", email=second_email)
 
     assert name_update_res["success"] is True
     assert name_update_res["contact"]["email"] == second_email

@@ -25,7 +25,7 @@ def test_email_service_logs_activity_when_unconfigured(monkeypatch):
         to_email="prospect@acmecorp.com",
         subject="Accelerating RevOps with Autonomous AI",
         body="Hi Alex, here is how NeuronForce helps your team.",
-        to_name="Alex Prospect"
+        to_name="Alex Prospect",
     )
     assert res["success"] is True
     assert res["sent_live"] is False
@@ -52,7 +52,6 @@ def test_email_service_smtp_live_dispatch_mocked(monkeypatch):
     monkeypatch.setenv("SMTP_USER", "test-user@neuronforce.ai")
     monkeypatch.setenv("SMTP_PASSWORD", "test-password")
 
-
     with patch("smtplib.SMTP") as mock_smtp_class:
         mock_instance = MagicMock()
         mock_smtp_class.return_value.__enter__.return_value = mock_instance
@@ -61,7 +60,7 @@ def test_email_service_smtp_live_dispatch_mocked(monkeypatch):
             to_email="tanujsinghkushwah@gmail.com",
             subject="Personalized Outreach: NeuronForce",
             body="Hi Tanuj, thanks for exploring NeuronForce.",
-            to_name="Tanuj"
+            to_name="Tanuj",
         )
 
         assert res["success"] is True
@@ -82,12 +81,14 @@ def test_email_service_resend_live_dispatch_mocked(monkeypatch):
             to_email="tanujsinghkushwah@gmail.com",
             subject="Hyper-personalized Outreach: NeuronForce",
             body="Hi Tanuj, exploring autonomous AI capabilities.",
-            to_name="Tanuj Singh Kushwah"
+            to_name="Tanuj Singh Kushwah",
         )
 
         assert res["success"] is True
         assert res["sent_live"] is True
         assert res["provider"] == "Resend API"
-        assert "Delivered live to tanujsinghkushwah@gmail.com via Resend" in res["delivery_status"]
+        assert (
+            "Delivered live to tanujsinghkushwah@gmail.com via Resend"
+            in res["delivery_status"]
+        )
         assert mock_resend_send.called
-

@@ -1,41 +1,59 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ShieldCheck, ArrowRight, Loader2, Sparkles, ExternalLink } from 'lucide-react';
-import NeuronForceLogo from '../../components/NeuronForceLogo';
-import { GoogleIcon } from '../../components/GoogleAuthModal';
-import { useAuth } from '../../context/AuthContext';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  ShieldCheck,
+  ArrowRight,
+  Loader2,
+  Sparkles,
+  ExternalLink,
+} from "lucide-react";
+import NeuronForceLogo from "../../components/NeuronForceLogo";
+import { GoogleIcon } from "../../components/GoogleAuthModal";
+import { useAuth } from "../../context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { loginWithGoogle, loginWithDemoAccount, signInWithGoogleSSO, isFirebaseAvailable } = useAuth();
-  const [email, setEmail] = useState('');
+  const {
+    loginWithGoogle,
+    loginWithDemoAccount,
+    signInWithGoogleSSO,
+    isFirebaseAvailable,
+  } = useAuth();
+  const [email, setEmail] = useState("");
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleFirebaseSSO = async () => {
     setIsSubmitting(true);
-    setErrorMessage('');
+    setErrorMessage("");
     try {
       await signInWithGoogleSSO();
-      router.push('/');
+      router.push("/");
     } catch (err: any) {
-      if (err.message !== 'FIREBASE_CONFIG_REQUIRED') {
-        setErrorMessage(err.message || 'Google SSO failed');
+      if (err.message !== "FIREBASE_CONFIG_REQUIRED") {
+        setErrorMessage(err.message || "Google SSO failed");
       } else {
         // Fallback: prompt for 1-click select
-        setErrorMessage('Firebase credentials not set in env; please pick one of the 1-click accounts below.');
+        setErrorMessage(
+          "Firebase credentials not set in env; please pick one of the 1-click accounts below.",
+        );
       }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDemoSelect = async (demo: { email: string; full_name: string; role: string; avatar: string }) => {
+  const handleDemoSelect = async (demo: {
+    email: string;
+    full_name: string;
+    role: string;
+    avatar: string;
+  }) => {
     setIsSubmitting(true);
-    setErrorMessage('');
+    setErrorMessage("");
 
     try {
       await loginWithDemoAccount({
@@ -44,9 +62,9 @@ export default function LoginPage() {
         role: demo.role,
         avatar_url: demo.avatar,
       });
-      router.push('/');
+      router.push("/");
     } catch (err: any) {
-      setErrorMessage(err.message || 'Authentication failed.');
+      setErrorMessage(err.message || "Authentication failed.");
     } finally {
       setIsSubmitting(false);
     }
@@ -57,23 +75,26 @@ export default function LoginPage() {
     if (!email) return;
 
     setIsSubmitting(true);
-    setErrorMessage('');
+    setErrorMessage("");
 
     try {
-      const generatedSub = `google_${email.replace(/[^a-zA-Z0-9]/g, '_')}`;
-      const name = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+      const generatedSub = `google_${email.replace(/[^a-zA-Z0-9]/g, "_")}`;
+      const name = email
+        .split("@")[0]
+        .replace(/[._]/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
 
       await loginWithGoogle({
         email,
         full_name: name,
         avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
         sub: generatedSub,
-        role: 'sales_rep',
+        role: "sales_rep",
       });
 
-      router.push('/');
+      router.push("/");
     } catch (err: any) {
-      setErrorMessage(err.message || 'Authentication failed.');
+      setErrorMessage(err.message || "Authentication failed.");
     } finally {
       setIsSubmitting(false);
     }
@@ -145,25 +166,27 @@ export default function LoginPage() {
           <div className="space-y-2 py-4">
             {[
               {
-                email: 'alex.rivera@neuronforce.ai',
-                full_name: 'Alex Rivera',
-                role: 'revops_lead',
-                roleLabel: 'RevOps Lead',
-                avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
+                email: "alex.rivera@neuronforce.ai",
+                full_name: "Alex Rivera",
+                role: "revops_lead",
+                roleLabel: "RevOps Lead",
+                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
               },
               {
-                email: 'sarah.jenkins@neuronforce.ai',
-                full_name: 'Sarah Jenkins',
-                role: 'admin',
-                roleLabel: 'Platform Admin',
-                avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SarahJ',
+                email: "sarah.jenkins@neuronforce.ai",
+                full_name: "Sarah Jenkins",
+                role: "admin",
+                roleLabel: "Platform Admin",
+                avatar:
+                  "https://api.dicebear.com/7.x/avataaars/svg?seed=SarahJ",
               },
               {
-                email: 'jordan.lee@neuronforce.ai',
-                full_name: 'Jordan Lee',
-                role: 'sales_rep',
-                roleLabel: 'Enterprise Sales Rep',
-                avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan',
+                email: "jordan.lee@neuronforce.ai",
+                full_name: "Jordan Lee",
+                role: "sales_rep",
+                roleLabel: "Enterprise Sales Rep",
+                avatar:
+                  "https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan",
               },
             ].map((demo) => (
               <button
@@ -183,7 +206,9 @@ export default function LoginPage() {
                     <p className="text-xs font-semibold text-white group-hover:text-indigo-300 truncate">
                       {demo.full_name}
                     </p>
-                    <p className="text-[11px] text-slate-400 truncate">{demo.email}</p>
+                    <p className="text-[11px] text-slate-400 truncate">
+                      {demo.email}
+                    </p>
                   </div>
                 </div>
                 <span className="text-[10px] font-semibold text-slate-400 px-2 py-0.5 rounded-md bg-white/5 shrink-0 group-hover:bg-indigo-500/20 group-hover:text-indigo-200">
@@ -201,7 +226,10 @@ export default function LoginPage() {
                 + Connect another Google account
               </button>
             ) : (
-              <form onSubmit={handleCustomGoogleSubmit} className="pt-2 space-y-2">
+              <form
+                onSubmit={handleCustomGoogleSubmit}
+                className="pt-2 space-y-2"
+              >
                 <input
                   type="email"
                   required

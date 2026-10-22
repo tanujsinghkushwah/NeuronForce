@@ -1,9 +1,18 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { User, GoogleAuthPayload } from '../types/crm';
-import { api } from '../lib/api';
-import { signInWithGoogleFirebase, isFirebaseConfigured } from '../lib/firebase';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import { User, GoogleAuthPayload } from "../types/crm";
+import { api } from "../lib/api";
+import {
+  signInWithGoogleFirebase,
+  isFirebaseConfigured,
+} from "../lib/firebase";
 
 interface AuthContextType {
   user: User | null;
@@ -13,7 +22,12 @@ interface AuthContextType {
   isFirebaseAvailable: boolean;
   signInWithGoogleSSO: () => Promise<User>;
   loginWithGoogle: (payload: GoogleAuthPayload) => Promise<User>;
-  loginWithDemoAccount: (demoUser: { email: string; full_name: string; avatar_url?: string; role?: string }) => Promise<User>;
+  loginWithDemoAccount: (demoUser: {
+    email: string;
+    full_name: string;
+    avatar_url?: string;
+    role?: string;
+  }) => Promise<User>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -30,27 +44,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async function initAuth() {
       try {
         // 1. Check for SSO token redirect parameter from Google OAuth callback
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
           const urlParams = new URLSearchParams(window.location.search);
-          const ssoToken = urlParams.get('sso_token');
+          const ssoToken = urlParams.get("sso_token");
           if (ssoToken) {
-            localStorage.setItem('neuronforce_token', ssoToken);
+            localStorage.setItem("neuronforce_token", ssoToken);
             setToken(ssoToken);
-            window.history.replaceState({}, document.title, window.location.pathname);
+            window.history.replaceState(
+              {},
+              document.title,
+              window.location.pathname,
+            );
             try {
               const verifiedUser = await api.getMe();
               setUser(verifiedUser);
-              localStorage.setItem('neuronforce_user', JSON.stringify(verifiedUser));
+              localStorage.setItem(
+                "neuronforce_user",
+                JSON.stringify(verifiedUser),
+              );
               setIsLoading(false);
               return;
             } catch (err) {
-              console.warn('SSO token verification failed:', err);
+              console.warn("SSO token verification failed:", err);
             }
           }
         }
 
-        const storedToken = localStorage.getItem('neuronforce_token');
-        const storedUser = localStorage.getItem('neuronforce_user');
+        const storedToken = localStorage.getItem("neuronforce_token");
+        const storedUser = localStorage.getItem("neuronforce_user");
 
         if (storedToken && storedUser) {
           setToken(storedToken);
@@ -60,11 +81,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           try {
             const verifiedUser = await api.getMe();
             setUser(verifiedUser);
-            localStorage.setItem('neuronforce_user', JSON.stringify(verifiedUser));
+            localStorage.setItem(
+              "neuronforce_user",
+              JSON.stringify(verifiedUser),
+            );
           } catch (err) {
-            console.warn('Session expired or invalid, clearing local session.');
-            localStorage.removeItem('neuronforce_token');
-            localStorage.removeItem('neuronforce_user');
+            console.warn("Session expired or invalid, clearing local session.");
+            localStorage.removeItem("neuronforce_token");
+            localStorage.removeItem("neuronforce_user");
             setToken(null);
             setUser(null);
           }
@@ -74,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
         }
       } catch (err) {
-        console.error('Failed to initialize authentication state:', err);
+        console.error("Failed to initialize authentication state:", err);
       } finally {
         setIsLoading(false);
       }
@@ -83,43 +107,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
   }, []);
 
-  const loginWithGoogle = useCallback(async (payload: GoogleAuthPayload): Promise<User> => {
-    setIsLoading(true);
-    try {
-      const res = await api.googleAuth(payload);
-      localStorage.setItem('neuronforce_token', res.access_token);
-      localStorage.setItem('neuronforce_user', JSON.stringify(res.user));
-      setToken(res.access_token);
-      setUser(res.user);
-      return res.user;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const loginWithGoogle = useCallback(
+    async (payload: GoogleAuthPayload): Promise<User> => {
+      setIsLoading(true);
+      try {
+        const res = await api.googleAuth(payload);
+        localStorage.setItem("neuronforce_token", res.access_token);
+        localStorage.setItem("neuronforce_user", JSON.stringify(res.user));
+        setToken(res.access_token);
+        setUser(res.user);
+        return res.user;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
 
-  const loginWithDemoAccount = useCallback(async (demoUser: {
-    email: string;
-    full_name: string;
-    avatar_url?: string;
-    role?: string;
-  }): Promise<User> => {
-    return loginWithGoogle({
-      email: demoUser.email,
-      full_name: demoUser.full_name,
-      avatar_url: demoUser.avatar_url,
-      sub: `google_${demoUser.email.replace(/[@.]/g, '_')}`,
-      role: demoUser.role || 'sales_rep',
-    });
-  }, [loginWithGoogle]);
+  const loginWithDemoAccount = useCallback(
+    async (demoUser: {
+      email: string;
+      full_name: string;
+      avatar_url?: string;
+      role?: string;
+    }): Promise<User> => {
+      return loginWithGoogle({
+        email: demoUser.email,
+        full_name: demoUser.full_name,
+        avatar_url: demoUser.avatar_url,
+        sub: `google_${demoUser.email.replace(/[@.]/g, "_")}`,
+        role: demoUser.role || "sales_rep",
+      });
+    },
+    [loginWithGoogle],
+  );
 
   const logout = useCallback(async () => {
     try {
       await api.logout();
     } catch (err) {
-      console.warn('Logout API call failed:', err);
+      console.warn("Logout API call failed:", err);
     } finally {
-      localStorage.removeItem('neuronforce_token');
-      localStorage.removeItem('neuronforce_user');
+      localStorage.removeItem("neuronforce_token");
+      localStorage.removeItem("neuronforce_user");
       setToken(null);
       setUser(null);
     }
@@ -129,9 +159,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const refreshed = await api.getMe();
       setUser(refreshed);
-      localStorage.setItem('neuronforce_user', JSON.stringify(refreshed));
+      localStorage.setItem("neuronforce_user", JSON.stringify(refreshed));
     } catch (err) {
-      console.error('Failed to refresh user profile:', err);
+      console.error("Failed to refresh user profile:", err);
     }
   }, []);
 
@@ -142,18 +172,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const firebaseUser = await signInWithGoogleFirebase();
         const res = await api.googleAuth({
           credential: firebaseUser.idToken,
-          email: firebaseUser.email || '',
-          full_name: firebaseUser.displayName || '',
+          email: firebaseUser.email || "",
+          full_name: firebaseUser.displayName || "",
           avatar_url: firebaseUser.photoURL || undefined,
           sub: firebaseUser.uid,
         });
-        localStorage.setItem('neuronforce_token', res.access_token);
-        localStorage.setItem('neuronforce_user', JSON.stringify(res.user));
+        localStorage.setItem("neuronforce_token", res.access_token);
+        localStorage.setItem("neuronforce_user", JSON.stringify(res.user));
         setToken(res.access_token);
         setUser(res.user);
         return res.user;
       } else {
-        throw new Error('FIREBASE_CONFIG_REQUIRED');
+        throw new Error("FIREBASE_CONFIG_REQUIRED");
       }
     } finally {
       setIsLoading(false);
@@ -183,7 +213,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

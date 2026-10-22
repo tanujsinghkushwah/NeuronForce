@@ -3,7 +3,17 @@ Email Campaign Data Models (Marketing Cloud)
 """
 
 import enum
-from sqlalchemy import Column, Integer, String, DateTime, Text, Enum as SQLEnum, JSON, Boolean, Float
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Text,
+    Enum as SQLEnum,
+    JSON,
+    Boolean,
+    Float,
+)
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 
@@ -45,7 +55,9 @@ class Campaign(Base):
     from_email = Column(String(255), default="noreply@neuronforce.ai")
 
     # Audience targeting
-    audience_filter = Column(JSON, default=dict)   # e.g. {"industry": "SaaS", "lead_status": "qualified"}
+    audience_filter = Column(
+        JSON, default=dict
+    )  # e.g. {"industry": "SaaS", "lead_status": "qualified"}
     recipient_count = Column(Integer, default=0)
 
     # Scheduling
@@ -74,4 +86,8 @@ class Campaign(Base):
     tags = Column(JSON, default=list)
     created_by = Column(String(200))
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )

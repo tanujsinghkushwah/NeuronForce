@@ -1,16 +1,24 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { X, ShieldCheck, CheckCircle2, ArrowRight, Loader2, UserPlus, ExternalLink } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import React, { useState } from "react";
+import {
+  X,
+  ShieldCheck,
+  CheckCircle2,
+  ArrowRight,
+  Loader2,
+  UserPlus,
+  ExternalLink,
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 interface GoogleAuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  defaultMode?: 'signin' | 'signup';
+  defaultMode?: "signin" | "signup";
 }
 
-export function GoogleIcon({ className = 'w-5 h-5' }: { className?: string }) {
+export function GoogleIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24">
       <path
@@ -35,25 +43,25 @@ export function GoogleIcon({ className = 'w-5 h-5' }: { className?: string }) {
 
 const GOOGLE_SSO_PROFILES = [
   {
-    email: 'alex.rivera@neuronforce.ai',
-    full_name: 'Alex Rivera',
-    role: 'revops_lead',
-    roleLabel: 'RevOps Lead',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
+    email: "alex.rivera@neuronforce.ai",
+    full_name: "Alex Rivera",
+    role: "revops_lead",
+    roleLabel: "RevOps Lead",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
   },
   {
-    email: 'sarah.jenkins@neuronforce.ai',
-    full_name: 'Sarah Jenkins',
-    role: 'admin',
-    roleLabel: 'Platform Admin',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SarahJ',
+    email: "sarah.jenkins@neuronforce.ai",
+    full_name: "Sarah Jenkins",
+    role: "admin",
+    roleLabel: "Platform Admin",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=SarahJ",
   },
   {
-    email: 'jordan.lee@neuronforce.ai',
-    full_name: 'Jordan Lee',
-    role: 'sales_rep',
-    roleLabel: 'Enterprise Sales Rep',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan',
+    email: "jordan.lee@neuronforce.ai",
+    full_name: "Jordan Lee",
+    role: "sales_rep",
+    roleLabel: "Enterprise Sales Rep",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan",
   },
 ];
 
@@ -64,16 +72,18 @@ export default function GoogleAuthModal({
   const { loginWithGoogle, loginWithDemoAccount } = useAuth();
   const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
   const [showCustomInput, setShowCustomInput] = useState(false);
-  const [customEmail, setCustomEmail] = useState('');
+  const [customEmail, setCustomEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
 
   if (!isOpen) return null;
 
-  const handleSelectGoogleProfile = async (profile: (typeof GOOGLE_SSO_PROFILES)[0]) => {
+  const handleSelectGoogleProfile = async (
+    profile: (typeof GOOGLE_SSO_PROFILES)[0],
+  ) => {
     setSelectedEmail(profile.email);
     setIsSubmitting(true);
-    setErrorMessage('');
+    setErrorMessage("");
 
     try {
       await loginWithDemoAccount({
@@ -84,7 +94,7 @@ export default function GoogleAuthModal({
       });
       onClose();
     } catch (err: any) {
-      setErrorMessage(err.message || 'Google SSO sign-in failed');
+      setErrorMessage(err.message || "Google SSO sign-in failed");
     } finally {
       setIsSubmitting(false);
       setSelectedEmail(null);
@@ -96,29 +106,33 @@ export default function GoogleAuthModal({
     if (!customEmail) return;
 
     setIsSubmitting(true);
-    setErrorMessage('');
+    setErrorMessage("");
 
     try {
-      const generatedSub = `google_${customEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
-      const name = customEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+      const generatedSub = `google_${customEmail.replace(/[^a-zA-Z0-9]/g, "_")}`;
+      const name = customEmail
+        .split("@")[0]
+        .replace(/[._]/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
 
       await loginWithGoogle({
         email: customEmail,
         full_name: name,
         avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${customEmail}`,
         sub: generatedSub,
-        role: 'sales_rep',
+        role: "sales_rep",
       });
       onClose();
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to authenticate Google account');
+      setErrorMessage(err.message || "Failed to authenticate Google account");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleLiveGoogleSSORedirect = () => {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
     window.location.href = `${backendUrl}/api/auth/google/login`;
   };
 
@@ -150,7 +164,8 @@ export default function GoogleAuthModal({
             Sign in with Google SSO
           </h3>
           <p className="text-xs text-slate-400 mt-1">
-            Choose an account to continue to <span className="text-white font-medium">NeuronForce</span>
+            Choose an account to continue to{" "}
+            <span className="text-white font-medium">NeuronForce</span>
           </p>
         </div>
 
@@ -163,7 +178,8 @@ export default function GoogleAuthModal({
         {/* 1-Click Google Accounts Chooser */}
         <div className="py-4 space-y-2">
           {GOOGLE_SSO_PROFILES.map((profile) => {
-            const isThisLoading = isSubmitting && selectedEmail === profile.email;
+            const isThisLoading =
+              isSubmitting && selectedEmail === profile.email;
             return (
               <button
                 key={profile.email}
@@ -187,7 +203,9 @@ export default function GoogleAuthModal({
                     <p className="text-xs font-semibold text-white group-hover:text-indigo-200 truncate">
                       {profile.full_name}
                     </p>
-                    <p className="text-[11px] text-slate-400 truncate">{profile.email}</p>
+                    <p className="text-[11px] text-slate-400 truncate">
+                      {profile.email}
+                    </p>
                   </div>
                 </div>
 
@@ -215,10 +233,15 @@ export default function GoogleAuthModal({
               <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
                 <UserPlus className="w-4 h-4" />
               </div>
-              <span className="text-xs font-medium">Use another Google account</span>
+              <span className="text-xs font-medium">
+                Use another Google account
+              </span>
             </button>
           ) : (
-            <form onSubmit={handleCustomGoogleSubmit} className="pt-2 space-y-2">
+            <form
+              onSubmit={handleCustomGoogleSubmit}
+              className="pt-2 space-y-2"
+            >
               <div className="relative">
                 <input
                   type="email"
@@ -271,7 +294,8 @@ export default function GoogleAuthModal({
 
         {/* Google SSO Consent & Privacy Notice */}
         <div className="mt-4 pt-3 border-t border-white/10 text-[10px] text-slate-500 leading-relaxed text-center">
-          To continue, Google will share your verified name, email address, language preference, and profile picture with NeuronForce.
+          To continue, Google will share your verified name, email address,
+          language preference, and profile picture with NeuronForce.
         </div>
       </div>
     </div>

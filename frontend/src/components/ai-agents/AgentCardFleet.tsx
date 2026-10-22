@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import {
   Zap,
   Mail,
@@ -13,8 +13,8 @@ import {
   ChevronRight,
   Clock,
   Sparkles,
-  Lock
-} from 'lucide-react';
+  Lock,
+} from "lucide-react";
 
 export interface AgentCardItem {
   id: string;
@@ -32,112 +32,126 @@ export interface AgentCardItem {
 export const FLEET_AGENTS: AgentCardItem[] = [
   // ─── 5 Active Implemented Agent Workflows ─────────────────────────────────
   {
-    id: 'lead_scoring',
-    name: 'Lead Scoring Agent',
-    category: 'Sales Automation',
-    description: 'Predicts buyer intent using multi-factor signals (engagement, ICP alignment, tech stack).',
+    id: "lead_scoring",
+    name: "Lead Scoring Agent",
+    category: "Sales Automation",
+    description:
+      "Predicts buyer intent using multi-factor signals (engagement, ICP alignment, tech stack).",
     icon: Zap,
-    costEstimate: '~$0.002',
-    latencyEstimate: '~250ms',
-    color: 'from-indigo-600 to-blue-500',
+    costEstimate: "~$0.002",
+    latencyEstimate: "~250ms",
+    color: "from-indigo-600 to-blue-500",
     isActive: true,
-    samplePrompt: 'Score lead Elena Rostova from HyperScale for enterprise buyer intent'
+    samplePrompt:
+      "Score lead Elena Rostova from HyperScale for enterprise buyer intent",
   },
   {
-    id: 'email_draft',
-    name: 'Personalized Email Drafter',
-    category: 'Content Generation',
-    description: 'Generates context-aware, hyper-personalized sales follow-ups addressing known buyer objections.',
+    id: "email_draft",
+    name: "Personalized Email Drafter",
+    category: "Content Generation",
+    description:
+      "Generates context-aware, hyper-personalized sales follow-ups addressing known buyer objections.",
     icon: Mail,
-    costEstimate: '~$0.008',
-    latencyEstimate: '~1200ms',
-    color: 'from-purple-600 to-indigo-500',
+    costEstimate: "~$0.008",
+    latencyEstimate: "~1200ms",
+    color: "from-purple-600 to-indigo-500",
     isActive: true,
-    samplePrompt: 'Draft a follow-up email to Sarah Chen regarding architecture review'
+    samplePrompt:
+      "Draft a follow-up email to Sarah Chen regarding architecture review",
   },
   {
-    id: 'deal_risk',
-    name: 'Deal Risk & Win Probability',
-    category: 'Revenue Intelligence',
-    description: 'Detects competitor undercutting, budget freezes, and missing champions across deal records.',
+    id: "deal_risk",
+    name: "Deal Risk & Win Probability",
+    category: "Revenue Intelligence",
+    description:
+      "Detects competitor undercutting, budget freezes, and missing champions across deal records.",
     icon: Award,
-    costEstimate: '~$0.015',
-    latencyEstimate: '~1800ms',
-    color: 'from-cyan-600 to-blue-600',
+    costEstimate: "~$0.015",
+    latencyEstimate: "~1800ms",
+    color: "from-cyan-600 to-blue-600",
     isActive: true,
-    samplePrompt: 'Analyze deal risk and win probability for TechCorp Enterprise Platform License'
+    samplePrompt:
+      "Analyze deal risk and win probability for TechCorp Enterprise Platform License",
   },
   {
-    id: 'churn_prediction',
-    name: 'Customer Churn Sentinel',
-    category: 'Retention Intelligence',
-    description: 'Identifies enterprise accounts exhibiting usage drop-offs and recommends retention interventions.',
+    id: "churn_prediction",
+    name: "Customer Churn Sentinel",
+    category: "Retention Intelligence",
+    description:
+      "Identifies enterprise accounts exhibiting usage drop-offs and recommends retention interventions.",
     icon: ShieldAlert,
-    costEstimate: '~$0.025',
-    latencyEstimate: '~1500ms',
-    color: 'from-rose-600 to-amber-500',
+    costEstimate: "~$0.025",
+    latencyEstimate: "~1500ms",
+    color: "from-rose-600 to-amber-500",
     isActive: true,
-    samplePrompt: 'Identify enterprise accounts with elevated churn risk'
+    samplePrompt: "Identify enterprise accounts with elevated churn risk",
   },
   {
-    id: 'meeting_summary',
-    name: 'Executive Meeting Summarizer',
-    category: 'Meeting Intelligence',
-    description: 'Extracts action items, timeline commitments, sentiment, and CRM deal updates from meeting notes.',
+    id: "meeting_summary",
+    name: "Executive Meeting Summarizer",
+    category: "Meeting Intelligence",
+    description:
+      "Extracts action items, timeline commitments, sentiment, and CRM deal updates from meeting notes.",
     icon: FileText,
-    costEstimate: '~$0.012',
-    latencyEstimate: '~1100ms',
-    color: 'from-amber-600 to-orange-500',
+    costEstimate: "~$0.012",
+    latencyEstimate: "~1100ms",
+    color: "from-amber-600 to-orange-500",
     isActive: true,
-    samplePrompt: 'Summarize meeting notes and action items for Stark Industries review'
+    samplePrompt:
+      "Summarize meeting notes and action items for Stark Industries review",
   },
 
   // ─── Coming Soon Workflows (Reduced Opacity) ──────────────────────────────
   {
-    id: 'forecast',
-    name: 'Pipeline Revenue Forecaster',
-    category: 'Executive Forecasting',
-    description: 'Runs ensemble Bayesian forecast calculations with risk-adjusted confidence intervals.',
+    id: "forecast",
+    name: "Pipeline Revenue Forecaster",
+    category: "Executive Forecasting",
+    description:
+      "Runs ensemble Bayesian forecast calculations with risk-adjusted confidence intervals.",
     icon: TrendingUp,
-    costEstimate: '~$0.045',
-    latencyEstimate: '~2400ms',
-    color: 'from-emerald-600 to-teal-500',
+    costEstimate: "~$0.045",
+    latencyEstimate: "~2400ms",
+    color: "from-emerald-600 to-teal-500",
     isActive: false,
-    samplePrompt: 'Forecast Q4 revenue trajectory'
+    samplePrompt: "Forecast Q4 revenue trajectory",
   },
   {
-    id: 'ticket_triage',
-    name: 'Service Cloud Triage Agent',
-    category: 'Service Automation',
-    description: 'Autonomous case classification, SLA urgency prediction, customer sentiment, and rapid response drafting.',
+    id: "ticket_triage",
+    name: "Service Cloud Triage Agent",
+    category: "Service Automation",
+    description:
+      "Autonomous case classification, SLA urgency prediction, customer sentiment, and rapid response drafting.",
     icon: LifeBuoy,
-    costEstimate: '~$0.005',
-    latencyEstimate: '~400ms',
-    color: 'from-blue-600 to-cyan-500',
+    costEstimate: "~$0.005",
+    latencyEstimate: "~400ms",
+    color: "from-blue-600 to-cyan-500",
     isActive: false,
-    samplePrompt: 'Triage customer support cases'
+    samplePrompt: "Triage customer support cases",
   },
   {
-    id: 'campaign_optimize',
-    name: 'Marketing Campaign Optimizer',
-    category: 'Marketing Intelligence',
-    description: 'Predicts email open & click-through rates, scores subject line hooks, and suggests high-converting A/B variants.',
+    id: "campaign_optimize",
+    name: "Marketing Campaign Optimizer",
+    category: "Marketing Intelligence",
+    description:
+      "Predicts email open & click-through rates, scores subject line hooks, and suggests high-converting A/B variants.",
     icon: Megaphone,
-    costEstimate: '~$0.006',
-    latencyEstimate: '~500ms',
-    color: 'from-pink-600 to-rose-500',
+    costEstimate: "~$0.006",
+    latencyEstimate: "~500ms",
+    color: "from-pink-600 to-rose-500",
     isActive: false,
-    samplePrompt: 'Optimize campaign open rates'
-  }
+    samplePrompt: "Optimize campaign open rates",
+  },
 ];
 
 interface AgentCardFleetProps {
   onSelectAgentPrompt: (prompt: string) => void;
 }
 
-export default function AgentCardFleet({ onSelectAgentPrompt }: AgentCardFleetProps) {
-  const activeCount = FLEET_AGENTS.filter(a => a.isActive).length;
-  const comingSoonCount = FLEET_AGENTS.filter(a => !a.isActive).length;
+export default function AgentCardFleet({
+  onSelectAgentPrompt,
+}: AgentCardFleetProps) {
+  const activeCount = FLEET_AGENTS.filter((a) => a.isActive).length;
+  const comingSoonCount = FLEET_AGENTS.filter((a) => !a.isActive).length;
 
   return (
     <div className="space-y-4">
@@ -150,7 +164,8 @@ export default function AgentCardFleet({ onSelectAgentPrompt }: AgentCardFleetPr
             </span>
           </h3>
           <p className="text-xs text-slate-400">
-            Specialized micro-agents handling non-deterministic CRM workflows through the LangGraph studio
+            Specialized micro-agents handling non-deterministic CRM workflows
+            through the LangGraph studio
           </p>
         </div>
       </div>
@@ -204,7 +219,9 @@ export default function AgentCardFleet({ onSelectAgentPrompt }: AgentCardFleetPr
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${agent.color} flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform`}>
+                  <div
+                    className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${agent.color} flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform`}
+                  >
                     <Icon className="w-5 h-5" />
                   </div>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold font-mono">

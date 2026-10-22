@@ -79,7 +79,9 @@ def _call_openrouter(prompt: str) -> Optional[Dict[str, Any]]:
         # Token cost calculation based on usage or token estimation
         usage = data.get("usage", {})
         prompt_tokens = usage.get("prompt_tokens") or len(prompt.split()) * 1.3
-        completion_tokens = usage.get("completion_tokens") or len(raw_content.split()) * 1.3
+        completion_tokens = (
+            usage.get("completion_tokens") or len(raw_content.split()) * 1.3
+        )
         total_tokens = usage.get("total_tokens") or (prompt_tokens + completion_tokens)
 
         # Standard blended cost model
@@ -98,7 +100,9 @@ def _call_openrouter(prompt: str) -> Optional[Dict[str, Any]]:
         logger.warning(f"OpenRouter returned non-JSON response: {je}")
         return None
     except Exception as exc:
-        logger.warning(f"OpenRouter inference failed: {exc}, falling back to simulation.")
+        logger.warning(
+            f"OpenRouter inference failed: {exc}, falling back to simulation."
+        )
         return None
 
 
@@ -121,7 +125,6 @@ Return JSON:
   "icp_match": <float 0.0-1.0>,
   "engagement_signals": ["<signal1>", "<signal2>"]
 }}""",
-
         "email_draft": f"""{base}
 
 Task: Write a hyper-personalized B2B sales email.
@@ -136,7 +139,6 @@ Return JSON:
   "cta": "<call to action phrase>",
   "alternatives": ["<alt subject 1>", "<alt subject 2>"]
 }}""",
-
         "deal_analysis": f"""{base}
 
 Task: Analyze this deal for win probability, risk factors and recommended actions.
@@ -152,7 +154,6 @@ Return JSON:
   "recommended_next_action": "<specific action>",
   "timeline_assessment": "<brief timeline note>"
 }}""",
-
         "churn_prediction": f"""{base}
 
 Task: Identify churn risk and retention opportunities.
@@ -176,7 +177,6 @@ Return JSON:
   "recommended_interventions": ["<action1>", "<action2>"],
   "estimated_retention_probability": <float 0.0-1.0>
 }}""",
-
         "forecast": f"""{base}
 
 Task: Generate a revenue forecast based on the pipeline data.
@@ -192,7 +192,6 @@ Return JSON:
   "downside_scenario": <float>,
   "forecast_accuracy": "<high|medium|low>"
 }}""",
-
         "meeting_summary": f"""{base}
 
 Task: Summarize the meeting notes and extract action items.
@@ -207,7 +206,6 @@ Return JSON:
   "sentiment": "<positive|neutral|negative>",
   "follow_up_date": "<suggested follow-up timeframe>"
 }}""",
-
         "ticket_triage": f"""{base}
 
 Task: Analyze this support ticket and provide triage recommendations.
@@ -224,7 +222,6 @@ Return JSON:
   "escalate": <boolean>,
   "estimated_resolution_hours": <integer>
 }}""",
-
         "campaign_optimize": f"""{base}
 
 Task: Analyze this email campaign and suggest optimizations.
@@ -241,7 +238,10 @@ Return JSON:
   "ab_test_suggestion": "<A/B test idea>"
 }}""",
     }
-    return prompts.get(task_type, f"{base}\n\nTask type: {task_type}\nInput: {input_data}\n\nReturn a JSON object with your analysis.")
+    return prompts.get(
+        task_type,
+        f"{base}\n\nTask type: {task_type}\nInput: {input_data}\n\nReturn a JSON object with your analysis.",
+    )
 
 
 def _simulation_fallback(task_type: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -250,16 +250,25 @@ def _simulation_fallback(task_type: str, input_data: Dict[str, Any]) -> Dict[str
         "lead_scoring": {
             "score": random.randint(55, 97),
             "tier": random.choice(["hot", "warm", "cold"]),
-            "factors": random.sample([
-                "High email engagement", "Budget confirmed", "Decision maker identified",
-                "Active on website", "Downloaded whitepaper", "Attended webinar"
-            ], k=3),
-            "recommendation": random.choice([
-                "Schedule discovery call this week",
-                "Send personalized ROI case study",
-                "Assign to senior AE immediately",
-                "Add to high-priority nurture sequence"
-            ]),
+            "factors": random.sample(
+                [
+                    "High email engagement",
+                    "Budget confirmed",
+                    "Decision maker identified",
+                    "Active on website",
+                    "Downloaded whitepaper",
+                    "Attended webinar",
+                ],
+                k=3,
+            ),
+            "recommendation": random.choice(
+                [
+                    "Schedule discovery call this week",
+                    "Send personalized ROI case study",
+                    "Assign to senior AE immediately",
+                    "Add to high-priority nurture sequence",
+                ]
+            ),
             "icp_match": round(random.uniform(0.6, 0.97), 2),
             "engagement_signals": ["Email opened 3x", "Visited pricing page"],
         },
@@ -269,21 +278,39 @@ def _simulation_fallback(task_type: str, input_data: Dict[str, Any]) -> Dict[str
             "tone_analysis": "Professional, direct, value-driven",
             "word_count": 82,
             "cta": "Book 15-min demo",
-            "alternatives": ["Quick question about your pipeline", "Helping [Company] hit Q4 targets"],
+            "alternatives": [
+                "Quick question about your pipeline",
+                "Helping [Company] hit Q4 targets",
+            ],
         },
         "deal_analysis": {
             "win_probability": round(random.uniform(0.35, 0.88), 2),
             "risk_level": random.choice(["low", "medium", "high"]),
-            "key_risks": random.sample(["Budget freeze risk", "Competitor evaluation", "Long decision cycle", "Missing executive champion"], k=2),
+            "key_risks": random.sample(
+                [
+                    "Budget freeze risk",
+                    "Competitor evaluation",
+                    "Long decision cycle",
+                    "Missing executive champion",
+                ],
+                k=2,
+            ),
             "buying_signals": ["RFP submitted", "Legal review started"],
-            "mitigation_strategies": ["Arrange executive sponsor meeting", "Provide ROI calculator"],
+            "mitigation_strategies": [
+                "Arrange executive sponsor meeting",
+                "Provide ROI calculator",
+            ],
             "recommended_next_action": "Schedule a technical deep-dive with their CTO",
             "timeline_assessment": "On track for Q4 close if champion engaged by EOW",
         },
         "churn_prediction": {
             "churn_probability": round(random.uniform(0.15, 0.65), 2),
             "risk_tier": random.choice(["high", "medium", "low"]),
-            "churn_signals": ["30% usage drop last month", "Support ticket volume up 2x", "Champion left company"],
+            "churn_signals": [
+                "30% usage drop last month",
+                "Support ticket volume up 2x",
+                "Champion left company",
+            ],
             "revenue_at_risk": random.randint(25000, 250000),
             "total_revenue_at_risk": 501000,
             "at_risk_accounts": [
@@ -294,7 +321,10 @@ def _simulation_fallback(task_type: str, input_data: Dict[str, Any]) -> Dict[str
                     "mrr": 18500,
                 }
             ],
-            "recommended_interventions": ["Schedule executive business review", "Offer dedicated CSM"],
+            "recommended_interventions": [
+                "Schedule executive business review",
+                "Offer dedicated CSM",
+            ],
             "estimated_retention_probability": round(random.uniform(0.55, 0.85), 2),
         },
         "forecast": {
@@ -308,8 +338,15 @@ def _simulation_fallback(task_type: str, input_data: Dict[str, Any]) -> Dict[str
         },
         "meeting_summary": {
             "summary": "Team reviewed Q4 pipeline velocity with focus on 3 enterprise deals in negotiation. Budget constraints flagged for 2 accounts.",
-            "key_points": ["Pipeline at $3.2M", "3 deals in final stage", "2 budget concerns flagged"],
-            "action_items": ["Follow up with TechCorp by Friday", "Prepare ROI deck for HealthTech deal"],
+            "key_points": [
+                "Pipeline at $3.2M",
+                "3 deals in final stage",
+                "2 budget concerns flagged",
+            ],
+            "action_items": [
+                "Follow up with TechCorp by Friday",
+                "Prepare ROI deck for HealthTech deal",
+            ],
             "decisions_made": ["Prioritize enterprise segment in Q4"],
             "sentiment": "positive",
             "follow_up_date": "Next Tuesday",
@@ -320,7 +357,11 @@ def _simulation_fallback(task_type: str, input_data: Dict[str, Any]) -> Dict[str
             "sentiment": random.choice(["frustrated", "neutral", "positive"]),
             "urgency_score": random.randint(3, 9),
             "suggested_response": "Thank you for reaching out. Our team is reviewing your request and will respond within 4 business hours.",
-            "resolution_steps": ["Reproduce the issue", "Check recent deployments", "Escalate if needed"],
+            "resolution_steps": [
+                "Reproduce the issue",
+                "Check recent deployments",
+                "Escalate if needed",
+            ],
             "escalate": False,
             "estimated_resolution_hours": random.randint(2, 24),
         },
@@ -328,7 +369,10 @@ def _simulation_fallback(task_type: str, input_data: Dict[str, Any]) -> Dict[str
             "subject_line_score": random.randint(60, 92),
             "predicted_open_rate": round(random.uniform(0.22, 0.45), 2),
             "predicted_click_rate": round(random.uniform(0.04, 0.18), 2),
-            "improvements": ["Add personalization token in subject", "Move CTA higher in body"],
+            "improvements": [
+                "Add personalization token in subject",
+                "Move CTA higher in body",
+            ],
             "optimal_send_time": "Tuesday 9-11am in recipient timezone",
             "audience_fit_score": random.randint(65, 95),
             "ab_test_suggestion": "Test question vs. statement subject lines",

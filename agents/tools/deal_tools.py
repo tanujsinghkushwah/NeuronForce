@@ -25,7 +25,7 @@ def create_deal(
     stage: str = "prospecting",
     probability: Optional[int] = None,
     priority: str = "medium",
-    expected_close_days: int = 30
+    expected_close_days: int = 30,
 ) -> Dict[str, Any]:
     """Create a new deal in the CRM pipeline."""
     db = SessionLocal()
@@ -40,7 +40,10 @@ def create_deal(
         # Match priority enum safely
         matched_priority = Priority.MEDIUM
         for p in Priority:
-            if p.value.lower() == priority.lower() or p.name.lower() == priority.lower():
+            if (
+                p.value.lower() == priority.lower()
+                or p.name.lower() == priority.lower()
+            ):
                 matched_priority = p
                 break
 
@@ -50,7 +53,7 @@ def create_deal(
             DealStage.PROPOSAL: 60,
             DealStage.NEGOTIATION: 80,
             DealStage.CLOSED_WON: 100,
-            DealStage.CLOSED_LOST: 0
+            DealStage.CLOSED_LOST: 0,
         }.get(matched_stage, 25)
 
         close_date = datetime.now(timezone.utc) + timedelta(days=expected_close_days)
@@ -63,8 +66,10 @@ def create_deal(
             probability=probability if probability is not None else default_prob,
             priority=matched_priority,
             expected_close_date=close_date,
-            ai_win_probability=round((probability if probability is not None else default_prob) / 100.0, 2),
-            description=f"Auto-generated via Autonomous Sales Agent: Deal for {company} valued at ${value:,.2f}"
+            ai_win_probability=round(
+                (probability if probability is not None else default_prob) / 100.0, 2
+            ),
+            description=f"Auto-generated via Autonomous Sales Agent: Deal for {company} valued at ${value:,.2f}",
         )
         db.add(deal)
         db.commit()
@@ -82,11 +87,16 @@ def create_deal(
                 "probability": deal.probability,
                 "priority": deal.priority.value,
             },
-            "message": f"Successfully created deal '{deal.title}' for {deal.company} (${deal.value:,.2f}) in {deal.stage.value.title()} stage."
+            "message": f"Successfully created deal '{deal.title}' for {deal.company} (${deal.value:,.2f}) in {deal.stage.value.title()} stage.",
         }
     except Exception as exc:
         db.rollback()
-        return {"success": False, "action": "create_deal", "error": str(exc), "message": f"Failed to create deal: {str(exc)}"}
+        return {
+            "success": False,
+            "action": "create_deal",
+            "error": str(exc),
+            "message": f"Failed to create deal: {str(exc)}",
+        }
     finally:
         db.close()
 
@@ -95,7 +105,7 @@ def update_deal(
     deal_identifier: str,  # deal id (str/int) or company name / deal title
     stage: Optional[str] = None,
     value: Optional[float] = None,
-    probability: Optional[int] = None
+    probability: Optional[int] = None,
 ) -> Dict[str, Any]:
     """Update deal stage, value, or probability."""
     db = SessionLocal()
@@ -105,13 +115,20 @@ def update_deal(
             deal = db.query(Deal).filter(Deal.id == int(deal_identifier)).first()
         if not deal:
             # Search by title or company
-            deal = db.query(Deal).filter(
-                (Deal.title.ilike(f"%{deal_identifier}%")) |
-                (Deal.company.ilike(f"%{deal_identifier}%"))
-            ).first()
+            deal = (
+                db.query(Deal)
+                .filter(
+                    (Deal.title.ilike(f"%{deal_identifier}%"))
+                    | (Deal.company.ilike(f"%{deal_identifier}%"))
+                )
+                .first()
+            )
 
         if not deal:
-            return {"success": False, "message": f"Deal matching '{deal_identifier}' was not found in the pipeline."}
+            return {
+                "success": False,
+                "message": f"Deal matching '{deal_identifier}' was not found in the pipeline.",
+            }
 
         if stage:
             for s in DealStage:
@@ -140,10 +157,15 @@ def update_deal(
                 "stage": deal.stage.value,
                 "probability": deal.probability,
             },
-            "message": f"Updated deal '{deal.title}' ({deal.company}): stage is now {deal.stage.value.title()} (${deal.value:,.2f}, {deal.probability}% probability)."
+            "message": f"Updated deal '{deal.title}' ({deal.company}): stage is now {deal.stage.value.title()} (${deal.value:,.2f}, {deal.probability}% probability).",
         }
     except Exception as exc:
         db.rollback()
-        return {"success": False, "action": "update_deal", "error": str(exc), "message": f"Failed to update deal: {str(exc)}"}
+        return {
+            "success": False,
+            "action": "update_deal",
+            "error": str(exc),
+            "message": f"Failed to update deal: {str(exc)}",
+        }
     finally:
         db.close()

@@ -121,7 +121,9 @@ html[data-theme="light"] [class*="bg-white/[0.0"],
 html[data-theme="light"] [class*="bg-white/[0.1"] {
   background-color: #ffffff !important;
   border-color: rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px -2px rgba(0, 0, 0, 0.02) !important;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 16px -2px rgba(0, 0, 0, 0.02) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -225,7 +227,8 @@ html[data-theme="light"] [class*="bg-white/10"] {
 html.light input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
 html.light select,
 html.light textarea,
-html[data-theme="light"] input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+html[data-theme="light"]
+  input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
 html[data-theme="light"] select,
 html[data-theme="light"] textarea {
   background-color: #ffffff !important;
@@ -515,4 +518,3 @@ html.light .auth-guard-persona-btn div,
 html[data-theme="light"] .auth-guard-persona-btn div {
   color: #475569 !important;
 }
-

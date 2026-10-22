@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { AIAgentTask } from '../../types/crm';
+import React, { useState } from "react";
+import { AIAgentTask } from "../../types/crm";
 import {
   CheckCircle2,
   Code2,
@@ -15,14 +15,14 @@ import {
   ArrowRight,
   Copy,
   Check,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface AgentOutputViewProps {
   task: AIAgentTask;
 }
 
 export default function AgentOutputView({ task }: AgentOutputViewProps) {
-  const [viewMode, setViewMode] = useState<'visual' | 'json'>('visual');
+  const [viewMode, setViewMode] = useState<"visual" | "json">("visual");
   const [copied, setCopied] = useState(false);
 
   const output = task.output_data || {};
@@ -55,13 +55,17 @@ export default function AgentOutputView({ task }: AgentOutputViewProps) {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-3 text-[11px] font-mono">
             <span className="text-slate-400">
-              Latency: <strong className="text-white">{task.latency_ms}ms</strong>
+              Latency:{" "}
+              <strong className="text-white">{task.latency_ms}ms</strong>
             </span>
             <span className="text-slate-400">
-              Cost: <strong className="text-emerald-400">${(task.actual_cost || 0.002).toFixed(4)}</strong>
+              Cost:{" "}
+              <strong className="text-emerald-400">
+                ${(task.actual_cost || 0.002).toFixed(4)}
+              </strong>
             </span>
             <span className="text-slate-400">
-              Confidence:{' '}
+              Confidence:{" "}
               <strong className="text-cyan-400">
                 {Math.round((task.confidence_score || 0.92) * 100)}%
               </strong>
@@ -72,22 +76,22 @@ export default function AgentOutputView({ task }: AgentOutputViewProps) {
           <div className="flex items-center rounded-lg bg-slate-900 border border-white/10 p-0.5 text-[10px]">
             <button
               type="button"
-              onClick={() => setViewMode('visual')}
+              onClick={() => setViewMode("visual")}
               className={`px-2 py-0.5 rounded font-medium transition-colors cursor-pointer ${
-                viewMode === 'visual'
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-slate-400 hover:text-white'
+                viewMode === "visual"
+                  ? "bg-indigo-600 text-white"
+                  : "text-slate-400 hover:text-white"
               }`}
             >
               Summary
             </button>
             <button
               type="button"
-              onClick={() => setViewMode('json')}
+              onClick={() => setViewMode("json")}
               className={`px-2 py-0.5 rounded font-medium transition-colors cursor-pointer ${
-                viewMode === 'json'
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-slate-400 hover:text-white'
+                viewMode === "json"
+                  ? "bg-indigo-600 text-white"
+                  : "text-slate-400 hover:text-white"
               }`}
             >
               JSON
@@ -97,7 +101,7 @@ export default function AgentOutputView({ task }: AgentOutputViewProps) {
       </div>
 
       {/* ── Content View ───────────────────────────────────────────────── */}
-      {viewMode === 'visual' ? (
+      {viewMode === "visual" ? (
         <div className="space-y-3 pt-1">
           {/* Key Metric / Highlight Banner */}
           {(output.score !== undefined ||
@@ -107,17 +111,23 @@ export default function AgentOutputView({ task }: AgentOutputViewProps) {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {output.score !== undefined && (
                 <div className="p-2.5 rounded-lg bg-slate-900/80 border border-indigo-500/20">
-                  <span className="text-[10px] text-slate-400 font-medium block">Lead Intent Score</span>
+                  <span className="text-[10px] text-slate-400 font-medium block">
+                    Lead Intent Score
+                  </span>
                   <span className="text-xl font-bold text-indigo-400 font-mono">
                     {output.score}
-                    <span className="text-xs text-slate-500 font-normal">/100</span>
+                    <span className="text-xs text-slate-500 font-normal">
+                      /100
+                    </span>
                   </span>
                 </div>
               )}
 
               {output.win_probability !== undefined && (
                 <div className="p-2.5 rounded-lg bg-slate-900/80 border border-emerald-500/20">
-                  <span className="text-[10px] text-slate-400 font-medium block">Win Probability</span>
+                  <span className="text-[10px] text-slate-400 font-medium block">
+                    Win Probability
+                  </span>
                   <span className="text-xl font-bold text-emerald-400 font-mono">
                     {Math.round(output.win_probability * 100)}%
                   </span>
@@ -126,25 +136,38 @@ export default function AgentOutputView({ task }: AgentOutputViewProps) {
 
               {output.churn_probability !== undefined && (
                 <div className="p-2.5 rounded-lg bg-slate-900/80 border border-rose-500/20">
-                  <span className="text-[10px] text-slate-400 font-medium block">Churn Probability</span>
+                  <span className="text-[10px] text-slate-400 font-medium block">
+                    Churn Probability
+                  </span>
                   <span className="text-xl font-bold text-rose-400 font-mono">
                     {Math.round(output.churn_probability * 100)}%
                   </span>
                 </div>
               )}
 
-              {(output.total_revenue_at_risk !== undefined || output.revenue_at_risk !== undefined) && (
+              {(output.total_revenue_at_risk !== undefined ||
+                output.revenue_at_risk !== undefined) && (
                 <div className="p-2.5 rounded-lg bg-slate-900/80 border border-amber-500/20">
-                  <span className="text-[10px] text-slate-400 font-medium block">ARR at Risk</span>
+                  <span className="text-[10px] text-slate-400 font-medium block">
+                    ARR at Risk
+                  </span>
                   <span className="text-xl font-bold text-amber-400 font-mono">
-                    ${((output.total_revenue_at_risk || output.revenue_at_risk || 0) / 1000).toFixed(0)}k
+                    $
+                    {(
+                      (output.total_revenue_at_risk ||
+                        output.revenue_at_risk ||
+                        0) / 1000
+                    ).toFixed(0)}
+                    k
                   </span>
                 </div>
               )}
 
               {output.predicted_revenue !== undefined && (
                 <div className="p-2.5 rounded-lg bg-slate-900/80 border border-emerald-500/20">
-                  <span className="text-[10px] text-slate-400 font-medium block">Forecasted Revenue</span>
+                  <span className="text-[10px] text-slate-400 font-medium block">
+                    Forecasted Revenue
+                  </span>
                   <span className="text-xl font-bold text-emerald-400 font-mono">
                     ${(output.predicted_revenue / 1000).toFixed(0)}k
                   </span>
@@ -153,7 +176,9 @@ export default function AgentOutputView({ task }: AgentOutputViewProps) {
 
               {output.priority && (
                 <div className="p-2.5 rounded-lg bg-slate-900/80 border border-indigo-500/20">
-                  <span className="text-[10px] text-slate-400 font-medium block">Priority Level</span>
+                  <span className="text-[10px] text-slate-400 font-medium block">
+                    Priority Level
+                  </span>
                   <span className="text-sm font-bold text-white uppercase tracking-wider">
                     {output.priority}
                   </span>
@@ -163,7 +188,10 @@ export default function AgentOutputView({ task }: AgentOutputViewProps) {
           )}
 
           {/* Recommendation / Key Takeaway Callout */}
-          {(output.recommendation || output.recommended_next_action || output.summary || output.message) && (
+          {(output.recommendation ||
+            output.recommended_next_action ||
+            output.summary ||
+            output.message) && (
             <div className="p-3 rounded-lg bg-indigo-500/[0.08] border border-indigo-500/30 flex items-start gap-2.5">
               <Sparkles className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
               <div>
@@ -184,18 +212,26 @@ export default function AgentOutputView({ task }: AgentOutputViewProps) {
           {output.subject && output.body && (
             <div className="space-y-2 p-3 rounded-lg bg-slate-900/90 border border-white/10">
               <div className="flex items-center justify-between pb-1.5 border-b border-white/10">
-                <span className="font-semibold text-white">Subject: {output.subject}</span>
+                <span className="font-semibold text-white">
+                  Subject: {output.subject}
+                </span>
                 <button
                   type="button"
                   onClick={() => {
-                    navigator.clipboard.writeText(`${output.subject}\n\n${output.body}`);
+                    navigator.clipboard.writeText(
+                      `${output.subject}\n\n${output.body}`,
+                    );
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
                   }}
                   className="flex items-center gap-1 text-[11px] text-indigo-400 hover:text-indigo-300 cursor-pointer"
                 >
-                  {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                  {copied ? 'Copied' : 'Copy Email'}
+                  {copied ? (
+                    <Check className="w-3 h-3" />
+                  ) : (
+                    <Copy className="w-3 h-3" />
+                  )}
+                  {copied ? "Copied" : "Copy Email"}
                 </button>
               </div>
               <p className="text-slate-300 text-xs whitespace-pre-line leading-relaxed font-sans">
@@ -228,7 +264,9 @@ export default function AgentOutputView({ task }: AgentOutputViewProps) {
                     className="px-2.5 py-1 rounded-md text-[11px] bg-slate-900 border border-white/10 text-slate-300 flex items-center gap-1.5"
                   >
                     <ArrowRight className="w-3 h-3 text-indigo-400 shrink-0" />
-                    <span>{typeof item === 'string' ? item : JSON.stringify(item)}</span>
+                    <span>
+                      {typeof item === "string" ? item : JSON.stringify(item)}
+                    </span>
                   </span>
                 ))}
               </div>
@@ -243,8 +281,12 @@ export default function AgentOutputView({ task }: AgentOutputViewProps) {
             onClick={handleCopy}
             className="absolute top-2 right-2 px-2 py-1 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1 cursor-pointer transition-colors"
           >
-            {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-            {copied ? 'Copied' : 'Copy JSON'}
+            {copied ? (
+              <Check className="w-3 h-3 text-emerald-400" />
+            ) : (
+              <Copy className="w-3 h-3" />
+            )}
+            {copied ? "Copied" : "Copy JSON"}
           </button>
           <pre className="p-3 rounded-lg bg-black/60 border border-white/5 font-mono text-[11px] text-slate-200 overflow-x-auto max-h-56 leading-relaxed">
             {JSON.stringify(output, null, 2)}

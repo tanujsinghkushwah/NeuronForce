@@ -20,11 +20,31 @@ import random
 from datetime import datetime, timezone, timedelta
 from app.database import SessionLocal, engine, Base
 from app.models import (
-    Contact, Deal, Activity, Task, AIAgentTask, AnalyticsSnapshot,
-    CalendarEvent, LeadStatus, DealStage, Priority, TaskStatus,
-    ActivityType, AgentTaskType, AgentTaskStatus, User, OAuthAccount, UserSession,
-    Ticket, TicketMessage, TicketStatus, TicketPriority, TicketCategory,
-    Campaign, CampaignStatus, CampaignType
+    Contact,
+    Deal,
+    Activity,
+    Task,
+    AIAgentTask,
+    AnalyticsSnapshot,
+    CalendarEvent,
+    LeadStatus,
+    DealStage,
+    Priority,
+    TaskStatus,
+    ActivityType,
+    AgentTaskType,
+    AgentTaskStatus,
+    User,
+    OAuthAccount,
+    UserSession,
+    Ticket,
+    TicketMessage,
+    TicketStatus,
+    TicketPriority,
+    TicketCategory,
+    Campaign,
+    CampaignStatus,
+    CampaignType,
 )
 
 
@@ -75,7 +95,11 @@ def seed_users(db):
             provider="google",
             provider_user_id=u_info["google_sub"],
             email=u_info["email"],
-            raw_claims={"email": u_info["email"], "name": u_info["full_name"], "email_verified": True},
+            raw_claims={
+                "email": u_info["email"],
+                "name": u_info["full_name"],
+                "email_verified": True,
+            },
         )
         db.add(oauth_acc)
 
@@ -90,8 +114,16 @@ def seed_tickets(db):
 
     now = datetime.now(timezone.utc)
     c1 = db.query(Contact).filter(Contact.email == "sarah.chen@techcorp.io").first()
-    c2 = db.query(Contact).filter(Contact.email == "marcus.johnson@innovateinc.com").first()
-    c3 = db.query(Contact).filter(Contact.email == "elena.rodriguez@globalretail.com").first()
+    c2 = (
+        db.query(Contact)
+        .filter(Contact.email == "marcus.johnson@innovateinc.com")
+        .first()
+    )
+    c3 = (
+        db.query(Contact)
+        .filter(Contact.email == "elena.rodriguez@globalretail.com")
+        .first()
+    )
 
     tickets_data = [
         {
@@ -140,8 +172,8 @@ def seed_tickets(db):
                     "is_internal": True,
                     "is_ai_generated": True,
                     "created_at": now - timedelta(hours=1, minutes=5),
-                }
-            ]
+                },
+            ],
         },
         {
             "ticket_number": "TKT-0002",
@@ -174,7 +206,7 @@ def seed_tickets(db):
                     "is_internal": False,
                     "created_at": now - timedelta(hours=2),
                 }
-            ]
+            ],
         },
         {
             "ticket_number": "TKT-0003",
@@ -221,8 +253,8 @@ def seed_tickets(db):
                     "body": "That worked perfectly! All our 140 users successfully federated. Thank you!",
                     "is_internal": False,
                     "created_at": now - timedelta(hours=2),
-                }
-            ]
+                },
+            ],
         },
         {
             "ticket_number": "TKT-0004",
@@ -253,7 +285,7 @@ def seed_tickets(db):
                     "is_internal": False,
                     "created_at": now - timedelta(hours=6),
                 }
-            ]
+            ],
         },
     ]
 
@@ -304,10 +336,14 @@ def seed_campaigns(db):
             "revenue_attributed": 48500.0,
             "ai_score": 94,
             "ai_insights": {
-                "strengths": ["Personalized subject line", "High executive engagement", "Above-benchmark open rate (+14%)"],
-                "recommendation": "Deploy automated 48-hour follow-up to attendees who clicked the registration link."
+                "strengths": [
+                    "Personalized subject line",
+                    "High executive engagement",
+                    "Above-benchmark open rate (+14%)",
+                ],
+                "recommendation": "Deploy automated 48-hour follow-up to attendees who clicked the registration link.",
             },
-            "tags": ["webinar", "q4-pipeline", "enterprise", "c-level"]
+            "tags": ["webinar", "q4-pipeline", "enterprise", "c-level"],
         },
         {
             "name": "Re-engagement: Closed-Lost Pipeline Nurture",
@@ -337,9 +373,9 @@ def seed_campaigns(db):
             "ai_score": 87,
             "ai_insights": {
                 "strengths": ["Strong value proposition for previous evaluators"],
-                "recommendation": "Add customer case study video link in body to boost click-through by ~18%."
+                "recommendation": "Add customer case study video link in body to boost click-through by ~18%.",
             },
-            "tags": ["nurture", "re-engagement", "closed-lost"]
+            "tags": ["nurture", "re-engagement", "closed-lost"],
         },
         {
             "name": "Spring 2026 Product Release: Autonomous Agentforce",
@@ -358,11 +394,11 @@ def seed_campaigns(db):
             "ai_score": 92,
             "ai_insights": {
                 "strengths": ["Compelling hook", "Clear product positioning"],
-                "recommendation": "Set up A/B subject line test between product-led vs. outcome-led headline."
+                "recommendation": "Set up A/B subject line test between product-led vs. outcome-led headline.",
             },
             "ab_test_enabled": True,
             "ab_variant_subject": "How top revenue teams are automating 65% of customer workflows with AI",
-            "tags": ["product-launch", "announcement", "agentforce"]
+            "tags": ["product-launch", "announcement", "agentforce"],
         },
         {
             "name": "Mid-Market Growth Plan: 20% Annual Upgrade",
@@ -390,11 +426,15 @@ def seed_campaigns(db):
             "revenue_attributed": 64200.0,
             "ai_score": 96,
             "ai_insights": {
-                "strengths": ["High conversion rate", "Clear ROI proposition", "Strong click-to-open ratio"],
-                "recommendation": "Expand audience segment to Healthcare and Retail verticals."
+                "strengths": [
+                    "High conversion rate",
+                    "Clear ROI proposition",
+                    "Strong click-to-open ratio",
+                ],
+                "recommendation": "Expand audience segment to Healthcare and Retail verticals.",
             },
-            "tags": ["promotional", "upgrade", "annual-plan"]
-        }
+            "tags": ["promotional", "upgrade", "annual-plan"],
+        },
     ]
 
     for c_data in campaignss_data if "campaignss_data" in locals() else campaigns_data:
@@ -423,13 +463,13 @@ def seed_analytics_snapshots(db, force: bool = False):
     for i in range(total_days):
         date = now - timedelta(days=total_days - 1 - i)
         progress = i / float(total_days - 1) if total_days > 1 else 1.0
-        base_revenue = start_revenue + (end_revenue - start_revenue) * (progress ** 1.25)
+        base_revenue = start_revenue + (end_revenue - start_revenue) * (progress**1.25)
         if i == total_days - 1:
             rev = end_revenue
         else:
             rev = round(base_revenue + random.uniform(-1500, 1500), 2)
 
-        base_pipeline = 1800000.0 + 550000.0 * (progress ** 0.8)
+        base_pipeline = 1800000.0 + 550000.0 * (progress**0.8)
         pipe_val = round(base_pipeline + random.uniform(-40000, 40000), 2)
 
         snapshot = AnalyticsSnapshot(
@@ -469,78 +509,222 @@ def seed_database(db):
 
     # --- CONTACTS ---
     contacts_data = [
-        {"first_name": "Sarah", "last_name": "Chen", "email": "sarah.chen@techcorp.io",
-         "phone": "+1-415-555-0101", "company": "TechCorp Solutions", "job_title": "VP of Engineering",
-         "department": "Engineering", "industry": "Technology", "city": "San Francisco", "state": "CA",
-         "country": "USA", "lead_status": LeadStatus.QUALIFIED, "lead_score": 92,
-         "source": "LinkedIn", "tags": ["enterprise", "tech", "hot-lead"],
-         "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah"},
-        {"first_name": "Marcus", "last_name": "Johnson", "email": "marcus.j@innovate.com",
-         "phone": "+1-212-555-0202", "company": "Innovate Inc", "job_title": "CTO",
-         "department": "Technology", "industry": "SaaS", "city": "New York", "state": "NY",
-         "country": "USA", "lead_status": LeadStatus.CONTACTED, "lead_score": 78,
-         "source": "Referral", "tags": ["startup", "saas", "decision-maker"],
-         "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus"},
-        {"first_name": "Elena", "last_name": "Rodriguez", "email": "elena.r@globalretail.com",
-         "phone": "+1-305-555-0303", "company": "Global Retail Group", "job_title": "Director of Operations",
-         "department": "Operations", "industry": "Retail", "city": "Miami", "state": "FL",
-         "country": "USA", "lead_status": LeadStatus.QUALIFIED, "lead_score": 85,
-         "source": "Website", "tags": ["retail", "enterprise", "warm-lead"],
-         "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena"},
-        {"first_name": "James", "last_name": "Park", "email": "james.park@finova.io",
-         "phone": "+1-312-555-0404", "company": "Finova Financial", "job_title": "CFO",
-         "department": "Finance", "industry": "Finance", "city": "Chicago", "state": "IL",
-         "country": "USA", "lead_status": LeadStatus.NEW, "lead_score": 65,
-         "source": "Conference", "tags": ["finance", "enterprise", "new-lead"],
-         "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=James"},
-        {"first_name": "Aisha", "last_name": "Patel", "email": "aisha.p@healthtech.io",
-         "phone": "+1-617-555-0505", "company": "HealthTech Solutions", "job_title": "CEO",
-         "department": "Executive", "industry": "Healthcare", "city": "Boston", "state": "MA",
-         "country": "USA", "lead_status": LeadStatus.QUALIFIED, "lead_score": 95,
-         "source": "Referral", "tags": ["healthcare", "startup", "hot-lead"],
-         "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Aisha"},
-        {"first_name": "David", "last_name": "Kim", "email": "david.kim@cloudops.com",
-         "phone": "+1-206-555-0606", "company": "CloudOps Platform", "job_title": "Head of DevOps",
-         "department": "Engineering", "industry": "Cloud Computing", "city": "Seattle", "state": "WA",
-         "country": "USA", "lead_status": LeadStatus.CONTACTED, "lead_score": 72,
-         "source": "Website", "tags": ["cloud", "devops", "mid-market"],
-         "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=David"},
-        {"first_name": "Maria", "last_name": "Santos", "email": "maria.santos@edulearn.com",
-         "phone": "+1-512-555-0707", "company": "EduLearn Platform", "job_title": "VP of Product",
-         "department": "Product", "industry": "EdTech", "city": "Austin", "state": "TX",
-         "country": "USA", "lead_status": LeadStatus.NEW, "lead_score": 58,
-         "source": "LinkedIn", "tags": ["edtech", "startup"],
-         "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria"},
-        {"first_name": "Robert", "last_name": "Williams", "email": "robert.w@megacorp.com",
-         "phone": "+1-404-555-0808", "company": "MegaCorp Industries", "job_title": "VP of Sales",
-         "department": "Sales", "industry": "Manufacturing", "city": "Atlanta", "state": "GA",
-         "country": "USA", "lead_status": LeadStatus.CONVERTED, "lead_score": 88,
-         "source": "Conference", "tags": ["manufacturing", "enterprise", "customer"],
-         "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Robert"},
-        {"first_name": "Lisa", "last_name": "Thompson", "email": "lisa.t@datawise.ai",
-         "phone": "+1-720-555-0909", "company": "DataWise AI", "job_title": "Head of AI/ML",
-         "department": "Engineering", "industry": "AI/ML", "city": "Denver", "state": "CO",
-         "country": "USA", "lead_status": LeadStatus.QUALIFIED, "lead_score": 90,
-         "source": "Referral", "tags": ["ai", "startup", "hot-lead"],
-         "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Lisa"},
-        {"first_name": "Michael", "last_name": "Chang", "email": "michael.c@cyberguard.io",
-         "phone": "+1-571-555-1010", "company": "CyberGuard Security", "job_title": "CISO",
-         "department": "Security", "industry": "Cybersecurity", "city": "Washington", "state": "DC",
-         "country": "USA", "lead_status": LeadStatus.CONTACTED, "lead_score": 76,
-         "source": "Website", "tags": ["security", "enterprise", "warm-lead"],
-         "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael"},
-        {"first_name": "Priya", "last_name": "Sharma", "email": "priya.s@greenergy.com",
-         "phone": "+1-503-555-1111", "company": "GreenErgy Solutions", "job_title": "COO",
-         "department": "Operations", "industry": "Clean Energy", "city": "Portland", "state": "OR",
-         "country": "USA", "lead_status": LeadStatus.NEW, "lead_score": 62,
-         "source": "LinkedIn", "tags": ["energy", "sustainability"],
-         "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Priya"},
-        {"first_name": "Tom", "last_name": "Anderson", "email": "tom.a@logisticspro.com",
-         "phone": "+1-901-555-1212", "company": "LogisticsPro", "job_title": "Director of Supply Chain",
-         "department": "Logistics", "industry": "Logistics", "city": "Memphis", "state": "TN",
-         "country": "USA", "lead_status": LeadStatus.UNQUALIFIED, "lead_score": 35,
-         "source": "Cold Call", "tags": ["logistics", "mid-market"],
-         "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Tom"},
+        {
+            "first_name": "Sarah",
+            "last_name": "Chen",
+            "email": "sarah.chen@techcorp.io",
+            "phone": "+1-415-555-0101",
+            "company": "TechCorp Solutions",
+            "job_title": "VP of Engineering",
+            "department": "Engineering",
+            "industry": "Technology",
+            "city": "San Francisco",
+            "state": "CA",
+            "country": "USA",
+            "lead_status": LeadStatus.QUALIFIED,
+            "lead_score": 92,
+            "source": "LinkedIn",
+            "tags": ["enterprise", "tech", "hot-lead"],
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
+        },
+        {
+            "first_name": "Marcus",
+            "last_name": "Johnson",
+            "email": "marcus.j@innovate.com",
+            "phone": "+1-212-555-0202",
+            "company": "Innovate Inc",
+            "job_title": "CTO",
+            "department": "Technology",
+            "industry": "SaaS",
+            "city": "New York",
+            "state": "NY",
+            "country": "USA",
+            "lead_status": LeadStatus.CONTACTED,
+            "lead_score": 78,
+            "source": "Referral",
+            "tags": ["startup", "saas", "decision-maker"],
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus",
+        },
+        {
+            "first_name": "Elena",
+            "last_name": "Rodriguez",
+            "email": "elena.r@globalretail.com",
+            "phone": "+1-305-555-0303",
+            "company": "Global Retail Group",
+            "job_title": "Director of Operations",
+            "department": "Operations",
+            "industry": "Retail",
+            "city": "Miami",
+            "state": "FL",
+            "country": "USA",
+            "lead_status": LeadStatus.QUALIFIED,
+            "lead_score": 85,
+            "source": "Website",
+            "tags": ["retail", "enterprise", "warm-lead"],
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena",
+        },
+        {
+            "first_name": "James",
+            "last_name": "Park",
+            "email": "james.park@finova.io",
+            "phone": "+1-312-555-0404",
+            "company": "Finova Financial",
+            "job_title": "CFO",
+            "department": "Finance",
+            "industry": "Finance",
+            "city": "Chicago",
+            "state": "IL",
+            "country": "USA",
+            "lead_status": LeadStatus.NEW,
+            "lead_score": 65,
+            "source": "Conference",
+            "tags": ["finance", "enterprise", "new-lead"],
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=James",
+        },
+        {
+            "first_name": "Aisha",
+            "last_name": "Patel",
+            "email": "aisha.p@healthtech.io",
+            "phone": "+1-617-555-0505",
+            "company": "HealthTech Solutions",
+            "job_title": "CEO",
+            "department": "Executive",
+            "industry": "Healthcare",
+            "city": "Boston",
+            "state": "MA",
+            "country": "USA",
+            "lead_status": LeadStatus.QUALIFIED,
+            "lead_score": 95,
+            "source": "Referral",
+            "tags": ["healthcare", "startup", "hot-lead"],
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Aisha",
+        },
+        {
+            "first_name": "David",
+            "last_name": "Kim",
+            "email": "david.kim@cloudops.com",
+            "phone": "+1-206-555-0606",
+            "company": "CloudOps Platform",
+            "job_title": "Head of DevOps",
+            "department": "Engineering",
+            "industry": "Cloud Computing",
+            "city": "Seattle",
+            "state": "WA",
+            "country": "USA",
+            "lead_status": LeadStatus.CONTACTED,
+            "lead_score": 72,
+            "source": "Website",
+            "tags": ["cloud", "devops", "mid-market"],
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
+        },
+        {
+            "first_name": "Maria",
+            "last_name": "Santos",
+            "email": "maria.santos@edulearn.com",
+            "phone": "+1-512-555-0707",
+            "company": "EduLearn Platform",
+            "job_title": "VP of Product",
+            "department": "Product",
+            "industry": "EdTech",
+            "city": "Austin",
+            "state": "TX",
+            "country": "USA",
+            "lead_status": LeadStatus.NEW,
+            "lead_score": 58,
+            "source": "LinkedIn",
+            "tags": ["edtech", "startup"],
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
+        },
+        {
+            "first_name": "Robert",
+            "last_name": "Williams",
+            "email": "robert.w@megacorp.com",
+            "phone": "+1-404-555-0808",
+            "company": "MegaCorp Industries",
+            "job_title": "VP of Sales",
+            "department": "Sales",
+            "industry": "Manufacturing",
+            "city": "Atlanta",
+            "state": "GA",
+            "country": "USA",
+            "lead_status": LeadStatus.CONVERTED,
+            "lead_score": 88,
+            "source": "Conference",
+            "tags": ["manufacturing", "enterprise", "customer"],
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Robert",
+        },
+        {
+            "first_name": "Lisa",
+            "last_name": "Thompson",
+            "email": "lisa.t@datawise.ai",
+            "phone": "+1-720-555-0909",
+            "company": "DataWise AI",
+            "job_title": "Head of AI/ML",
+            "department": "Engineering",
+            "industry": "AI/ML",
+            "city": "Denver",
+            "state": "CO",
+            "country": "USA",
+            "lead_status": LeadStatus.QUALIFIED,
+            "lead_score": 90,
+            "source": "Referral",
+            "tags": ["ai", "startup", "hot-lead"],
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Lisa",
+        },
+        {
+            "first_name": "Michael",
+            "last_name": "Chang",
+            "email": "michael.c@cyberguard.io",
+            "phone": "+1-571-555-1010",
+            "company": "CyberGuard Security",
+            "job_title": "CISO",
+            "department": "Security",
+            "industry": "Cybersecurity",
+            "city": "Washington",
+            "state": "DC",
+            "country": "USA",
+            "lead_status": LeadStatus.CONTACTED,
+            "lead_score": 76,
+            "source": "Website",
+            "tags": ["security", "enterprise", "warm-lead"],
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
+        },
+        {
+            "first_name": "Priya",
+            "last_name": "Sharma",
+            "email": "priya.s@greenergy.com",
+            "phone": "+1-503-555-1111",
+            "company": "GreenErgy Solutions",
+            "job_title": "COO",
+            "department": "Operations",
+            "industry": "Clean Energy",
+            "city": "Portland",
+            "state": "OR",
+            "country": "USA",
+            "lead_status": LeadStatus.NEW,
+            "lead_score": 62,
+            "source": "LinkedIn",
+            "tags": ["energy", "sustainability"],
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Priya",
+        },
+        {
+            "first_name": "Tom",
+            "last_name": "Anderson",
+            "email": "tom.a@logisticspro.com",
+            "phone": "+1-901-555-1212",
+            "company": "LogisticsPro",
+            "job_title": "Director of Supply Chain",
+            "department": "Logistics",
+            "industry": "Logistics",
+            "city": "Memphis",
+            "state": "TN",
+            "country": "USA",
+            "lead_status": LeadStatus.UNQUALIFIED,
+            "lead_score": 35,
+            "source": "Cold Call",
+            "tags": ["logistics", "mid-market"],
+            "avatar_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Tom",
+        },
     ]
 
     contacts = []
@@ -557,69 +741,214 @@ def seed_database(db):
 
     # --- DEALS ---
     deals_data = [
-        {"title": "TechCorp Enterprise Platform License", "value": 450000,
-         "stage": DealStage.NEGOTIATION, "probability": 75,
-         "expected_close_date": now + timedelta(days=14), "company": "TechCorp Solutions",
-         "owner": "Alex Rivera", "priority": Priority.HIGH,
-         "tags": ["enterprise", "annual"], "ai_win_probability": 0.78,
-         "ai_insights": {"risk_factors": ["Competitor pricing pressure"], "recommended_actions": ["Schedule executive meeting", "Prepare ROI analysis"], "sentiment": "positive"}},
-        {"title": "Innovate Inc SaaS Migration", "value": 180000,
-         "stage": DealStage.PROPOSAL, "probability": 50,
-         "expected_close_date": now + timedelta(days=30), "company": "Innovate Inc",
-         "owner": "Alex Rivera", "priority": Priority.MEDIUM,
-         "tags": ["saas", "migration"], "ai_win_probability": 0.55,
-         "ai_insights": {"risk_factors": ["Budget constraints in Q4"], "recommended_actions": ["Offer phased implementation", "Provide case studies"], "sentiment": "neutral"}},
-        {"title": "Global Retail POS Integration", "value": 320000,
-         "stage": DealStage.QUALIFICATION, "probability": 35,
-         "expected_close_date": now + timedelta(days=60), "company": "Global Retail Group",
-         "owner": "Jordan Lee", "priority": Priority.HIGH,
-         "tags": ["retail", "integration"], "ai_win_probability": 0.42,
-         "ai_insights": {"risk_factors": ["Complex integration requirements", "Multiple stakeholders"], "recommended_actions": ["Technical POC", "Stakeholder mapping"], "sentiment": "cautious"}},
-        {"title": "Finova Compliance Automation Suite", "value": 95000,
-         "stage": DealStage.PROSPECTING, "probability": 15,
-         "expected_close_date": now + timedelta(days=90), "company": "Finova Financial",
-         "owner": "Jordan Lee", "priority": Priority.LOW,
-         "tags": ["finance", "compliance"], "ai_win_probability": 0.20,
-         "ai_insights": {"risk_factors": ["Early stage", "Budget not allocated"], "recommended_actions": ["Discovery call", "Industry benchmark report"], "sentiment": "early"}},
-        {"title": "HealthTech AI Diagnostics Platform", "value": 780000,
-         "stage": DealStage.NEGOTIATION, "probability": 80,
-         "expected_close_date": now + timedelta(days=7), "company": "HealthTech Solutions",
-         "owner": "Alex Rivera", "priority": Priority.CRITICAL,
-         "tags": ["healthcare", "ai", "priority"], "ai_win_probability": 0.88,
-         "ai_insights": {"risk_factors": ["Legal review pending"], "recommended_actions": ["Fast-track legal review", "Prepare implementation plan"], "sentiment": "very positive"}},
-        {"title": "CloudOps Infrastructure Deal", "value": 210000,
-         "stage": DealStage.PROPOSAL, "probability": 45,
-         "expected_close_date": now + timedelta(days=45), "company": "CloudOps Platform",
-         "owner": "Sam Taylor", "priority": Priority.MEDIUM,
-         "tags": ["cloud", "infrastructure"], "ai_win_probability": 0.52,
-         "ai_insights": {"risk_factors": ["Technical evaluation ongoing"], "recommended_actions": ["Arrange technical deep-dive", "Competitive analysis"], "sentiment": "neutral"}},
-        {"title": "MegaCorp Manufacturing Suite", "value": 520000,
-         "stage": DealStage.CLOSED_WON, "probability": 100,
-         "expected_close_date": now - timedelta(days=15), "actual_close_date": now - timedelta(days=12),
-         "company": "MegaCorp Industries", "owner": "Alex Rivera", "priority": Priority.HIGH,
-         "tags": ["manufacturing", "won"], "ai_win_probability": 1.0,
-         "ai_insights": {"win_factors": ["Strong executive sponsorship", "Clear ROI demonstrated"], "sentiment": "closed"}},
-        {"title": "DataWise ML Pipeline License", "value": 165000,
-         "stage": DealStage.QUALIFICATION, "probability": 40,
-         "expected_close_date": now + timedelta(days=55), "company": "DataWise AI",
-         "owner": "Sam Taylor", "priority": Priority.MEDIUM,
-         "tags": ["ai", "data"], "ai_win_probability": 0.45,
-         "ai_insights": {"risk_factors": ["Evaluating alternatives"], "recommended_actions": ["Differentiation presentation", "Free trial offer"], "sentiment": "competitive"}},
-        {"title": "CyberGuard Security Audit Platform", "value": 290000,
-         "stage": DealStage.CLOSED_LOST, "probability": 0,
-         "expected_close_date": now - timedelta(days=20), "actual_close_date": now - timedelta(days=18),
-         "company": "CyberGuard Security", "owner": "Jordan Lee", "priority": Priority.MEDIUM,
-         "tags": ["security", "lost"], "ai_win_probability": 0.0,
-         "ai_insights": {"loss_factors": ["Price too high", "Competitor offered bundled solution"], "sentiment": "lost"}},
-        {"title": "EduLearn Content Management System", "value": 75000,
-         "stage": DealStage.PROSPECTING, "probability": 20,
-         "expected_close_date": now + timedelta(days=75), "company": "EduLearn Platform",
-         "owner": "Sam Taylor", "priority": Priority.LOW,
-         "tags": ["edtech", "content"], "ai_win_probability": 0.25,
-         "ai_insights": {"risk_factors": ["Small budget", "Long decision cycle"], "recommended_actions": ["Starter package proposal", "ROI calculator"], "sentiment": "early"}},
+        {
+            "title": "TechCorp Enterprise Platform License",
+            "value": 450000,
+            "stage": DealStage.NEGOTIATION,
+            "probability": 75,
+            "expected_close_date": now + timedelta(days=14),
+            "company": "TechCorp Solutions",
+            "owner": "Alex Rivera",
+            "priority": Priority.HIGH,
+            "tags": ["enterprise", "annual"],
+            "ai_win_probability": 0.78,
+            "ai_insights": {
+                "risk_factors": ["Competitor pricing pressure"],
+                "recommended_actions": [
+                    "Schedule executive meeting",
+                    "Prepare ROI analysis",
+                ],
+                "sentiment": "positive",
+            },
+        },
+        {
+            "title": "Innovate Inc SaaS Migration",
+            "value": 180000,
+            "stage": DealStage.PROPOSAL,
+            "probability": 50,
+            "expected_close_date": now + timedelta(days=30),
+            "company": "Innovate Inc",
+            "owner": "Alex Rivera",
+            "priority": Priority.MEDIUM,
+            "tags": ["saas", "migration"],
+            "ai_win_probability": 0.55,
+            "ai_insights": {
+                "risk_factors": ["Budget constraints in Q4"],
+                "recommended_actions": [
+                    "Offer phased implementation",
+                    "Provide case studies",
+                ],
+                "sentiment": "neutral",
+            },
+        },
+        {
+            "title": "Global Retail POS Integration",
+            "value": 320000,
+            "stage": DealStage.QUALIFICATION,
+            "probability": 35,
+            "expected_close_date": now + timedelta(days=60),
+            "company": "Global Retail Group",
+            "owner": "Jordan Lee",
+            "priority": Priority.HIGH,
+            "tags": ["retail", "integration"],
+            "ai_win_probability": 0.42,
+            "ai_insights": {
+                "risk_factors": [
+                    "Complex integration requirements",
+                    "Multiple stakeholders",
+                ],
+                "recommended_actions": ["Technical POC", "Stakeholder mapping"],
+                "sentiment": "cautious",
+            },
+        },
+        {
+            "title": "Finova Compliance Automation Suite",
+            "value": 95000,
+            "stage": DealStage.PROSPECTING,
+            "probability": 15,
+            "expected_close_date": now + timedelta(days=90),
+            "company": "Finova Financial",
+            "owner": "Jordan Lee",
+            "priority": Priority.LOW,
+            "tags": ["finance", "compliance"],
+            "ai_win_probability": 0.20,
+            "ai_insights": {
+                "risk_factors": ["Early stage", "Budget not allocated"],
+                "recommended_actions": ["Discovery call", "Industry benchmark report"],
+                "sentiment": "early",
+            },
+        },
+        {
+            "title": "HealthTech AI Diagnostics Platform",
+            "value": 780000,
+            "stage": DealStage.NEGOTIATION,
+            "probability": 80,
+            "expected_close_date": now + timedelta(days=7),
+            "company": "HealthTech Solutions",
+            "owner": "Alex Rivera",
+            "priority": Priority.CRITICAL,
+            "tags": ["healthcare", "ai", "priority"],
+            "ai_win_probability": 0.88,
+            "ai_insights": {
+                "risk_factors": ["Legal review pending"],
+                "recommended_actions": [
+                    "Fast-track legal review",
+                    "Prepare implementation plan",
+                ],
+                "sentiment": "very positive",
+            },
+        },
+        {
+            "title": "CloudOps Infrastructure Deal",
+            "value": 210000,
+            "stage": DealStage.PROPOSAL,
+            "probability": 45,
+            "expected_close_date": now + timedelta(days=45),
+            "company": "CloudOps Platform",
+            "owner": "Sam Taylor",
+            "priority": Priority.MEDIUM,
+            "tags": ["cloud", "infrastructure"],
+            "ai_win_probability": 0.52,
+            "ai_insights": {
+                "risk_factors": ["Technical evaluation ongoing"],
+                "recommended_actions": [
+                    "Arrange technical deep-dive",
+                    "Competitive analysis",
+                ],
+                "sentiment": "neutral",
+            },
+        },
+        {
+            "title": "MegaCorp Manufacturing Suite",
+            "value": 520000,
+            "stage": DealStage.CLOSED_WON,
+            "probability": 100,
+            "expected_close_date": now - timedelta(days=15),
+            "actual_close_date": now - timedelta(days=12),
+            "company": "MegaCorp Industries",
+            "owner": "Alex Rivera",
+            "priority": Priority.HIGH,
+            "tags": ["manufacturing", "won"],
+            "ai_win_probability": 1.0,
+            "ai_insights": {
+                "win_factors": [
+                    "Strong executive sponsorship",
+                    "Clear ROI demonstrated",
+                ],
+                "sentiment": "closed",
+            },
+        },
+        {
+            "title": "DataWise ML Pipeline License",
+            "value": 165000,
+            "stage": DealStage.QUALIFICATION,
+            "probability": 40,
+            "expected_close_date": now + timedelta(days=55),
+            "company": "DataWise AI",
+            "owner": "Sam Taylor",
+            "priority": Priority.MEDIUM,
+            "tags": ["ai", "data"],
+            "ai_win_probability": 0.45,
+            "ai_insights": {
+                "risk_factors": ["Evaluating alternatives"],
+                "recommended_actions": [
+                    "Differentiation presentation",
+                    "Free trial offer",
+                ],
+                "sentiment": "competitive",
+            },
+        },
+        {
+            "title": "CyberGuard Security Audit Platform",
+            "value": 290000,
+            "stage": DealStage.CLOSED_LOST,
+            "probability": 0,
+            "expected_close_date": now - timedelta(days=20),
+            "actual_close_date": now - timedelta(days=18),
+            "company": "CyberGuard Security",
+            "owner": "Jordan Lee",
+            "priority": Priority.MEDIUM,
+            "tags": ["security", "lost"],
+            "ai_win_probability": 0.0,
+            "ai_insights": {
+                "loss_factors": [
+                    "Price too high",
+                    "Competitor offered bundled solution",
+                ],
+                "sentiment": "lost",
+            },
+        },
+        {
+            "title": "EduLearn Content Management System",
+            "value": 75000,
+            "stage": DealStage.PROSPECTING,
+            "probability": 20,
+            "expected_close_date": now + timedelta(days=75),
+            "company": "EduLearn Platform",
+            "owner": "Sam Taylor",
+            "priority": Priority.LOW,
+            "tags": ["edtech", "content"],
+            "ai_win_probability": 0.25,
+            "ai_insights": {
+                "risk_factors": ["Small budget", "Long decision cycle"],
+                "recommended_actions": ["Starter package proposal", "ROI calculator"],
+                "sentiment": "early",
+            },
+        },
     ]
 
-    contact_deal_mapping = {0: [0], 1: [1], 2: [2], 3: [3], 4: [4], 5: [5], 7: [6], 8: [7], 9: [8], 6: [9]}
+    contact_deal_mapping = {
+        0: [0],
+        1: [1],
+        2: [2],
+        3: [3],
+        4: [4],
+        5: [5],
+        7: [6],
+        8: [7],
+        9: [8],
+        6: [9],
+    }
 
     deals = []
     for dd in deals_data:
@@ -640,12 +969,41 @@ def seed_database(db):
     db.flush()
 
     # --- ACTIVITIES ---
-    activity_types = [ActivityType.CALL, ActivityType.EMAIL, ActivityType.MEETING, ActivityType.NOTE]
+    activity_types = [
+        ActivityType.CALL,
+        ActivityType.EMAIL,
+        ActivityType.MEETING,
+        ActivityType.NOTE,
+    ]
     activity_subjects = {
-        ActivityType.CALL: ["Discovery call", "Follow-up call", "Pricing discussion", "Technical Q&A", "Check-in call"],
-        ActivityType.EMAIL: ["Proposal sent", "Follow-up email", "Pricing update", "Meeting request", "Case study shared"],
-        ActivityType.MEETING: ["Demo presentation", "Contract review", "Technical deep-dive", "Executive briefing", "Quarterly review"],
-        ActivityType.NOTE: ["Competitor intel", "Budget update", "Decision timeline", "Stakeholder feedback", "Requirements update"],
+        ActivityType.CALL: [
+            "Discovery call",
+            "Follow-up call",
+            "Pricing discussion",
+            "Technical Q&A",
+            "Check-in call",
+        ],
+        ActivityType.EMAIL: [
+            "Proposal sent",
+            "Follow-up email",
+            "Pricing update",
+            "Meeting request",
+            "Case study shared",
+        ],
+        ActivityType.MEETING: [
+            "Demo presentation",
+            "Contract review",
+            "Technical deep-dive",
+            "Executive briefing",
+            "Quarterly review",
+        ],
+        ActivityType.NOTE: [
+            "Competitor intel",
+            "Budget update",
+            "Decision timeline",
+            "Stakeholder feedback",
+            "Requirements update",
+        ],
     }
 
     for i in range(40):
@@ -659,39 +1017,74 @@ def seed_database(db):
             description=f"Activity: {subject} with {contact.first_name} {contact.last_name}",
             contact_id=contact.id,
             deal_id=deal.id if deal else None,
-            duration_minutes=random.randint(5, 60) if atype in [ActivityType.CALL, ActivityType.MEETING] else None,
-            outcome=random.choice(["Positive", "Neutral", "Follow-up needed", "No response"]) if atype != ActivityType.NOTE else None,
-            scheduled_at=now - timedelta(days=random.randint(0, 60), hours=random.randint(0, 8)),
-            completed_at=now - timedelta(days=random.randint(0, 55)) if random.random() > 0.2 else None,
+            duration_minutes=(
+                random.randint(5, 60)
+                if atype in [ActivityType.CALL, ActivityType.MEETING]
+                else None
+            ),
+            outcome=(
+                random.choice(
+                    ["Positive", "Neutral", "Follow-up needed", "No response"]
+                )
+                if atype != ActivityType.NOTE
+                else None
+            ),
+            scheduled_at=now
+            - timedelta(days=random.randint(0, 60), hours=random.randint(0, 8)),
+            completed_at=(
+                now - timedelta(days=random.randint(0, 55))
+                if random.random() > 0.2
+                else None
+            ),
             created_at=now - timedelta(days=random.randint(0, 60)),
         )
         db.add(activity)
 
     # --- TASKS ---
     task_titles = [
-        "Follow up with client on proposal", "Prepare Q4 forecast report",
-        "Schedule demo for new feature", "Update CRM records",
-        "Send contract for review", "Prepare competitive analysis",
-        "Call to discuss pricing", "Set up onboarding meeting",
-        "Review customer feedback", "Create ROI presentation",
-        "Update pipeline forecast", "Send meeting notes",
-        "Research competitor offerings", "Prepare case study",
+        "Follow up with client on proposal",
+        "Prepare Q4 forecast report",
+        "Schedule demo for new feature",
+        "Update CRM records",
+        "Send contract for review",
+        "Prepare competitive analysis",
+        "Call to discuss pricing",
+        "Set up onboarding meeting",
+        "Review customer feedback",
+        "Create ROI presentation",
+        "Update pipeline forecast",
+        "Send meeting notes",
+        "Research competitor offerings",
+        "Prepare case study",
         "Schedule quarterly review",
     ]
     assignees = ["Alex Rivera", "Jordan Lee", "Sam Taylor"]
 
     for i, title in enumerate(task_titles):
         contact = random.choice(contacts)
-        status = random.choice([TaskStatus.TODO, TaskStatus.TODO, TaskStatus.IN_PROGRESS, TaskStatus.COMPLETED])
+        status = random.choice(
+            [
+                TaskStatus.TODO,
+                TaskStatus.TODO,
+                TaskStatus.IN_PROGRESS,
+                TaskStatus.COMPLETED,
+            ]
+        )
         task = Task(
             title=title,
             description=f"Task related to {contact.company}",
             status=status,
-            priority=random.choice([Priority.LOW, Priority.MEDIUM, Priority.HIGH, Priority.CRITICAL]),
+            priority=random.choice(
+                [Priority.LOW, Priority.MEDIUM, Priority.HIGH, Priority.CRITICAL]
+            ),
             due_date=now + timedelta(days=random.randint(-5, 30)),
             contact_id=contact.id,
             assigned_to=random.choice(assignees),
-            completed_at=now - timedelta(days=random.randint(0, 10)) if status == TaskStatus.COMPLETED else None,
+            completed_at=(
+                now - timedelta(days=random.randint(0, 10))
+                if status == TaskStatus.COMPLETED
+                else None
+            ),
             created_at=now - timedelta(days=random.randint(0, 30)),
             updated_at=now - timedelta(days=random.randint(0, 5)),
         )
@@ -699,41 +1092,125 @@ def seed_database(db):
 
     # --- AI AGENT TASKS ---
     ai_tasks_data = [
-        {"task_type": AgentTaskType.LEAD_SCORING, "status": AgentTaskStatus.COMPLETED,
-         "input_data": {"contact_id": 1, "features": ["engagement_high", "budget_confirmed"]},
-         "output_data": {"score": 92, "factors": ["High email engagement rate", "Budget confirmed", "Decision maker"], "recommendation": "Prioritize for immediate outreach"},
-         "confidence_score": 0.94, "cost_estimate": 0.002, "actual_cost": 0.0018, "latency_ms": 245,
-         "triggered_by": "automation"},
-        {"task_type": AgentTaskType.EMAIL_DRAFT, "status": AgentTaskStatus.COMPLETED,
-         "input_data": {"contact_id": 2, "context": "follow_up_proposal", "tone": "professional"},
-         "output_data": {"subject": "Following Up: Innovate Inc Partnership Proposal", "body": "Dear Marcus,\n\nI hope this message finds you well...", "alternatives": 3},
-         "confidence_score": 0.87, "cost_estimate": 0.008, "actual_cost": 0.0072, "latency_ms": 1840,
-         "triggered_by": "user"},
-        {"task_type": AgentTaskType.DEAL_ANALYSIS, "status": AgentTaskStatus.COMPLETED,
-         "input_data": {"deal_id": 1, "analysis_type": "risk_assessment"},
-         "output_data": {"risk_level": "medium", "win_probability": 0.78, "key_risks": ["Competitor undercutting", "Budget freeze risk"], "mitigation_strategies": ["Demonstrate unique value prop", "Offer flexible payment terms"]},
-         "confidence_score": 0.82, "cost_estimate": 0.015, "actual_cost": 0.013, "latency_ms": 3200,
-         "triggered_by": "user"},
-        {"task_type": AgentTaskType.CHURN_PREDICTION, "status": AgentTaskStatus.COMPLETED,
-         "input_data": {"customer_segment": "enterprise", "time_horizon": "90_days"},
-         "output_data": {"at_risk_accounts": [{"company": "CloudOps Platform", "churn_probability": 0.35, "signals": ["Decreased usage", "Support ticket spike"]}], "total_revenue_at_risk": 501000},
-         "confidence_score": 0.79, "cost_estimate": 0.025, "actual_cost": 0.022, "latency_ms": 4500,
-         "triggered_by": "schedule"},
-        {"task_type": AgentTaskType.FORECAST, "status": AgentTaskStatus.COMPLETED,
-         "input_data": {"period": "Q4_2026", "model": "ensemble"},
-         "output_data": {"predicted_revenue": 2850000, "confidence_interval": [2420000, 3280000], "key_drivers": ["HealthTech deal close", "TechCorp expansion"], "risk_adjusted_forecast": 2650000},
-         "confidence_score": 0.76, "cost_estimate": 0.05, "actual_cost": 0.045, "latency_ms": 8900,
-         "triggered_by": "schedule"},
-        {"task_type": AgentTaskType.MEETING_SUMMARY, "status": AgentTaskStatus.RUNNING,
-         "input_data": {"meeting_id": "mtg_2026_q4_review", "participants": ["Sarah Chen", "Alex Rivera"]},
-         "output_data": {},
-         "confidence_score": None, "cost_estimate": 0.012, "actual_cost": None, "latency_ms": None,
-         "triggered_by": "automation"},
+        {
+            "task_type": AgentTaskType.LEAD_SCORING,
+            "status": AgentTaskStatus.COMPLETED,
+            "input_data": {
+                "contact_id": 1,
+                "features": ["engagement_high", "budget_confirmed"],
+            },
+            "output_data": {
+                "score": 92,
+                "factors": [
+                    "High email engagement rate",
+                    "Budget confirmed",
+                    "Decision maker",
+                ],
+                "recommendation": "Prioritize for immediate outreach",
+            },
+            "confidence_score": 0.94,
+            "cost_estimate": 0.002,
+            "actual_cost": 0.0018,
+            "latency_ms": 245,
+            "triggered_by": "automation",
+        },
+        {
+            "task_type": AgentTaskType.EMAIL_DRAFT,
+            "status": AgentTaskStatus.COMPLETED,
+            "input_data": {
+                "contact_id": 2,
+                "context": "follow_up_proposal",
+                "tone": "professional",
+            },
+            "output_data": {
+                "subject": "Following Up: Innovate Inc Partnership Proposal",
+                "body": "Dear Marcus,\n\nI hope this message finds you well...",
+                "alternatives": 3,
+            },
+            "confidence_score": 0.87,
+            "cost_estimate": 0.008,
+            "actual_cost": 0.0072,
+            "latency_ms": 1840,
+            "triggered_by": "user",
+        },
+        {
+            "task_type": AgentTaskType.DEAL_ANALYSIS,
+            "status": AgentTaskStatus.COMPLETED,
+            "input_data": {"deal_id": 1, "analysis_type": "risk_assessment"},
+            "output_data": {
+                "risk_level": "medium",
+                "win_probability": 0.78,
+                "key_risks": ["Competitor undercutting", "Budget freeze risk"],
+                "mitigation_strategies": [
+                    "Demonstrate unique value prop",
+                    "Offer flexible payment terms",
+                ],
+            },
+            "confidence_score": 0.82,
+            "cost_estimate": 0.015,
+            "actual_cost": 0.013,
+            "latency_ms": 3200,
+            "triggered_by": "user",
+        },
+        {
+            "task_type": AgentTaskType.CHURN_PREDICTION,
+            "status": AgentTaskStatus.COMPLETED,
+            "input_data": {"customer_segment": "enterprise", "time_horizon": "90_days"},
+            "output_data": {
+                "at_risk_accounts": [
+                    {
+                        "company": "CloudOps Platform",
+                        "churn_probability": 0.35,
+                        "signals": ["Decreased usage", "Support ticket spike"],
+                    }
+                ],
+                "total_revenue_at_risk": 501000,
+            },
+            "confidence_score": 0.79,
+            "cost_estimate": 0.025,
+            "actual_cost": 0.022,
+            "latency_ms": 4500,
+            "triggered_by": "schedule",
+        },
+        {
+            "task_type": AgentTaskType.FORECAST,
+            "status": AgentTaskStatus.COMPLETED,
+            "input_data": {"period": "Q4_2026", "model": "ensemble"},
+            "output_data": {
+                "predicted_revenue": 2850000,
+                "confidence_interval": [2420000, 3280000],
+                "key_drivers": ["HealthTech deal close", "TechCorp expansion"],
+                "risk_adjusted_forecast": 2650000,
+            },
+            "confidence_score": 0.76,
+            "cost_estimate": 0.05,
+            "actual_cost": 0.045,
+            "latency_ms": 8900,
+            "triggered_by": "schedule",
+        },
+        {
+            "task_type": AgentTaskType.MEETING_SUMMARY,
+            "status": AgentTaskStatus.RUNNING,
+            "input_data": {
+                "meeting_id": "mtg_2026_q4_review",
+                "participants": ["Sarah Chen", "Alex Rivera"],
+            },
+            "output_data": {},
+            "confidence_score": None,
+            "cost_estimate": 0.012,
+            "actual_cost": None,
+            "latency_ms": None,
+            "triggered_by": "automation",
+        },
     ]
 
     for atd in ai_tasks_data:
         atd["created_at"] = now - timedelta(hours=random.randint(0, 72))
-        atd["completed_at"] = now - timedelta(hours=random.randint(0, 24)) if atd["status"] == AgentTaskStatus.COMPLETED else None
+        atd["completed_at"] = (
+            now - timedelta(hours=random.randint(0, 24))
+            if atd["status"] == AgentTaskStatus.COMPLETED
+            else None
+        )
         ai_task = AIAgentTask(**atd)
         db.add(ai_task)
 
@@ -742,55 +1219,136 @@ def seed_database(db):
 
     # --- CALENDAR EVENTS ---
     calendar_events = [
-        {"title": "TechCorp Contract Negotiation", "description": "Final contract terms discussion with Sarah Chen",
-         "start_time": now + timedelta(days=1, hours=2), "end_time": now + timedelta(days=1, hours=3),
-         "location": "Zoom Meeting", "event_type": "meeting", "attendees": ["Sarah Chen", "Alex Rivera"],
-         "color": "#6366f1"},
-        {"title": "HealthTech Demo Call", "description": "Product demo for AI Diagnostics Platform",
-         "start_time": now + timedelta(days=2, hours=4), "end_time": now + timedelta(days=2, hours=5, minutes=30),
-         "location": "Google Meet", "event_type": "demo", "attendees": ["Aisha Patel", "Alex Rivera", "Jordan Lee"],
-         "color": "#f59e0b"},
-        {"title": "Pipeline Review", "description": "Weekly pipeline review with sales team",
-         "start_time": now + timedelta(days=3, hours=1), "end_time": now + timedelta(days=3, hours=2),
-         "location": "Conference Room A", "event_type": "meeting", "attendees": ["Alex Rivera", "Jordan Lee", "Sam Taylor"],
-         "color": "#6366f1"},
-        {"title": "Follow-up: Innovate Inc", "description": "Follow up on SaaS migration proposal",
-         "start_time": now + timedelta(days=1, hours=5), "end_time": now + timedelta(days=1, hours=5, minutes=30),
-         "location": "Phone", "event_type": "call", "attendees": ["Marcus Johnson"],
-         "color": "#10b981"},
-        {"title": "Global Retail POC Planning", "description": "Technical POC scope and timeline",
-         "start_time": now + timedelta(days=4, hours=3), "end_time": now + timedelta(days=4, hours=4, minutes=30),
-         "location": "Teams Meeting", "event_type": "meeting", "attendees": ["Elena Rodriguez", "Jordan Lee"],
-         "color": "#6366f1"},
-        {"title": "Q4 Forecast Review", "description": "Quarterly forecast discussion with leadership",
-         "start_time": now + timedelta(days=5, hours=2), "end_time": now + timedelta(days=5, hours=3),
-         "location": "Executive Board Room", "event_type": "meeting",
-         "attendees": ["Alex Rivera", "Jordan Lee", "Sam Taylor", "VP Sales"],
-         "color": "#8b5cf6"},
-        {"title": "DataWise Follow-up", "description": "Technical deep-dive and differentiation discussion",
-         "start_time": now + timedelta(days=2, hours=1), "end_time": now + timedelta(days=2, hours=2),
-         "location": "Zoom Meeting", "event_type": "follow_up", "attendees": ["Lisa Thompson", "Sam Taylor"],
-         "color": "#ef4444"},
-        {"title": "Customer Success Alignment: HyperScale", "description": "Quarterly enterprise onboarding review and SLA checkpoint with account team.",
-         "start_time": now.replace(hour=11, minute=0, second=0), "end_time": now.replace(hour=12, minute=0, second=0),
-         "location": "Google Meet", "event_type": "meeting", "attendees": ["elena@hyperscale.ai", "alex@neuronforce.ai"],
-         "color": "#10b981"},
-        {"title": "AI Agent Mesh Cost Optimization Sync", "description": "Evaluating token consumption and sub-100ms routing efficiency across models.",
-         "start_time": now.replace(hour=14, minute=30, second=0), "end_time": now.replace(hour=15, minute=30, second=0),
-         "location": "Zoom Meeting", "event_type": "demo", "attendees": ["jordan@neuronforce.ai", "alex@neuronforce.ai"],
-         "color": "#8b5cf6"},
-        {"title": "CyberGuard Security Governance Sign-off", "description": "Final SOC2 Type II compliance audit review and enterprise DPA sign-off.",
-         "start_time": (now + timedelta(days=1)).replace(hour=9, minute=30, second=0), "end_time": (now + timedelta(days=1)).replace(hour=10, minute=30, second=0),
-         "location": "Teams Meeting", "event_type": "review", "attendees": ["ciso@cyberguard.io", "legal@neuronforce.ai"],
-         "color": "#ef4444"},
-        {"title": "Weekly Sales Leadership Standup", "description": "Pipeline acceleration metrics, deal probability rankings, and quarterly targets.",
-         "start_time": (now + timedelta(days=1)).replace(hour=11, minute=30, second=0), "end_time": (now + timedelta(days=1)).replace(hour=12, minute=30, second=0),
-         "location": "Executive Board Room", "event_type": "meeting", "attendees": ["alex@neuronforce.ai", "jordan@neuronforce.ai", "sam@neuronforce.ai"],
-         "color": "#06b6d4"},
-        {"title": "Finova Compliance Architecture Review", "description": "Technical architecture validation for automated audit workflows.",
-         "start_time": (now - timedelta(days=1)).replace(hour=10, minute=0, second=0), "end_time": (now - timedelta(days=1)).replace(hour=11, minute=0, second=0),
-         "location": "Zoom Meeting", "event_type": "presentation", "attendees": ["james.park@finova.io", "alex@neuronforce.ai"],
-         "color": "#6366f1"},
+        {
+            "title": "TechCorp Contract Negotiation",
+            "description": "Final contract terms discussion with Sarah Chen",
+            "start_time": now + timedelta(days=1, hours=2),
+            "end_time": now + timedelta(days=1, hours=3),
+            "location": "Zoom Meeting",
+            "event_type": "meeting",
+            "attendees": ["Sarah Chen", "Alex Rivera"],
+            "color": "#6366f1",
+        },
+        {
+            "title": "HealthTech Demo Call",
+            "description": "Product demo for AI Diagnostics Platform",
+            "start_time": now + timedelta(days=2, hours=4),
+            "end_time": now + timedelta(days=2, hours=5, minutes=30),
+            "location": "Google Meet",
+            "event_type": "demo",
+            "attendees": ["Aisha Patel", "Alex Rivera", "Jordan Lee"],
+            "color": "#f59e0b",
+        },
+        {
+            "title": "Pipeline Review",
+            "description": "Weekly pipeline review with sales team",
+            "start_time": now + timedelta(days=3, hours=1),
+            "end_time": now + timedelta(days=3, hours=2),
+            "location": "Conference Room A",
+            "event_type": "meeting",
+            "attendees": ["Alex Rivera", "Jordan Lee", "Sam Taylor"],
+            "color": "#6366f1",
+        },
+        {
+            "title": "Follow-up: Innovate Inc",
+            "description": "Follow up on SaaS migration proposal",
+            "start_time": now + timedelta(days=1, hours=5),
+            "end_time": now + timedelta(days=1, hours=5, minutes=30),
+            "location": "Phone",
+            "event_type": "call",
+            "attendees": ["Marcus Johnson"],
+            "color": "#10b981",
+        },
+        {
+            "title": "Global Retail POC Planning",
+            "description": "Technical POC scope and timeline",
+            "start_time": now + timedelta(days=4, hours=3),
+            "end_time": now + timedelta(days=4, hours=4, minutes=30),
+            "location": "Teams Meeting",
+            "event_type": "meeting",
+            "attendees": ["Elena Rodriguez", "Jordan Lee"],
+            "color": "#6366f1",
+        },
+        {
+            "title": "Q4 Forecast Review",
+            "description": "Quarterly forecast discussion with leadership",
+            "start_time": now + timedelta(days=5, hours=2),
+            "end_time": now + timedelta(days=5, hours=3),
+            "location": "Executive Board Room",
+            "event_type": "meeting",
+            "attendees": ["Alex Rivera", "Jordan Lee", "Sam Taylor", "VP Sales"],
+            "color": "#8b5cf6",
+        },
+        {
+            "title": "DataWise Follow-up",
+            "description": "Technical deep-dive and differentiation discussion",
+            "start_time": now + timedelta(days=2, hours=1),
+            "end_time": now + timedelta(days=2, hours=2),
+            "location": "Zoom Meeting",
+            "event_type": "follow_up",
+            "attendees": ["Lisa Thompson", "Sam Taylor"],
+            "color": "#ef4444",
+        },
+        {
+            "title": "Customer Success Alignment: HyperScale",
+            "description": "Quarterly enterprise onboarding review and SLA checkpoint with account team.",
+            "start_time": now.replace(hour=11, minute=0, second=0),
+            "end_time": now.replace(hour=12, minute=0, second=0),
+            "location": "Google Meet",
+            "event_type": "meeting",
+            "attendees": ["elena@hyperscale.ai", "alex@neuronforce.ai"],
+            "color": "#10b981",
+        },
+        {
+            "title": "AI Agent Mesh Cost Optimization Sync",
+            "description": "Evaluating token consumption and sub-100ms routing efficiency across models.",
+            "start_time": now.replace(hour=14, minute=30, second=0),
+            "end_time": now.replace(hour=15, minute=30, second=0),
+            "location": "Zoom Meeting",
+            "event_type": "demo",
+            "attendees": ["jordan@neuronforce.ai", "alex@neuronforce.ai"],
+            "color": "#8b5cf6",
+        },
+        {
+            "title": "CyberGuard Security Governance Sign-off",
+            "description": "Final SOC2 Type II compliance audit review and enterprise DPA sign-off.",
+            "start_time": (now + timedelta(days=1)).replace(
+                hour=9, minute=30, second=0
+            ),
+            "end_time": (now + timedelta(days=1)).replace(hour=10, minute=30, second=0),
+            "location": "Teams Meeting",
+            "event_type": "review",
+            "attendees": ["ciso@cyberguard.io", "legal@neuronforce.ai"],
+            "color": "#ef4444",
+        },
+        {
+            "title": "Weekly Sales Leadership Standup",
+            "description": "Pipeline acceleration metrics, deal probability rankings, and quarterly targets.",
+            "start_time": (now + timedelta(days=1)).replace(
+                hour=11, minute=30, second=0
+            ),
+            "end_time": (now + timedelta(days=1)).replace(hour=12, minute=30, second=0),
+            "location": "Executive Board Room",
+            "event_type": "meeting",
+            "attendees": [
+                "alex@neuronforce.ai",
+                "jordan@neuronforce.ai",
+                "sam@neuronforce.ai",
+            ],
+            "color": "#06b6d4",
+        },
+        {
+            "title": "Finova Compliance Architecture Review",
+            "description": "Technical architecture validation for automated audit workflows.",
+            "start_time": (now - timedelta(days=1)).replace(
+                hour=10, minute=0, second=0
+            ),
+            "end_time": (now - timedelta(days=1)).replace(hour=11, minute=0, second=0),
+            "location": "Zoom Meeting",
+            "event_type": "presentation",
+            "attendees": ["james.park@finova.io", "alex@neuronforce.ai"],
+            "color": "#6366f1",
+        },
     ]
 
     for ced in calendar_events:

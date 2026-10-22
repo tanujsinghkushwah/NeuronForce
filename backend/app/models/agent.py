@@ -2,7 +2,16 @@
 AI Agent Telemetry and Task Models
 """
 
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text, Enum as SQLEnum, JSON
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Float,
+    DateTime,
+    Text,
+    Enum as SQLEnum,
+    JSON,
+)
 from datetime import datetime, timezone
 
 from app.database import Base

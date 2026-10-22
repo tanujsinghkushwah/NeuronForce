@@ -27,3 +27,5 @@ python-dotenv==1.2.4
 langgraph>=1.2.16
 langchain-core>=1.6.13
 resend>=2.50.0
+black>=24.0.0
+pre-commit>=3.7.0

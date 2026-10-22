@@ -10,7 +10,13 @@ from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel
 
 from app.database import get_db
-from app.models.ticket import Ticket, TicketMessage, TicketStatus, TicketPriority, TicketCategory
+from app.models.ticket import (
+    Ticket,
+    TicketMessage,
+    TicketStatus,
+    TicketPriority,
+    TicketCategory,
+)
 from app.services.ai_service import run_ai_task
 
 router = APIRouter(prefix="/api/tickets", tags=["Tickets"])
@@ -24,6 +30,7 @@ SLA_HOURS = {
 
 
 # ─── Pydantic schemas ───────────────────────────────────────────────────────
+
 
 class TicketCreate(BaseModel):
     title: str
@@ -57,6 +64,7 @@ class MessageCreate(BaseModel):
 
 # ─── Helpers ───────────────────────────────────────────────────────────────
 
+
 def _generate_ticket_number(db: Session) -> str:
     count = db.query(func.count(Ticket.id)).scalar()
     return f"TKT-{count + 1:04d}"
@@ -69,7 +77,11 @@ def _sla_due(priority: str) -> datetime:
 
 def _ticket_to_dict(t: Ticket) -> dict:
     now = datetime.now(timezone.utc)
-    sla_breached = t.sla_due_at and t.status not in [TicketStatus.RESOLVED, TicketStatus.CLOSED] and t.sla_due_at.replace(tzinfo=timezone.utc) < now
+    sla_breached = (
+        t.sla_due_at
+        and t.status not in [TicketStatus.RESOLVED, TicketStatus.CLOSED]
+        and t.sla_due_at.replace(tzinfo=timezone.utc) < now
+    )
     return {
         "id": t.id,
         "ticket_number": t.ticket_number,
@@ -85,7 +97,9 @@ def _ticket_to_dict(t: Ticket) -> dict:
         "deal_id": t.deal_id,
         "sla_due_at": t.sla_due_at.isoformat() if t.sla_due_at else None,
         "sla_breached": bool(sla_breached),
-        "first_response_at": t.first_response_at.isoformat() if t.first_response_at else None,
+        "first_response_at": (
+            t.first_response_at.isoformat() if t.first_response_at else None
+        ),
         "resolved_at": t.resolved_at.isoformat() if t.resolved_at else None,
         "ai_triage": t.ai_triage or {},
         "sentiment": t.sentiment,
@@ -110,6 +124,7 @@ def _ticket_to_dict(t: Ticket) -> dict:
 
 
 # ─── Routes ────────────────────────────────────────────────────────────────
+
 
 @router.get("")
 def list_tickets(
@@ -156,13 +171,16 @@ def create_ticket(payload: TicketCreate, db: Session = Depends(get_db)):
 
     # Run AI triage if requested
     if payload.ai_triage:
-        result = run_ai_task("ticket_triage", {
-            "title": payload.title,
-            "description": payload.description,
-            "category": payload.category,
-            "priority": payload.priority,
-            "reporter": payload.reporter_name,
-        })
+        result = run_ai_task(
+            "ticket_triage",
+            {
+                "title": payload.title,
+                "description": payload.description,
+                "category": payload.category,
+                "priority": payload.priority,
+                "reporter": payload.reporter_name,
+            },
+        )
         output = result["output"]
         ticket.ai_triage = output
         ticket.sentiment = output.get("sentiment", "neutral")
@@ -182,18 +200,30 @@ def ticket_stats(db: Session = Depends(get_db)):
     """Get Service Cloud KPIs."""
     total = db.query(Ticket).count()
     open_count = db.query(Ticket).filter(Ticket.status == TicketStatus.OPEN).count()
-    in_progress = db.query(Ticket).filter(Ticket.status == TicketStatus.IN_PROGRESS).count()
+    in_progress = (
+        db.query(Ticket).filter(Ticket.status == TicketStatus.IN_PROGRESS).count()
+    )
     resolved = db.query(Ticket).filter(Ticket.status == TicketStatus.RESOLVED).count()
-    critical = db.query(Ticket).filter(Ticket.priority == TicketPriority.CRITICAL).count()
+    critical = (
+        db.query(Ticket).filter(Ticket.priority == TicketPriority.CRITICAL).count()
+    )
 
     now = datetime.now(timezone.utc)
-    sla_breached = db.query(Ticket).filter(
-        Ticket.sla_due_at < now,
-        Ticket.status.notin_([TicketStatus.RESOLVED, TicketStatus.CLOSED])
-    ).count()
+    sla_breached = (
+        db.query(Ticket)
+        .filter(
+            Ticket.sla_due_at < now,
+            Ticket.status.notin_([TicketStatus.RESOLVED, TicketStatus.CLOSED]),
+        )
+        .count()
+    )
 
-    by_category = db.query(Ticket.category, func.count(Ticket.id)).group_by(Ticket.category).all()
-    by_priority = db.query(Ticket.priority, func.count(Ticket.id)).group_by(Ticket.priority).all()
+    by_category = (
+        db.query(Ticket.category, func.count(Ticket.id)).group_by(Ticket.category).all()
+    )
+    by_priority = (
+        db.query(Ticket.priority, func.count(Ticket.id)).group_by(Ticket.priority).all()
+    )
 
     return {
         "total": total,
@@ -207,8 +237,14 @@ def ticket_stats(db: Session = Depends(get_db)):
         "critical": critical,
         "sla_breached": sla_breached,
         "resolution_rate": round(resolved / total * 100, 1) if total > 0 else 0,
-        "by_category": [{"category": c[0].value if hasattr(c[0], "value") else c[0], "count": c[1]} for c in by_category],
-        "by_priority": [{"priority": p[0].value if hasattr(p[0], "value") else p[0], "count": p[1]} for p in by_priority],
+        "by_category": [
+            {"category": c[0].value if hasattr(c[0], "value") else c[0], "count": c[1]}
+            for c in by_category
+        ],
+        "by_priority": [
+            {"priority": p[0].value if hasattr(p[0], "value") else p[0], "count": p[1]}
+            for p in by_priority
+        ],
     }
 
 
@@ -259,7 +295,12 @@ def add_message(ticket_id: int, payload: MessageCreate, db: Session = Depends(ge
 
     db.commit()
     db.refresh(msg)
-    return {"id": msg.id, "body": msg.body, "author_name": msg.author_name, "created_at": msg.created_at.isoformat()}
+    return {
+        "id": msg.id,
+        "body": msg.body,
+        "author_name": msg.author_name,
+        "created_at": msg.created_at.isoformat(),
+    }
 
 
 @router.post("/{ticket_id}/ai-reply")
@@ -269,17 +310,26 @@ def generate_ai_reply(ticket_id: int, db: Session = Depends(get_db)):
     if not t:
         raise HTTPException(status_code=404, detail="Ticket not found")
 
-    result = run_ai_task("ticket_triage", {
-        "title": t.title,
-        "description": t.description,
-        "category": t.category.value if t.category else "general",
-        "priority": t.priority.value if t.priority else "medium",
-        "messages_count": len(t.messages),
-    })
-    suggested = result["output"].get("suggested_response", "Thank you for contacting support. We are reviewing your request.")
+    result = run_ai_task(
+        "ticket_triage",
+        {
+            "title": t.title,
+            "description": t.description,
+            "category": t.category.value if t.category else "general",
+            "priority": t.priority.value if t.priority else "medium",
+            "messages_count": len(t.messages),
+        },
+    )
+    suggested = result["output"].get(
+        "suggested_response",
+        "Thank you for contacting support. We are reviewing your request.",
+    )
     t.ai_suggested_response = suggested
     db.commit()
-    return {"suggested_response": suggested, "is_real_ai": result.get("is_real_ai", False)}
+    return {
+        "suggested_response": suggested,
+        "is_real_ai": result.get("is_real_ai", False),
+    }
 
 
 @router.delete("/{ticket_id}")

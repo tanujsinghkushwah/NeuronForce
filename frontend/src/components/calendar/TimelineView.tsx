@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React, { useMemo, useRef, useEffect } from 'react';
-import { CalendarEvent } from '../../types/crm';
-import { Video, Clock, MapPin, Plus } from 'lucide-react';
+import React, { useMemo, useRef, useEffect } from "react";
+import { CalendarEvent } from "../../types/crm";
+import { Video, Clock, MapPin, Plus } from "lucide-react";
 
 interface TimelineViewProps {
   events: CalendarEvent[];
   currentDate: Date;
-  viewMode: 'week' | 'day';
+  viewMode: "week" | "day";
   onSelectEvent: (event: CalendarEvent) => void;
   onSlotClick: (date: Date, hour: number) => void;
 }
@@ -28,7 +28,7 @@ export default function TimelineView({
 
   // Compute days to display based on viewMode
   const days = useMemo(() => {
-    if (viewMode === 'day') {
+    if (viewMode === "day") {
       const d = new Date(currentDate);
       d.setHours(0, 0, 0, 0);
       return [d];
@@ -50,7 +50,9 @@ export default function TimelineView({
 
   // Current time marker (stable default for prerender, updated on client mount)
   const [mounted, setMounted] = React.useState(false);
-  const [now, setNow] = React.useState<Date>(() => new Date('2026-10-22T12:00:00'));
+  const [now, setNow] = React.useState<Date>(
+    () => new Date("2026-10-22T12:00:00"),
+  );
 
   React.useEffect(() => {
     setMounted(true);
@@ -67,7 +69,10 @@ export default function TimelineView({
   useEffect(() => {
     if (scrollContainerRef.current) {
       // Scroll to 8 AM or current time
-      const targetScroll = Math.max(0, (Math.min(nowHour, 14) - START_HOUR - 1) * HOUR_HEIGHT);
+      const targetScroll = Math.max(
+        0,
+        (Math.min(nowHour, 14) - START_HOUR - 1) * HOUR_HEIGHT,
+      );
       scrollContainerRef.current.scrollTop = targetScroll;
     }
   }, []);
@@ -81,15 +86,18 @@ export default function TimelineView({
     );
   };
 
-  const hoursArray = Array.from({ length: TOTAL_HOURS }, (_, i) => START_HOUR + i);
+  const hoursArray = Array.from(
+    { length: TOTAL_HOURS },
+    (_, i) => START_HOUR + i,
+  );
 
   const formatHourLabel = (hour: number) => {
-    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const ampm = hour >= 12 ? "PM" : "AM";
     const h = hour % 12 === 0 ? 12 : hour % 12;
     return `${h} ${ampm}`;
   };
 
-  const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
     <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden flex flex-col shadow-2xl">
@@ -103,7 +111,9 @@ export default function TimelineView({
         </div>
 
         {/* Day Columns Header */}
-        <div className={`flex-1 grid ${viewMode === 'day' ? 'grid-cols-1' : 'grid-cols-7'}`}>
+        <div
+          className={`flex-1 grid ${viewMode === "day" ? "grid-cols-1" : "grid-cols-7"}`}
+        >
           {days.map((day, idx) => {
             const today = isToday(day);
             const dayName = DAY_NAMES[day.getDay()];
@@ -113,12 +123,12 @@ export default function TimelineView({
               <div
                 key={idx}
                 className={`py-3 px-2 flex flex-col items-center justify-center border-r border-white/10 last:border-r-0 transition-colors ${
-                  today ? 'bg-indigo-500/[0.07]' : ''
+                  today ? "bg-indigo-500/[0.07]" : ""
                 }`}
               >
                 <span
                   className={`text-[11px] font-bold uppercase tracking-wider mb-1 ${
-                    today ? 'text-indigo-400' : 'text-slate-400'
+                    today ? "text-indigo-400" : "text-slate-400"
                   }`}
                 >
                   {dayName}
@@ -127,8 +137,8 @@ export default function TimelineView({
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                     today
-                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/40 ring-2 ring-indigo-400/50'
-                      : 'text-slate-200 hover:bg-white/10'
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/40 ring-2 ring-indigo-400/50"
+                      : "text-slate-200 hover:bg-white/10"
                   }`}
                 >
                   {dayNum}
@@ -145,7 +155,10 @@ export default function TimelineView({
         className="overflow-y-auto max-h-[660px] relative select-none"
         style={{ height: `${TOTAL_HOURS * HOUR_HEIGHT}px` }}
       >
-        <div className="flex relative" style={{ height: `${TOTAL_HOURS * HOUR_HEIGHT}px` }}>
+        <div
+          className="flex relative"
+          style={{ height: `${TOTAL_HOURS * HOUR_HEIGHT}px` }}
+        >
           {/* Time markers gutter (left) */}
           <div className="w-16 sm:w-20 shrink-0 border-r border-white/10 relative text-right pr-2">
             {hoursArray.map((hour, idx) => (
@@ -160,7 +173,9 @@ export default function TimelineView({
           </div>
 
           {/* Timeline Grid Columns */}
-          <div className={`flex-1 grid ${viewMode === 'day' ? 'grid-cols-1' : 'grid-cols-7'} relative`}>
+          <div
+            className={`flex-1 grid ${viewMode === "day" ? "grid-cols-1" : "grid-cols-7"} relative`}
+          >
             {/* Background Horizontal Hour Lines spanning all columns */}
             <div className="absolute inset-0 pointer-events-none z-0">
               {hoursArray.map((hour, idx) => (
@@ -196,7 +211,7 @@ export default function TimelineView({
                 <div
                   key={dayIndex}
                   className={`relative border-r border-white/10 last:border-r-0 ${
-                    today ? 'bg-indigo-500/[0.03]' : ''
+                    today ? "bg-indigo-500/[0.03]" : ""
                   }`}
                   style={{ height: `${TOTAL_HOURS * HOUR_HEIGHT}px` }}
                 >
@@ -233,18 +248,34 @@ export default function TimelineView({
                   {dayEvents.map((evt) => {
                     const start = new Date(evt.start_time);
                     const end = new Date(evt.end_time);
-                    const startDecimal = start.getHours() + start.getMinutes() / 60;
+                    const startDecimal =
+                      start.getHours() + start.getMinutes() / 60;
                     const endDecimal = end.getHours() + end.getMinutes() / 60;
 
-                    const clampedStart = Math.max(START_HOUR, Math.min(END_HOUR, startDecimal));
-                    const clampedEnd = Math.max(clampedStart + 0.4, Math.min(END_HOUR, endDecimal));
+                    const clampedStart = Math.max(
+                      START_HOUR,
+                      Math.min(END_HOUR, startDecimal),
+                    );
+                    const clampedEnd = Math.max(
+                      clampedStart + 0.4,
+                      Math.min(END_HOUR, endDecimal),
+                    );
 
                     const top = (clampedStart - START_HOUR) * HOUR_HEIGHT;
-                    const height = Math.max(38, (clampedEnd - clampedStart) * HOUR_HEIGHT - 2);
+                    const height = Math.max(
+                      38,
+                      (clampedEnd - clampedStart) * HOUR_HEIGHT - 2,
+                    );
 
-                    const color = evt.color || '#6366f1';
-                    const startTimeStr = start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-                    const endTimeStr = end.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                    const color = evt.color || "#6366f1";
+                    const startTimeStr = start.toLocaleTimeString([], {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    });
+                    const endTimeStr = end.toLocaleTimeString([], {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    });
 
                     return (
                       <div
@@ -262,7 +293,7 @@ export default function TimelineView({
                           borderTop: `1px solid ${color}40`,
                           borderRight: `1px solid ${color}30`,
                           borderBottom: `1px solid ${color}30`,
-                          backdropFilter: 'blur(8px)',
+                          backdropFilter: "blur(8px)",
                         }}
                       >
                         <div>
@@ -278,13 +309,16 @@ export default function TimelineView({
                                   backgroundColor: `${color}35`,
                                 }}
                               >
-                                {evt.event_type.replace('_', ' ')}
+                                {evt.event_type.replace("_", " ")}
                               </span>
                             )}
                           </div>
 
                           <div className="flex items-center gap-1 text-[10px] text-slate-300 font-medium">
-                            <Clock className="w-2.5 h-2.5 shrink-0" style={{ color }} />
+                            <Clock
+                              className="w-2.5 h-2.5 shrink-0"
+                              style={{ color }}
+                            />
                             <span>
                               {startTimeStr} – {endTimeStr}
                             </span>

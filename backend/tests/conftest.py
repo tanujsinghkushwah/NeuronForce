@@ -56,6 +56,7 @@ def db_session():
 @pytest.fixture
 def client(db_session, monkeypatch):
     """Provides a FastAPI TestClient connected to the isolated test session."""
+
     def override_get_db():
         try:
             yield db_session

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Sparkles,
   Database,
@@ -18,10 +18,10 @@ import {
   Clock,
   RotateCw,
   Layers,
-  ArrowDown
-} from 'lucide-react';
-import { GraphNodeStep } from '../../types/crm';
-import NodeDetailModal from './NodeDetailModal';
+  ArrowDown,
+} from "lucide-react";
+import { GraphNodeStep } from "../../types/crm";
+import NodeDetailModal from "./NodeDetailModal";
 
 interface AgentGraphFlowProps {
   steps: GraphNodeStep[];
@@ -36,28 +36,38 @@ export default function AgentGraphFlow({
   isExecuting,
   activeNodeId,
   targetSubagent,
-  actionType
+  actionType,
 }: AgentGraphFlowProps) {
   const [selectedStep, setSelectedStep] = useState<GraphNodeStep | null>(null);
 
   // Helper to find step info for a node
   const getStep = (nodeId: string): GraphNodeStep | undefined => {
-    return steps.find(s => s.node === nodeId || s.node.includes(nodeId));
+    return steps.find((s) => s.node === nodeId || s.node.includes(nodeId));
   };
 
-  const getNodeState = (nodeId: string): 'idle' | 'running' | 'completed' | 'skipped' => {
+  const getNodeState = (
+    nodeId: string,
+  ): "idle" | "running" | "completed" | "skipped" => {
     const step = getStep(nodeId);
-    if (step) return 'completed';
+    if (step) return "completed";
     if (isExecuting) {
-      if (activeNodeId === nodeId) return 'running';
-      if (nodeId.startsWith('subagent_') && targetSubagent && nodeId.includes(targetSubagent)) {
-        return 'running';
+      if (activeNodeId === nodeId) return "running";
+      if (
+        nodeId.startsWith("subagent_") &&
+        targetSubagent &&
+        nodeId.includes(targetSubagent)
+      ) {
+        return "running";
       }
-      if (nodeId.startsWith('action_') && actionType && nodeId.includes(actionType)) {
-        return 'running';
+      if (
+        nodeId.startsWith("action_") &&
+        actionType &&
+        nodeId.includes(actionType)
+      ) {
+        return "running";
       }
     }
-    return 'idle';
+    return "idle";
   };
 
   const handleNodeClick = (nodeId: string, fallbackLabel: string) => {
@@ -71,25 +81,25 @@ export default function AgentGraphFlow({
         label: fallbackLabel,
         latency_ms: 0,
         summary: `${fallbackLabel} is ready in the workflow. It executes automatically when relevant prompts are received.`,
-        data: { step: fallbackLabel, status: 'Ready' }
+        data: { step: fallbackLabel, status: "Ready" },
       });
     }
   };
 
   const isAnySubagentActive = [
-    'subagent_lead_scoring',
-    'subagent_email_draft',
-    'subagent_deal_risk',
-    'subagent_churn_prediction',
-    'subagent_meeting_summary'
-  ].some(id => getNodeState(id) !== 'idle');
+    "subagent_lead_scoring",
+    "subagent_email_draft",
+    "subagent_deal_risk",
+    "subagent_churn_prediction",
+    "subagent_meeting_summary",
+  ].some((id) => getNodeState(id) !== "idle");
 
   const isAnyActionActive = [
-    'action_schedule_meeting',
-    'action_create_deal',
-    'action_create_contact',
-    'action_create_campaign'
-  ].some(id => getNodeState(id) !== 'idle');
+    "action_schedule_meeting",
+    "action_create_deal",
+    "action_create_contact",
+    "action_create_campaign",
+  ].some((id) => getNodeState(id) !== "idle");
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-[#080d1a] border border-indigo-500/20 rounded-2xl overflow-hidden shadow-xl">
@@ -144,11 +154,17 @@ export default function AgentGraphFlow({
             subtitle="Interpreting prompt goals, intent &amp; target details"
             icon={Sparkles}
             color="from-blue-600 to-indigo-600"
-            state={getNodeState('prompt_ingestion')}
-            step={getStep('prompt_ingestion')}
-            onClick={() => handleNodeClick('prompt_ingestion', 'Request Understanding')}
+            state={getNodeState("prompt_ingestion")}
+            step={getStep("prompt_ingestion")}
+            onClick={() =>
+              handleNodeClick("prompt_ingestion", "Request Understanding")
+            }
           />
-          <ConnectorLine active={getNodeState('prompt_ingestion') === 'completed' || isExecuting} />
+          <ConnectorLine
+            active={
+              getNodeState("prompt_ingestion") === "completed" || isExecuting
+            }
+          />
         </div>
 
         {/* Step 2: CRM Data Retrieval */}
@@ -159,16 +175,23 @@ export default function AgentGraphFlow({
             subtitle="Checking customer, deal &amp; calendar records"
             icon={Database}
             color="from-cyan-600 to-blue-600"
-            state={getNodeState('context_retrieval')}
-            step={getStep('context_retrieval')}
+            state={getNodeState("context_retrieval")}
+            step={getStep("context_retrieval")}
             badgeText={
-              getStep('context_retrieval')?.data?.matching_contacts_count !== undefined
-                ? `${getStep('context_retrieval')?.data?.matching_contacts_count} Contacts · ${getStep('context_retrieval')?.data?.matching_deals_count} Deals`
-                : 'Live CRM Sync'
+              getStep("context_retrieval")?.data?.matching_contacts_count !==
+              undefined
+                ? `${getStep("context_retrieval")?.data?.matching_contacts_count} Contacts · ${getStep("context_retrieval")?.data?.matching_deals_count} Deals`
+                : "Live CRM Sync"
             }
-            onClick={() => handleNodeClick('context_retrieval', 'CRM Data Gathering')}
+            onClick={() =>
+              handleNodeClick("context_retrieval", "CRM Data Gathering")
+            }
           />
-          <ConnectorLine active={getNodeState('context_retrieval') === 'completed' || isExecuting} />
+          <ConnectorLine
+            active={
+              getNodeState("context_retrieval") === "completed" || isExecuting
+            }
+          />
         </div>
 
         {/* Step 3: Decision Router */}
@@ -179,28 +202,34 @@ export default function AgentGraphFlow({
             subtitle="Directing to the best specialized agent or CRM tool"
             icon={GitFork}
             color="from-purple-600 to-indigo-600"
-            state={getNodeState('intent_router')}
-            step={getStep('intent_router')}
+            state={getNodeState("intent_router")}
+            step={getStep("intent_router")}
             badgeText={
               targetSubagent
-                ? `Agent: ${targetSubagent.replace('_', ' ').toUpperCase()}`
+                ? `Agent: ${targetSubagent.replace("_", " ").toUpperCase()}`
                 : actionType
-                ? `Action: ${actionType.replace('_', ' ').toUpperCase()}`
-                : 'Routing'
+                  ? `Action: ${actionType.replace("_", " ").toUpperCase()}`
+                  : "Routing"
             }
-            onClick={() => handleNodeClick('intent_router', 'Decision Router')}
+            onClick={() => handleNodeClick("intent_router", "Decision Router")}
           />
-          <ConnectorLine active={getNodeState('intent_router') === 'completed' || isExecuting} />
+          <ConnectorLine
+            active={
+              getNodeState("intent_router") === "completed" || isExecuting
+            }
+          />
         </div>
 
         {/* Step 4: Compact Dual-Branch Container (Specialized Agents vs CRM Actions) */}
         <div className="grid grid-cols-2 gap-3 max-w-xl mx-auto w-full">
           {/* Branch A: Specialized Agents */}
-          <div className={`p-2.5 rounded-xl transition-all border ${
-            isAnySubagentActive
-              ? 'bg-indigo-950/40 border-indigo-400/50 shadow-md shadow-indigo-500/10'
-              : 'bg-slate-900/40 border-white/5'
-          } flex flex-col space-y-1.5`}>
+          <div
+            className={`p-2.5 rounded-xl transition-all border ${
+              isAnySubagentActive
+                ? "bg-indigo-950/40 border-indigo-400/50 shadow-md shadow-indigo-500/10"
+                : "bg-slate-900/40 border-white/5"
+            } flex flex-col space-y-1.5`}
+          >
             <div className="flex items-center justify-between px-1 pb-1 border-b border-white/5">
               <span className="text-[10px] font-bold tracking-wider text-indigo-300 flex items-center gap-1">
                 <Layers className="w-3 h-3 text-indigo-400" />
@@ -215,9 +244,11 @@ export default function AgentGraphFlow({
                 name="Lead Scoring"
                 icon={Zap}
                 color="text-indigo-400"
-                state={getNodeState('subagent_lead_scoring')}
-                step={getStep('subagent_lead_scoring')}
-                onClick={() => handleNodeClick('subagent_lead_scoring', 'Lead Scoring Agent')}
+                state={getNodeState("subagent_lead_scoring")}
+                step={getStep("subagent_lead_scoring")}
+                onClick={() =>
+                  handleNodeClick("subagent_lead_scoring", "Lead Scoring Agent")
+                }
               />
 
               <MicroAgentNode
@@ -225,9 +256,11 @@ export default function AgentGraphFlow({
                 name="Email Drafter"
                 icon={Mail}
                 color="text-purple-400"
-                state={getNodeState('subagent_email_draft')}
-                step={getStep('subagent_email_draft')}
-                onClick={() => handleNodeClick('subagent_email_draft', 'Email Drafter')}
+                state={getNodeState("subagent_email_draft")}
+                step={getStep("subagent_email_draft")}
+                onClick={() =>
+                  handleNodeClick("subagent_email_draft", "Email Drafter")
+                }
               />
 
               <MicroAgentNode
@@ -235,9 +268,11 @@ export default function AgentGraphFlow({
                 name="Deal Risk Analysis"
                 icon={Award}
                 color="text-cyan-400"
-                state={getNodeState('subagent_deal_risk')}
-                step={getStep('subagent_deal_risk')}
-                onClick={() => handleNodeClick('subagent_deal_risk', 'Deal Risk Assessment')}
+                state={getNodeState("subagent_deal_risk")}
+                step={getStep("subagent_deal_risk")}
+                onClick={() =>
+                  handleNodeClick("subagent_deal_risk", "Deal Risk Assessment")
+                }
               />
 
               <MicroAgentNode
@@ -245,9 +280,11 @@ export default function AgentGraphFlow({
                 name="Churn Sentinel"
                 icon={ShieldAlert}
                 color="text-rose-400"
-                state={getNodeState('subagent_churn_prediction')}
-                step={getStep('subagent_churn_prediction')}
-                onClick={() => handleNodeClick('subagent_churn_prediction', 'Churn Sentinel')}
+                state={getNodeState("subagent_churn_prediction")}
+                step={getStep("subagent_churn_prediction")}
+                onClick={() =>
+                  handleNodeClick("subagent_churn_prediction", "Churn Sentinel")
+                }
               />
 
               <MicroAgentNode
@@ -255,19 +292,26 @@ export default function AgentGraphFlow({
                 name="Meeting Summarizer"
                 icon={FileText}
                 color="text-amber-400"
-                state={getNodeState('subagent_meeting_summary')}
-                step={getStep('subagent_meeting_summary')}
-                onClick={() => handleNodeClick('subagent_meeting_summary', 'Meeting Summarizer')}
+                state={getNodeState("subagent_meeting_summary")}
+                step={getStep("subagent_meeting_summary")}
+                onClick={() =>
+                  handleNodeClick(
+                    "subagent_meeting_summary",
+                    "Meeting Summarizer",
+                  )
+                }
               />
             </div>
           </div>
 
           {/* Branch B: CRM Action Tools */}
-          <div className={`p-2.5 rounded-xl transition-all border ${
-            isAnyActionActive
-              ? 'bg-cyan-950/40 border-cyan-400/50 shadow-md shadow-cyan-500/10'
-              : 'bg-slate-900/40 border-white/5'
-          } flex flex-col space-y-1.5`}>
+          <div
+            className={`p-2.5 rounded-xl transition-all border ${
+              isAnyActionActive
+                ? "bg-cyan-950/40 border-cyan-400/50 shadow-md shadow-cyan-500/10"
+                : "bg-slate-900/40 border-white/5"
+            } flex flex-col space-y-1.5`}
+          >
             <div className="flex items-center justify-between px-1 pb-1 border-b border-white/5">
               <span className="text-[10px] font-bold tracking-wider text-cyan-300 flex items-center gap-1">
                 <Briefcase className="w-3 h-3 text-cyan-400" />
@@ -282,9 +326,14 @@ export default function AgentGraphFlow({
                 name="Calendar Scheduler"
                 icon={Calendar}
                 color="text-emerald-400"
-                state={getNodeState('action_schedule_meeting')}
-                step={getStep('action_schedule_meeting')}
-                onClick={() => handleNodeClick('action_schedule_meeting', 'Calendar Scheduler')}
+                state={getNodeState("action_schedule_meeting")}
+                step={getStep("action_schedule_meeting")}
+                onClick={() =>
+                  handleNodeClick(
+                    "action_schedule_meeting",
+                    "Calendar Scheduler",
+                  )
+                }
               />
 
               <MicroAgentNode
@@ -292,9 +341,17 @@ export default function AgentGraphFlow({
                 name="Pipeline Deals"
                 icon={Award}
                 color="text-indigo-400"
-                state={getNodeState('action_create_deal') !== 'idle' ? getNodeState('action_create_deal') : getNodeState('action_update_deal')}
-                step={getStep('action_create_deal') || getStep('action_update_deal')}
-                onClick={() => handleNodeClick('action_create_deal', 'Pipeline Deals')}
+                state={
+                  getNodeState("action_create_deal") !== "idle"
+                    ? getNodeState("action_create_deal")
+                    : getNodeState("action_update_deal")
+                }
+                step={
+                  getStep("action_create_deal") || getStep("action_update_deal")
+                }
+                onClick={() =>
+                  handleNodeClick("action_create_deal", "Pipeline Deals")
+                }
               />
 
               <MicroAgentNode
@@ -302,9 +359,18 @@ export default function AgentGraphFlow({
                 name="Contact &amp; Leads"
                 icon={Users}
                 color="text-blue-400"
-                state={getNodeState('action_create_contact') !== 'idle' ? getNodeState('action_create_contact') : getNodeState('action_update_contact')}
-                step={getStep('action_create_contact') || getStep('action_update_contact')}
-                onClick={() => handleNodeClick('action_create_contact', 'Contact Manager')}
+                state={
+                  getNodeState("action_create_contact") !== "idle"
+                    ? getNodeState("action_create_contact")
+                    : getNodeState("action_update_contact")
+                }
+                step={
+                  getStep("action_create_contact") ||
+                  getStep("action_update_contact")
+                }
+                onClick={() =>
+                  handleNodeClick("action_create_contact", "Contact Manager")
+                }
               />
 
               <MicroAgentNode
@@ -312,9 +378,14 @@ export default function AgentGraphFlow({
                 name="Marketing Campaigns"
                 icon={Megaphone}
                 color="text-pink-400"
-                state={getNodeState('action_create_campaign')}
-                step={getStep('action_create_campaign')}
-                onClick={() => handleNodeClick('action_create_campaign', 'Marketing Campaigns')}
+                state={getNodeState("action_create_campaign")}
+                step={getStep("action_create_campaign")}
+                onClick={() =>
+                  handleNodeClick(
+                    "action_create_campaign",
+                    "Marketing Campaigns",
+                  )
+                }
               />
 
               <div className="py-1 px-2 rounded-lg bg-white/[0.02] border border-white/5 text-[10px] text-slate-400 flex items-center justify-center gap-1">
@@ -326,16 +397,20 @@ export default function AgentGraphFlow({
 
         {/* Step 5: Outcome & CRM Sync */}
         <div className="flex flex-col items-center">
-          <ConnectorLine active={getNodeState('synthesizer') === 'completed' || isExecuting} />
+          <ConnectorLine
+            active={getNodeState("synthesizer") === "completed" || isExecuting}
+          />
           <NodeCard
             stepNumber="4"
             title="Outcome &amp; Database Sync"
             subtitle="Finalizing response &amp; synchronizing CRM state"
             icon={CheckCircle2}
             color="from-emerald-600 to-teal-500"
-            state={getNodeState('synthesizer')}
-            step={getStep('synthesizer')}
-            onClick={() => handleNodeClick('synthesizer', 'Outcome & Database Sync')}
+            state={getNodeState("synthesizer")}
+            step={getStep("synthesizer")}
+            onClick={() =>
+              handleNodeClick("synthesizer", "Outcome & Database Sync")
+            }
           />
         </div>
       </div>
@@ -362,35 +437,37 @@ function NodeCard({
   state,
   step,
   badgeText,
-  onClick
+  onClick,
 }: {
   stepNumber: string;
   title: string;
   subtitle: string;
   icon: React.ComponentType<{ className?: string }>;
   color: string;
-  state: 'idle' | 'running' | 'completed' | 'skipped';
+  state: "idle" | "running" | "completed" | "skipped";
   step?: GraphNodeStep;
   badgeText?: string;
   onClick: () => void;
 }) {
-  const isRunning = state === 'running';
-  const isCompleted = state === 'completed';
+  const isRunning = state === "running";
+  const isCompleted = state === "completed";
 
   return (
     <div
       onClick={onClick}
       className={`w-full max-w-md p-2.5 px-3 rounded-xl border transition-all cursor-pointer relative group ${
         isRunning
-          ? 'bg-indigo-950/70 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400'
+          ? "bg-indigo-950/70 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400"
           : isCompleted
-          ? 'bg-slate-900/90 border-emerald-500/50 hover:border-emerald-400 shadow-sm shadow-emerald-500/10'
-          : 'bg-slate-900/60 border-white/10 hover:border-white/20 hover:bg-slate-900/90'
+            ? "bg-slate-900/90 border-emerald-500/50 hover:border-emerald-400 shadow-sm shadow-emerald-500/10"
+            : "bg-slate-900/60 border-white/10 hover:border-white/20 hover:bg-slate-900/90"
       }`}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${color} flex items-center justify-center text-white shadow-md relative shrink-0`}>
+          <div
+            className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${color} flex items-center justify-center text-white shadow-md relative shrink-0`}
+          >
             <Icon className="w-4 h-4" />
             {isRunning && (
               <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
@@ -414,7 +491,9 @@ function NodeCard({
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-slate-400 line-clamp-1">{subtitle}</p>
+            <p className="text-[11px] text-slate-400 line-clamp-1">
+              {subtitle}
+            </p>
           </div>
         </div>
 
@@ -445,28 +524,28 @@ function MicroAgentNode({
   color,
   state,
   step,
-  onClick
+  onClick,
 }: {
   nodeId: string;
   name: string;
   icon: React.ComponentType<{ className?: string }>;
   color: string;
-  state: 'idle' | 'running' | 'completed' | 'skipped';
+  state: "idle" | "running" | "completed" | "skipped";
   step?: GraphNodeStep;
   onClick: () => void;
 }) {
-  const isRunning = state === 'running';
-  const isCompleted = state === 'completed';
+  const isRunning = state === "running";
+  const isCompleted = state === "completed";
 
   return (
     <div
       onClick={onClick}
       className={`py-1 px-2.5 rounded-lg border text-xs flex items-center justify-between transition-all cursor-pointer ${
         isRunning
-          ? 'bg-indigo-950/90 border-cyan-400 shadow-sm shadow-cyan-500/20 ring-1 ring-cyan-400 text-white'
+          ? "bg-indigo-950/90 border-cyan-400 shadow-sm shadow-cyan-500/20 ring-1 ring-cyan-400 text-white"
           : isCompleted
-          ? 'bg-slate-900 border-emerald-500/50 text-white font-medium'
-          : 'bg-slate-900/50 border-white/5 hover:border-white/10 text-slate-400 hover:text-white'
+            ? "bg-slate-900 border-emerald-500/50 text-white font-medium"
+            : "bg-slate-900/50 border-white/5 hover:border-white/10 text-slate-400 hover:text-white"
       }`}
     >
       <div className="flex items-center gap-1.5 truncate pr-1">
@@ -490,7 +569,9 @@ function MicroAgentNode({
 function ConnectorLine({ active }: { active: boolean }) {
   return (
     <div className="h-2 w-0.5 relative my-0.5 flex items-center justify-center shrink-0">
-      <div className={`w-0.5 h-full transition-colors ${active ? 'bg-gradient-to-b from-cyan-400 to-indigo-500' : 'bg-slate-800'}`} />
+      <div
+        className={`w-0.5 h-full transition-colors ${active ? "bg-gradient-to-b from-cyan-400 to-indigo-500" : "bg-slate-800"}`}
+      />
       {active && (
         <span className="absolute w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400 animate-pulse" />
       )}

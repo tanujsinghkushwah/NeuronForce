@@ -9,7 +9,12 @@ from datetime import datetime, timezone, timedelta
 
 from app.database import get_db
 from app.models import (
-    Contact, Deal, Activity, AIAgentTask, AnalyticsSnapshot, DealStage
+    Contact,
+    Deal,
+    Activity,
+    AIAgentTask,
+    AnalyticsSnapshot,
+    DealStage,
 )
 from app.schemas import DashboardStats
 
@@ -23,20 +28,26 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
     total_deals = db.query(Deal).count()
 
     # Revenue from closed-won deals
-    total_revenue = db.query(func.coalesce(func.sum(Deal.value), 0)).filter(
-        Deal.stage == DealStage.CLOSED_WON
-    ).scalar()
+    total_revenue = (
+        db.query(func.coalesce(func.sum(Deal.value), 0))
+        .filter(Deal.stage == DealStage.CLOSED_WON)
+        .scalar()
+    )
 
     # Pipeline value (active deals)
-    pipeline_value = db.query(func.coalesce(func.sum(Deal.value), 0)).filter(
-        Deal.stage.notin_([DealStage.CLOSED_WON, DealStage.CLOSED_LOST])
-    ).scalar()
+    pipeline_value = (
+        db.query(func.coalesce(func.sum(Deal.value), 0))
+        .filter(Deal.stage.notin_([DealStage.CLOSED_WON, DealStage.CLOSED_LOST]))
+        .scalar()
+    )
 
     deals_won = db.query(Deal).filter(Deal.stage == DealStage.CLOSED_WON).count()
     deals_lost = db.query(Deal).filter(Deal.stage == DealStage.CLOSED_LOST).count()
-    active_deals = db.query(Deal).filter(
-        Deal.stage.notin_([DealStage.CLOSED_WON, DealStage.CLOSED_LOST])
-    ).count()
+    active_deals = (
+        db.query(Deal)
+        .filter(Deal.stage.notin_([DealStage.CLOSED_WON, DealStage.CLOSED_LOST]))
+        .count()
+    )
 
     total_closed = deals_won + deals_lost
     conversion_rate = (deals_won / total_closed * 100) if total_closed > 0 else 0
@@ -44,10 +55,14 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
 
     # AI task stats for today
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0)
-    ai_tasks_today = db.query(AIAgentTask).filter(AIAgentTask.created_at >= today_start).count()
-    ai_cost_today = db.query(func.coalesce(func.sum(AIAgentTask.actual_cost), 0)).filter(
-        AIAgentTask.created_at >= today_start
-    ).scalar()
+    ai_tasks_today = (
+        db.query(AIAgentTask).filter(AIAgentTask.created_at >= today_start).count()
+    )
+    ai_cost_today = (
+        db.query(func.coalesce(func.sum(AIAgentTask.actual_cost), 0))
+        .filter(AIAgentTask.created_at >= today_start)
+        .scalar()
+    )
 
     # Revenue trajectory trend: 6-month trajectory across enterprise accounts
     snapshots = db.query(AnalyticsSnapshot).order_by(AnalyticsSnapshot.date).all()
@@ -70,39 +85,55 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
     else:
         # Graceful trajectory fallback based on current total closed revenue
         now = datetime.now(timezone.utc)
-        curr_rev = float(total_revenue if total_revenue and total_revenue > 0 else 520000.0)
-        curr_pipe = float(pipeline_value if pipeline_value and pipeline_value > 0 else 2375000.0)
+        curr_rev = float(
+            total_revenue if total_revenue and total_revenue > 0 else 520000.0
+        )
+        curr_pipe = float(
+            pipeline_value if pipeline_value and pipeline_value > 0 else 2375000.0
+        )
         multipliers = [0.35, 0.46, 0.59, 0.72, 0.86, 1.0]
         revenue_trend = []
         for idx, mult in enumerate(multipliers):
             m_date = now - timedelta(days=30 * (5 - idx))
-            revenue_trend.append({
-                "month": m_date.strftime("%b"),
-                "date": m_date.strftime("%Y-%m-%d"),
-                "revenue": round(curr_rev * mult, 2),
-                "total_revenue": round(curr_rev * mult, 2),
-                "pipeline": round(curr_pipe * (0.8 + 0.2 * mult), 2),
-            })
+            revenue_trend.append(
+                {
+                    "month": m_date.strftime("%b"),
+                    "date": m_date.strftime("%Y-%m-%d"),
+                    "revenue": round(curr_rev * mult, 2),
+                    "total_revenue": round(curr_rev * mult, 2),
+                    "pipeline": round(curr_pipe * (0.8 + 0.2 * mult), 2),
+                }
+            )
 
     # Pipeline by stage
     pipeline_by_stage = []
     for stage in DealStage:
         stage_deals = db.query(Deal).filter(Deal.stage == stage).all()
         stage_value = sum(d.value or 0 for d in stage_deals)
-        pipeline_by_stage.append({
-            "stage": stage.value,
-            "count": len(stage_deals),
-            "value": stage_value,
-        })
+        pipeline_by_stage.append(
+            {
+                "stage": stage.value,
+                "count": len(stage_deals),
+                "value": stage_value,
+            }
+        )
 
     # Top deals
-    top_deals = db.query(Deal).filter(
-        Deal.stage.notin_([DealStage.CLOSED_WON, DealStage.CLOSED_LOST])
-    ).order_by(desc(Deal.value)).limit(5).all()
+    top_deals = (
+        db.query(Deal)
+        .filter(Deal.stage.notin_([DealStage.CLOSED_WON, DealStage.CLOSED_LOST]))
+        .order_by(desc(Deal.value))
+        .limit(5)
+        .all()
+    )
     top_deals_data = [
         {
-            "id": d.id, "title": d.title, "value": d.value, "stage": d.stage.value,
-            "company": d.company, "probability": d.probability
+            "id": d.id,
+            "title": d.title,
+            "value": d.value,
+            "stage": d.stage.value,
+            "company": d.company,
+            "probability": d.probability,
         }
         for d in top_deals
     ]
@@ -110,12 +141,19 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
     # Recent activities
     recent = db.query(Activity).order_by(desc(Activity.created_at)).limit(10).all()
     recent_data = [
-        {"id": a.id, "type": a.type.value, "subject": a.subject, "created_at": a.created_at.isoformat()}
+        {
+            "id": a.id,
+            "type": a.type.value,
+            "subject": a.subject,
+            "created_at": a.created_at.isoformat(),
+        }
         for a in recent
     ]
 
     # Lead sources
-    sources = db.query(Contact.source, func.count(Contact.id)).group_by(Contact.source).all()
+    sources = (
+        db.query(Contact.source, func.count(Contact.id)).group_by(Contact.source).all()
+    )
     lead_sources = [{"source": s[0] or "Unknown", "count": s[1]} for s in sources]
 
     return DashboardStats(
@@ -141,4 +179,8 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
 @router.get("/health")
 def health_check():
     """Health check endpoint."""
-    return {"status": "healthy", "version": "1.0.0", "timestamp": datetime.now(timezone.utc).isoformat()}
+    return {
+        "status": "healthy",
+        "version": "1.0.0",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }

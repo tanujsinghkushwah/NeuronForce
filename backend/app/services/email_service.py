@@ -39,6 +39,7 @@ def send_email_message(
         dotenv_path = BACKEND_DIR / ".env"
         if dotenv_path.exists():
             from dotenv import load_dotenv
+
             load_dotenv(dotenv_path)
 
     resend_api_key = os.getenv("RESEND_API_KEY", "").strip()
@@ -55,7 +56,9 @@ def send_email_message(
     provider_used = "CRM Activity Log"
 
     # Default styled HTML email template
-    html_content = html_body or f"""
+    html_content = (
+        html_body
+        or f"""
     <!DOCTYPE html>
     <html>
     <head>
@@ -82,13 +85,17 @@ def send_email_message(
     </body>
     </html>
     """
+    )
 
     # 1. Primary Free Method: Resend API (single RESEND_API_KEY)
     if resend_api_key:
         try:
             import resend
+
             resend.api_key = resend_api_key
-            from_sender = os.getenv("SMTP_FROM_EMAIL") or "NeuronForce <onboarding@resend.dev>"
+            from_sender = (
+                os.getenv("SMTP_FROM_EMAIL") or "NeuronForce <onboarding@resend.dev>"
+            )
             params = {
                 "from": from_sender,
                 "to": [to_email],
@@ -99,7 +106,9 @@ def send_email_message(
             res = resend.Emails.send(params)
             sent_successfully = True
             provider_used = "Resend API"
-            delivery_status_msg = f"Delivered live to {to_email} via Resend (ID: {res.get('id', 'sent')})"
+            delivery_status_msg = (
+                f"Delivered live to {to_email} via Resend (ID: {res.get('id', 'sent')})"
+            )
         except Exception as exc:
             sent_successfully = False
             error_detail = str(exc)
@@ -116,7 +125,9 @@ def send_email_message(
             from_addr = os.getenv("SMTP_FROM_EMAIL", smtp_user)
             msg["From"] = f"{from_name} <{from_addr}>"
             msg["To"] = f"{to_name} <{to_email}>" if to_name else to_email
-            msg["Date"] = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+            msg["Date"] = datetime.now(timezone.utc).strftime(
+                "%a, %d %b %Y %H:%M:%S +0000"
+            )
             msg.attach(MIMEText(body, "plain", "utf-8"))
             msg.attach(MIMEText(html_content, "html", "utf-8"))
 
@@ -127,7 +138,9 @@ def send_email_message(
 
             sent_successfully = True
             provider_used = f"SMTP ({host})"
-            delivery_status_msg = f"Delivered live to {to_email} via SMTP ({host}:{port})"
+            delivery_status_msg = (
+                f"Delivered live to {to_email} via SMTP ({host}:{port})"
+            )
         except Exception as exc:
             sent_successfully = False
             error_detail = str(exc)
@@ -150,7 +163,7 @@ def send_email_message(
             contact_id=contact_id,
             outcome=delivery_status_msg[:200],
             completed_at=datetime.now(timezone.utc),
-            scheduled_at=datetime.now(timezone.utc)
+            scheduled_at=datetime.now(timezone.utc),
         )
         db.add(activity)
         db.commit()
@@ -170,5 +183,5 @@ def send_email_message(
         "delivery_status": delivery_status_msg,
         "provider": provider_used,
         "error": error_detail,
-        "configured": bool(resend_api_key or (smtp_user and smtp_password))
+        "configured": bool(resend_api_key or (smtp_user and smtp_password)),
     }

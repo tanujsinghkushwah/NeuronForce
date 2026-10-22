@@ -74,8 +74,9 @@ class Settings:
         self.SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
         self.SMTP_USER: str = os.getenv("SMTP_USER", "")
         self.SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
-        self.SMTP_FROM_EMAIL: str = os.getenv("SMTP_FROM_EMAIL", "NeuronForce <onboarding@resend.dev>")
-
+        self.SMTP_FROM_EMAIL: str = os.getenv(
+            "SMTP_FROM_EMAIL", "NeuronForce <onboarding@resend.dev>"
+        )
 
     # CORS Allowed Origins
     @property

@@ -27,12 +27,16 @@ router = APIRouter(prefix="/api/analytics", tags=["Analytics"])
 
 # ─── Revenue Analytics ─────────────────────────────────────────────────────
 
+
 @router.get("/revenue")
 def get_revenue_analytics(days: int = 30, db: Session = Depends(get_db)):
     """Get revenue analytics over time."""
-    snapshots = db.query(AnalyticsSnapshot).order_by(
-        desc(AnalyticsSnapshot.date)
-    ).limit(days).all()
+    snapshots = (
+        db.query(AnalyticsSnapshot)
+        .order_by(desc(AnalyticsSnapshot.date))
+        .limit(days)
+        .all()
+    )
     snapshots.reverse()
     return [
         {
@@ -53,10 +57,15 @@ def get_revenue_analytics(days: int = 30, db: Session = Depends(get_db)):
 
 # ─── Performance Analytics ────────────────────────────────────────────────
 
+
 @router.get("/performance")
 def get_performance_metrics(db: Session = Depends(get_db)):
     """Get performance metrics for the sales team."""
-    owners = db.query(Deal.owner, func.count(Deal.id), func.sum(Deal.value)).group_by(Deal.owner).all()
+    owners = (
+        db.query(Deal.owner, func.count(Deal.id), func.sum(Deal.value))
+        .group_by(Deal.owner)
+        .all()
+    )
     return {
         "team_performance": [
             {
@@ -68,18 +77,19 @@ def get_performance_metrics(db: Session = Depends(get_db)):
             for o in owners
         ],
         "overall": {
-            "total_pipeline": db.query(func.coalesce(func.sum(Deal.value), 0)).filter(
-                Deal.stage.notin_([DealStage.CLOSED_WON, DealStage.CLOSED_LOST])
-            ).scalar(),
-            "total_revenue": db.query(func.coalesce(func.sum(Deal.value), 0)).filter(
-                Deal.stage == DealStage.CLOSED_WON
-            ).scalar(),
+            "total_pipeline": db.query(func.coalesce(func.sum(Deal.value), 0))
+            .filter(Deal.stage.notin_([DealStage.CLOSED_WON, DealStage.CLOSED_LOST]))
+            .scalar(),
+            "total_revenue": db.query(func.coalesce(func.sum(Deal.value), 0))
+            .filter(Deal.stage == DealStage.CLOSED_WON)
+            .scalar(),
             "avg_sales_cycle": random.randint(25, 45),
-        }
+        },
     }
 
 
 # ─── Custom Reports ───────────────────────────────────────────────────────
+
 
 @router.get("/reports/deals")
 def deal_report(
@@ -97,7 +107,9 @@ def deal_report(
     if start_date:
         query = query.filter(Deal.created_at >= datetime.fromisoformat(start_date))
     if end_date:
-        query = query.filter(Deal.created_at <= datetime.fromisoformat(end_date + "T23:59:59"))
+        query = query.filter(
+            Deal.created_at <= datetime.fromisoformat(end_date + "T23:59:59")
+        )
     if stage:
         query = query.filter(Deal.stage == stage)
     if owner:
@@ -118,13 +130,24 @@ def deal_report(
             "total_value": round(total_value, 2),
             "won_value": round(won_value, 2),
             "avg_value": round(total_value / len(deals), 2) if deals else 0,
-            "win_rate": round(sum(1 for d in deals if d.stage == DealStage.CLOSED_WON) / len(deals) * 100, 1) if deals else 0,
+            "win_rate": (
+                round(
+                    sum(1 for d in deals if d.stage == DealStage.CLOSED_WON)
+                    / len(deals)
+                    * 100,
+                    1,
+                )
+                if deals
+                else 0
+            ),
         },
         "by_stage": [
             {
                 "stage": stage_val.value,
                 "count": sum(1 for d in deals if d.stage == stage_val),
-                "value": round(sum(d.value or 0 for d in deals if d.stage == stage_val), 2),
+                "value": round(
+                    sum(d.value or 0 for d in deals if d.stage == stage_val), 2
+                ),
             }
             for stage_val in DealStage
         ],
@@ -138,11 +161,13 @@ def deal_report(
                 "company": d.company,
                 "probability": d.probability,
                 "ai_win_probability": d.ai_win_probability,
-                "expected_close_date": d.expected_close_date.isoformat() if d.expected_close_date else None,
+                "expected_close_date": (
+                    d.expected_close_date.isoformat() if d.expected_close_date else None
+                ),
                 "created_at": d.created_at.isoformat(),
             }
             for d in deals
-        ]
+        ],
     }
 
 
@@ -162,7 +187,9 @@ def contact_report(
     if start_date:
         query = query.filter(Contact.created_at >= datetime.fromisoformat(start_date))
     if end_date:
-        query = query.filter(Contact.created_at <= datetime.fromisoformat(end_date + "T23:59:59"))
+        query = query.filter(
+            Contact.created_at <= datetime.fromisoformat(end_date + "T23:59:59")
+        )
     if lead_status:
         query = query.filter(Contact.lead_status == lead_status)
     if source:
@@ -185,11 +212,18 @@ def contact_report(
     return {
         "summary": {
             "total_contacts": len(contacts),
-            "avg_lead_score": round(sum(c.lead_score or 0 for c in contacts) / len(contacts), 1) if contacts else 0,
+            "avg_lead_score": (
+                round(sum(c.lead_score or 0 for c in contacts) / len(contacts), 1)
+                if contacts
+                else 0
+            ),
             "converted": by_status.get("converted", 0),
         },
         "by_status": [{"status": k, "count": v} for k, v in by_status.items()],
-        "by_source": sorted([{"source": k, "count": v} for k, v in by_source.items()], key=lambda x: -x["count"])[:10],
+        "by_source": sorted(
+            [{"source": k, "count": v} for k, v in by_source.items()],
+            key=lambda x: -x["count"],
+        )[:10],
         "records": [
             {
                 "id": c.id,
@@ -204,7 +238,7 @@ def contact_report(
                 "created_at": c.created_at.isoformat(),
             }
             for c in contacts
-        ]
+        ],
     }
 
 
@@ -221,7 +255,9 @@ def ticket_report(
     if start_date:
         query = query.filter(Ticket.created_at >= datetime.fromisoformat(start_date))
     if end_date:
-        query = query.filter(Ticket.created_at <= datetime.fromisoformat(end_date + "T23:59:59"))
+        query = query.filter(
+            Ticket.created_at <= datetime.fromisoformat(end_date + "T23:59:59")
+        )
     if priority:
         query = query.filter(Ticket.priority == priority)
     if category:
@@ -229,12 +265,26 @@ def ticket_report(
 
     tickets = query.all()
     now = datetime.now(timezone.utc)
-    breached = [t for t in tickets if t.sla_due_at and t.status not in [TicketStatus.RESOLVED, TicketStatus.CLOSED] and t.sla_due_at.replace(tzinfo=timezone.utc) < now]
-    resolved = [t for t in tickets if t.status in [TicketStatus.RESOLVED, TicketStatus.CLOSED]]
+    breached = [
+        t
+        for t in tickets
+        if t.sla_due_at
+        and t.status not in [TicketStatus.RESOLVED, TicketStatus.CLOSED]
+        and t.sla_due_at.replace(tzinfo=timezone.utc) < now
+    ]
+    resolved = [
+        t for t in tickets if t.status in [TicketStatus.RESOLVED, TicketStatus.CLOSED]
+    ]
     avg_resolution_hrs = 0
     if resolved:
-        res_times = [abs((t.resolved_at - t.created_at).total_seconds()) / 3600 for t in resolved if t.resolved_at and t.created_at]
-        avg_resolution_hrs = round(sum(res_times) / len(res_times), 1) if res_times else 0
+        res_times = [
+            abs((t.resolved_at - t.created_at).total_seconds()) / 3600
+            for t in resolved
+            if t.resolved_at and t.created_at
+        ]
+        avg_resolution_hrs = (
+            round(sum(res_times) / len(res_times), 1) if res_times else 0
+        )
 
     by_priority = {}
     by_category = {}
@@ -251,7 +301,9 @@ def ticket_report(
             "resolved": len(resolved),
             "sla_breached": len(breached),
             "avg_resolution_hours": avg_resolution_hrs,
-            "resolution_rate": round(len(resolved) / len(tickets) * 100, 1) if tickets else 0,
+            "resolution_rate": (
+                round(len(resolved) / len(tickets) * 100, 1) if tickets else 0
+            ),
         },
         "by_priority": [{"priority": k, "count": v} for k, v in by_priority.items()],
         "by_category": [{"category": k, "count": v} for k, v in by_category.items()],
@@ -266,9 +318,19 @@ def campaign_report(db: Session = Depends(get_db)):
         "summary": {
             "total_campaigns": len(campaigns),
             "total_sent": sum(c.emails_sent or 0 for c in campaigns),
-            "avg_open_rate": round(sum(c.open_rate or 0 for c in campaigns) / len(campaigns), 4) if campaigns else 0,
-            "avg_click_rate": round(sum(c.click_rate or 0 for c in campaigns) / len(campaigns), 4) if campaigns else 0,
-            "total_revenue_attributed": round(sum(c.revenue_attributed or 0 for c in campaigns), 2),
+            "avg_open_rate": (
+                round(sum(c.open_rate or 0 for c in campaigns) / len(campaigns), 4)
+                if campaigns
+                else 0
+            ),
+            "avg_click_rate": (
+                round(sum(c.click_rate or 0 for c in campaigns) / len(campaigns), 4)
+                if campaigns
+                else 0
+            ),
+            "total_revenue_attributed": round(
+                sum(c.revenue_attributed or 0 for c in campaigns), 2
+            ),
         },
         "records": [
             {
@@ -283,11 +345,12 @@ def campaign_report(db: Session = Depends(get_db)):
                 "sent_at": c.sent_at.isoformat() if c.sent_at else None,
             }
             for c in sorted(campaigns, key=lambda x: -(x.revenue_attributed or 0))
-        ]
+        ],
     }
 
 
 # ─── CSV Export ───────────────────────────────────────────────────────────
+
 
 @router.get("/export/deals")
 def export_deals_csv(
@@ -301,26 +364,53 @@ def export_deals_csv(
     if start_date:
         query = query.filter(Deal.created_at >= datetime.fromisoformat(start_date))
     if end_date:
-        query = query.filter(Deal.created_at <= datetime.fromisoformat(end_date + "T23:59:59"))
+        query = query.filter(
+            Deal.created_at <= datetime.fromisoformat(end_date + "T23:59:59")
+        )
     if stage:
         query = query.filter(Deal.stage == stage)
     deals = query.order_by(desc(Deal.created_at)).limit(5000).all()
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["ID", "Title", "Value", "Stage", "Owner", "Company", "Probability", "AI Win Prob", "Expected Close", "Created At"])
+    writer.writerow(
+        [
+            "ID",
+            "Title",
+            "Value",
+            "Stage",
+            "Owner",
+            "Company",
+            "Probability",
+            "AI Win Prob",
+            "Expected Close",
+            "Created At",
+        ]
+    )
     for d in deals:
-        writer.writerow([
-            d.id, d.title, d.value, d.stage.value if d.stage else "", d.owner or "",
-            d.company or "", d.probability, d.ai_win_probability or "",
-            d.expected_close_date.date().isoformat() if d.expected_close_date else "",
-            d.created_at.date().isoformat()
-        ])
+        writer.writerow(
+            [
+                d.id,
+                d.title,
+                d.value,
+                d.stage.value if d.stage else "",
+                d.owner or "",
+                d.company or "",
+                d.probability,
+                d.ai_win_probability or "",
+                (
+                    d.expected_close_date.date().isoformat()
+                    if d.expected_close_date
+                    else ""
+                ),
+                d.created_at.date().isoformat(),
+            ]
+        )
     output.seek(0)
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=deals_export.csv"}
+        headers={"Content-Disposition": "attachment; filename=deals_export.csv"},
     )
 
 
@@ -340,53 +430,114 @@ def export_contacts_csv(
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["ID", "First Name", "Last Name", "Email", "Phone", "Company", "Job Title", "Lead Status", "Lead Score", "Source", "Industry", "Created At"])
+    writer.writerow(
+        [
+            "ID",
+            "First Name",
+            "Last Name",
+            "Email",
+            "Phone",
+            "Company",
+            "Job Title",
+            "Lead Status",
+            "Lead Score",
+            "Source",
+            "Industry",
+            "Created At",
+        ]
+    )
     for c in contacts:
-        writer.writerow([
-            c.id, c.first_name, c.last_name, c.email or "", c.phone or "",
-            c.company or "", c.job_title or "",
-            c.lead_status.value if c.lead_status else "", c.lead_score or 0,
-            c.source or "", c.industry or "", c.created_at.date().isoformat()
-        ])
+        writer.writerow(
+            [
+                c.id,
+                c.first_name,
+                c.last_name,
+                c.email or "",
+                c.phone or "",
+                c.company or "",
+                c.job_title or "",
+                c.lead_status.value if c.lead_status else "",
+                c.lead_score or 0,
+                c.source or "",
+                c.industry or "",
+                c.created_at.date().isoformat(),
+            ]
+        )
     output.seek(0)
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=contacts_export.csv"}
+        headers={"Content-Disposition": "attachment; filename=contacts_export.csv"},
     )
 
 
 # ─── Funnel & Cohort Analytics ────────────────────────────────────────────
 
+
 @router.get("/funnel")
 def conversion_funnel(db: Session = Depends(get_db)):
     """Get the full lead-to-revenue conversion funnel."""
     total_contacts = db.query(Contact).count()
-    qualified = db.query(Contact).filter(Contact.lead_status.in_([LeadStatus.QUALIFIED, LeadStatus.CONVERTED])).count()
+    qualified = (
+        db.query(Contact)
+        .filter(Contact.lead_status.in_([LeadStatus.QUALIFIED, LeadStatus.CONVERTED]))
+        .count()
+    )
     deals_total = db.query(Deal).count()
     deals_won = db.query(Deal).filter(Deal.stage == DealStage.CLOSED_WON).count()
-    revenue = db.query(func.coalesce(func.sum(Deal.value), 0)).filter(Deal.stage == DealStage.CLOSED_WON).scalar()
+    revenue = (
+        db.query(func.coalesce(func.sum(Deal.value), 0))
+        .filter(Deal.stage == DealStage.CLOSED_WON)
+        .scalar()
+    )
 
     return {
         "funnel": [
             {"stage": "Total Leads", "count": total_contacts, "rate": 100},
-            {"stage": "Qualified Leads", "count": qualified, "rate": round(qualified / total_contacts * 100, 1) if total_contacts else 0},
-            {"stage": "Deals Created", "count": deals_total, "rate": round(deals_total / total_contacts * 100, 1) if total_contacts else 0},
-            {"stage": "Deals Won", "count": deals_won, "rate": round(deals_won / deals_total * 100, 1) if deals_total else 0},
+            {
+                "stage": "Qualified Leads",
+                "count": qualified,
+                "rate": (
+                    round(qualified / total_contacts * 100, 1) if total_contacts else 0
+                ),
+            },
+            {
+                "stage": "Deals Created",
+                "count": deals_total,
+                "rate": (
+                    round(deals_total / total_contacts * 100, 1)
+                    if total_contacts
+                    else 0
+                ),
+            },
+            {
+                "stage": "Deals Won",
+                "count": deals_won,
+                "rate": round(deals_won / deals_total * 100, 1) if deals_total else 0,
+            },
         ],
         "total_revenue": round(float(revenue), 2),
-        "overall_conversion": round(deals_won / total_contacts * 100, 2) if total_contacts else 0,
+        "overall_conversion": (
+            round(deals_won / total_contacts * 100, 2) if total_contacts else 0
+        ),
     }
 
 
 @router.get("/forecast")
 def revenue_forecast(db: Session = Depends(get_db)):
     """AI-powered revenue forecast based on open pipeline."""
-    pipeline_deals = db.query(Deal).filter(
-        Deal.stage.notin_([DealStage.CLOSED_WON, DealStage.CLOSED_LOST])
-    ).all()
-    weighted = sum((d.value or 0) * ((d.probability or 10) / 100) for d in pipeline_deals)
-    ai_weighted = sum((d.value or 0) * (d.ai_win_probability or (d.probability or 10) / 100) for d in pipeline_deals)
+    pipeline_deals = (
+        db.query(Deal)
+        .filter(Deal.stage.notin_([DealStage.CLOSED_WON, DealStage.CLOSED_LOST]))
+        .all()
+    )
+    weighted = sum(
+        (d.value or 0) * ((d.probability or 10) / 100) for d in pipeline_deals
+    )
+    ai_weighted = sum(
+        (d.value or 0) * (d.ai_win_probability or (d.probability or 10) / 100)
+        for d in pipeline_deals
+    )
     total_pipeline = sum(d.value or 0 for d in pipeline_deals)
 
     return {
@@ -394,14 +545,30 @@ def revenue_forecast(db: Session = Depends(get_db)):
         "weighted_forecast": round(weighted, 2),
         "ai_weighted_forecast": round(ai_weighted, 2),
         "deals_in_pipeline": len(pipeline_deals),
-        "avg_probability": round(sum(d.probability or 0 for d in pipeline_deals) / len(pipeline_deals), 1) if pipeline_deals else 0,
+        "avg_probability": (
+            round(
+                sum(d.probability or 0 for d in pipeline_deals) / len(pipeline_deals), 1
+            )
+            if pipeline_deals
+            else 0
+        ),
         "by_stage": [
             {
                 "stage": s.value,
                 "count": sum(1 for d in pipeline_deals if d.stage == s),
-                "value": round(sum(d.value or 0 for d in pipeline_deals if d.stage == s), 2),
-                "weighted_value": round(sum((d.value or 0) * ((d.probability or 10) / 100) for d in pipeline_deals if d.stage == s), 2),
+                "value": round(
+                    sum(d.value or 0 for d in pipeline_deals if d.stage == s), 2
+                ),
+                "weighted_value": round(
+                    sum(
+                        (d.value or 0) * ((d.probability or 10) / 100)
+                        for d in pipeline_deals
+                        if d.stage == s
+                    ),
+                    2,
+                ),
             }
-            for s in DealStage if s not in [DealStage.CLOSED_WON, DealStage.CLOSED_LOST]
-        ]
+            for s in DealStage
+            if s not in [DealStage.CLOSED_WON, DealStage.CLOSED_LOST]
+        ],
     }

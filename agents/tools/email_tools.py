@@ -16,7 +16,9 @@ try:
     from app.services.email_service import send_email_message as _send_email_message
 except ImportError:
     # Fallback if app is in backend namespace
-    from backend.app.services.email_service import send_email_message as _send_email_message
+    from backend.app.services.email_service import (
+        send_email_message as _send_email_message,
+    )
 
 
 def send_email_message(

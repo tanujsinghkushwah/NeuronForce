@@ -21,16 +21,16 @@ def list_contacts(
     search: Optional[str] = None,
     status: Optional[str] = None,
     sort_by: Optional[str] = "created_at",
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """List contacts with optional filtering and search."""
     query = db.query(Contact)
     if search:
         query = query.filter(
-            (Contact.first_name.ilike(f"%{search}%")) |
-            (Contact.last_name.ilike(f"%{search}%")) |
-            (Contact.email.ilike(f"%{search}%")) |
-            (Contact.company.ilike(f"%{search}%"))
+            (Contact.first_name.ilike(f"%{search}%"))
+            | (Contact.last_name.ilike(f"%{search}%"))
+            | (Contact.email.ilike(f"%{search}%"))
+            | (Contact.company.ilike(f"%{search}%"))
         )
     if status:
         query = query.filter(Contact.lead_status == status)
@@ -58,7 +58,9 @@ def create_contact(contact: ContactCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{contact_id}", response_model=ContactResponse)
-def update_contact(contact_id: int, contact: ContactUpdate, db: Session = Depends(get_db)):
+def update_contact(
+    contact_id: int, contact: ContactUpdate, db: Session = Depends(get_db)
+):
     """Update a contact."""
     db_contact = db.query(Contact).filter(Contact.id == contact_id).first()
     if not db_contact:

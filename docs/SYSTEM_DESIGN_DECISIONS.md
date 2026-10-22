@@ -511,7 +511,7 @@ CRMs often suffer from aggressive text truncation (`truncate max-w-[130px]`). In
 
 #### Options Evaluated
 1. **Aggressive Single-Line Truncation**: Enforces rigid, pixel-identical card heights, but severely degrades information density and usability.
-2. **Adaptive Multi-Line Wrapping & Dynamic Chips**: 
+2. **Adaptive Multi-Line Wrapping & Dynamic Chips**:
    - In `CardsView.tsx`, meeting titles use `text-base font-bold break-words leading-snug`, descriptions have a generous `line-clamp-3` preview, and attendee chips wrap flexibly without arbitrary width ceilings.
    - In `TimelineView.tsx`, event titles use `line-clamp-2 leading-tight`, and badges scale dynamically based on block height (`height >= 48px`).
 
@@ -579,14 +579,14 @@ graph TD
     subgraph ScaleArchitecture ["High-Throughput Enterprise Architecture"]
         LB[Cloud Load Balancer / Cloudflare]
         LB --> CaddyCluster[Caddy Reverse Proxy Cluster]
-        
+
         CaddyCluster --> NextNodes[Next.js Frontend Nodes - Autoscaled]
         CaddyCluster --> FastAPINodes[FastAPI Stateless API Nodes - Autoscaled]
-        
+
         FastAPINodes --> Redis[Redis Cluster: Session Cache & AI Rate Limiter]
         FastAPINodes --> Celery[Celery / Temporal Worker Queue]
         Celery --> AIWorkers[AI Task Worker Pool]
-        
+
         FastAPINodes --> PgBouncer[PgBouncer Connection Pooler]
         PgBouncer --> PGPrimary[(PostgreSQL Primary - Writes)]
         PgBouncer --> PGReplica[(PostgreSQL Read Replicas)]

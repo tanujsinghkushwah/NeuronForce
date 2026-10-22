@@ -40,5 +40,5 @@ def get_settings():
             {"key": "negotiation", "label": "Negotiation", "probability": 75},
             {"key": "closed_won", "label": "Closed Won", "probability": 100},
             {"key": "closed_lost", "label": "Closed Lost", "probability": 0},
-        ]
+        ],
     }

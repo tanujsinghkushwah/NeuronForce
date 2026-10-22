@@ -2,7 +2,16 @@
 Calendar Event Model
 """
 
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey, JSON
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Boolean,
+    DateTime,
+    Text,
+    ForeignKey,
+    JSON,
+)
 from datetime import datetime, timezone
 
 from app.database import Base
@@ -25,4 +34,8 @@ class CalendarEvent(Base):
     is_all_day = Column(Boolean, default=False)
     reminder_minutes = Column(Integer, default=15)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { CalendarEvent } from '../../types/crm';
+import React from "react";
+import { CalendarEvent } from "../../types/crm";
 import {
   X,
   Clock,
@@ -11,8 +11,8 @@ import {
   Trash2,
   Calendar,
   ExternalLink,
-  ShieldCheck
-} from 'lucide-react';
+  ShieldCheck,
+} from "lucide-react";
 
 interface EventDetailModalProps {
   event: CalendarEvent | null;
@@ -31,20 +31,20 @@ export default function EventDetailModal({
   const endDate = new Date(event.end_time);
 
   const formatTime = (d: Date) =>
-    d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   const formatDate = (d: Date) =>
     d.toLocaleDateString(undefined, {
-      weekday: 'long',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
 
   const isVideoCall =
-    event.location?.toLowerCase().includes('zoom') ||
-    event.location?.toLowerCase().includes('meet') ||
-    event.location?.toLowerCase().includes('teams');
+    event.location?.toLowerCase().includes("zoom") ||
+    event.location?.toLowerCase().includes("meet") ||
+    event.location?.toLowerCase().includes("teams");
 
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -55,16 +55,16 @@ export default function EventDetailModal({
             <span
               className="w-3.5 h-3.5 rounded-full ring-4"
               style={{
-                backgroundColor: event.color || '#6366f1',
-                boxShadow: `0 0 12px ${event.color || '#6366f1'}80`,
+                backgroundColor: event.color || "#6366f1",
+                boxShadow: `0 0 12px ${event.color || "#6366f1"}80`,
               }}
             />
             <span
               className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border"
               style={{
-                borderColor: event.color || '#6366f1',
-                color: event.color || '#6366f1',
-                backgroundColor: `${event.color || '#6366f1'}15`,
+                borderColor: event.color || "#6366f1",
+                color: event.color || "#6366f1",
+                backgroundColor: `${event.color || "#6366f1"}15`,
               }}
             >
               {event.event_type}
@@ -111,7 +111,9 @@ export default function EventDetailModal({
           <div className="flex items-start gap-3">
             <Calendar className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
             <div>
-              <div className="font-semibold text-white">{formatDate(startDate)}</div>
+              <div className="font-semibold text-white">
+                {formatDate(startDate)}
+              </div>
               <div className="text-slate-400 text-[11px] flex items-center gap-1.5 mt-0.5">
                 <Clock className="w-3 h-3 text-slate-400" />
                 <span>
@@ -119,7 +121,10 @@ export default function EventDetailModal({
                 </span>
                 <span className="text-slate-500">•</span>
                 <span>
-                  {Math.round((endDate.getTime() - startDate.getTime()) / 60000)} mins
+                  {Math.round(
+                    (endDate.getTime() - startDate.getTime()) / 60000,
+                  )}{" "}
+                  mins
                 </span>
               </div>
             </div>
@@ -135,15 +140,21 @@ export default function EventDetailModal({
               )}
               <div className="flex-1 flex items-center justify-between">
                 <div>
-                  <div className="font-semibold text-white">{event.location}</div>
+                  <div className="font-semibold text-white">
+                    {event.location}
+                  </div>
                   <div className="text-slate-400 text-[11px]">
-                    {isVideoCall ? 'Virtual Video Conference Room' : 'In-person / Phone'}
+                    {isVideoCall
+                      ? "Virtual Video Conference Room"
+                      : "In-person / Phone"}
                   </div>
                 </div>
 
                 {isVideoCall && (
                   <button
-                    onClick={() => alert(`Launching ${event.location} video room...`)}
+                    onClick={() =>
+                      alert(`Launching ${event.location} video room...`)
+                    }
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 font-medium text-[11px] transition-all cursor-pointer"
                   >
                     <span>Join</span>
@@ -180,7 +191,9 @@ export default function EventDetailModal({
           {/* CRM Deal / Opportunity status */}
           <div className="flex items-center gap-2 p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px]">
             <ShieldCheck className="w-4 h-4 text-indigo-400 shrink-0" />
-            <span>Synced with Salesforce-compatible pipeline opportunity timeline</span>
+            <span>
+              Synced with Salesforce-compatible pipeline opportunity timeline
+            </span>
           </div>
         </div>
 

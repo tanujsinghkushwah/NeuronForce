@@ -22,7 +22,7 @@ def list_deals(
     limit: int = 50,
     stage: Optional[str] = None,
     search: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """List deals with optional filtering."""
     query = db.query(Deal)
@@ -30,8 +30,7 @@ def list_deals(
         query = query.filter(Deal.stage == stage)
     if search:
         query = query.filter(
-            (Deal.title.ilike(f"%{search}%")) |
-            (Deal.company.ilike(f"%{search}%"))
+            (Deal.title.ilike(f"%{search}%")) | (Deal.company.ilike(f"%{search}%"))
         )
     query = query.order_by(desc(Deal.created_at))
     return query.offset(skip).limit(limit).all()
@@ -45,18 +44,30 @@ def get_pipeline(db: Session = Depends(get_db)):
     weighted_value = 0
 
     for stage in DealStage:
-        deals = db.query(Deal).filter(Deal.stage == stage).order_by(desc(Deal.value)).all()
+        deals = (
+            db.query(Deal).filter(Deal.stage == stage).order_by(desc(Deal.value)).all()
+        )
         pipeline[stage.value] = []
         for d in deals:
             deal_data = {
-                "id": d.id, "title": d.title, "value": d.value,
-                "company": d.company, "probability": d.probability,
-                "owner": d.owner, "priority": d.priority.value if d.priority else "medium",
-                "expected_close_date": d.expected_close_date.isoformat() if d.expected_close_date else None,
+                "id": d.id,
+                "title": d.title,
+                "value": d.value,
+                "company": d.company,
+                "probability": d.probability,
+                "owner": d.owner,
+                "priority": d.priority.value if d.priority else "medium",
+                "expected_close_date": (
+                    d.expected_close_date.isoformat() if d.expected_close_date else None
+                ),
                 "ai_win_probability": d.ai_win_probability,
                 "tags": d.tags or [],
                 "contacts": [
-                    {"id": c.id, "name": f"{c.first_name} {c.last_name}", "avatar_url": c.avatar_url}
+                    {
+                        "id": c.id,
+                        "name": f"{c.first_name} {c.last_name}",
+                        "avatar_url": c.avatar_url,
+                    }
                     for c in d.contacts
                 ],
             }
@@ -65,7 +76,11 @@ def get_pipeline(db: Session = Depends(get_db)):
                 total_value += d.value or 0
                 weighted_value += (d.value or 0) * (d.probability or 0) / 100
 
-    return {"stages": pipeline, "total_value": total_value, "weighted_value": round(weighted_value, 2)}
+    return {
+        "stages": pipeline,
+        "total_value": total_value,
+        "weighted_value": round(weighted_value, 2),
+    }
 
 
 @router.get("/{deal_id}", response_model=DealResponse)

@@ -9,15 +9,13 @@ from typing import List, Optional
 
 from app.database import get_db
 from app.models.activity import Activity, Task
-from app.schemas import (
-    ActivityCreate, ActivityResponse,
-    TaskCreate, TaskResponse
-)
+from app.schemas import ActivityCreate, ActivityResponse, TaskCreate, TaskResponse
 
 router = APIRouter(prefix="/api", tags=["Activities & Tasks"])
 
 
 # --- Activities ---
+
 
 @router.get("/activities", response_model=List[ActivityResponse])
 def list_activities(
@@ -25,7 +23,7 @@ def list_activities(
     limit: int = 50,
     contact_id: Optional[int] = None,
     deal_id: Optional[int] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """List activities with optional filtering."""
     query = db.query(Activity)
@@ -48,12 +46,13 @@ def create_activity(activity: ActivityCreate, db: Session = Depends(get_db)):
 
 # --- Tasks ---
 
+
 @router.get("/tasks", response_model=List[TaskResponse])
 def list_tasks(
     skip: int = 0,
     limit: int = 50,
     status: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """List tasks with optional filtering."""
     query = db.query(Task)

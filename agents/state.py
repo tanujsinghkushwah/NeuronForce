@@ -18,15 +18,22 @@ class AgentState(TypedDict):
     """
     State passed through all LangGraph nodes in the orchestration workflow.
     """
+
     # User message & conversation
     user_prompt: str
     session_id: str
     messages: List[Dict[str, Any]]
 
     # Routing and classification
-    intent: Optional[str]  # 'lead_scoring' | 'email_draft' | 'deal_risk' | 'churn_prediction' | 'meeting_summary' | 'crm_action' | 'general'
-    target_subagent: Optional[str]  # 'lead_scoring' | 'email_draft' | 'deal_risk' | 'churn_prediction' | 'meeting_summary'
-    action_type: Optional[str]  # 'schedule_meeting' | 'create_deal' | 'update_deal' | 'create_contact' | 'update_contact' | 'create_campaign' | 'update_campaign'
+    intent: Optional[
+        str
+    ]  # 'lead_scoring' | 'email_draft' | 'deal_risk' | 'churn_prediction' | 'meeting_summary' | 'crm_action' | 'general'
+    target_subagent: Optional[
+        str
+    ]  # 'lead_scoring' | 'email_draft' | 'deal_risk' | 'churn_prediction' | 'meeting_summary'
+    action_type: Optional[
+        str
+    ]  # 'schedule_meeting' | 'create_deal' | 'update_deal' | 'create_contact' | 'update_contact' | 'create_campaign' | 'update_campaign'
     entities: Dict[str, Any]
 
     # Data Context retrieved from DB / APIs

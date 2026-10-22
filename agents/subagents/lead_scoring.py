@@ -45,9 +45,9 @@ def run_lead_scoring(prompt: str, context: Dict[str, Any]) -> Dict[str, Any]:
         "factors": [
             "Executive buyer engagement with high pricing page frequency",
             "Perfect firmographic alignment (Enterprise ARR > $50M)",
-            "Active evaluation of AI security and SOC2 compliance"
+            "Active evaluation of AI security and SOC2 compliance",
         ],
         "recommendation": "Priority inbound tier. Schedule immediate discovery call with Enterprise Account Executive.",
         "suggested_next_step": "Send tailored enterprise proposal within 4 hours",
-        "_meta": {"model": "simulation-fallback", "latency_ms": 120}
+        "_meta": {"model": "simulation-fallback", "latency_ms": 120},
     }

@@ -17,7 +17,7 @@ from app.schemas import (
     AIAgentTaskCreate,
     AIAgentTaskResponse,
     AIAgentChatRequest,
-    AIAgentChatResponse
+    AIAgentChatResponse,
 )
 from app.services.ai_service import run_ai_task
 
@@ -30,7 +30,7 @@ def list_ai_tasks(
     limit: int = 20,
     task_type: Optional[str] = None,
     status: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """List AI agent tasks with optional filtering."""
     query = db.query(AIAgentTask)
@@ -70,7 +70,7 @@ def create_ai_task(task: AIAgentTaskCreate, db: Session = Depends(get_db)):
         "_meta": {
             "model": result.get("model", "simulation"),
             "is_real_ai": result.get("is_real_ai", False),
-        }
+        },
     }
     return db_task
 
@@ -80,6 +80,7 @@ def execute_agent_chat(request: AIAgentChatRequest, db: Session = Depends(get_db
     """Execute autonomous LangGraph agent orchestrator from chat message."""
     import sys
     from pathlib import Path
+
     repo_root = Path(__file__).resolve().parent.parent.parent.parent
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
@@ -88,14 +89,17 @@ def execute_agent_chat(request: AIAgentChatRequest, db: Session = Depends(get_db
 
     start_time = time.time()
     result = run_agent_orchestrator(
-        prompt=request.message,
-        session_id=request.session_id or "default"
+        prompt=request.message, session_id=request.session_id or "default"
     )
     elapsed_ms = int((time.time() - start_time) * 1000)
 
     # Record in AIAgentTask table for telemetry & execution history
     try:
-        task_type = result.get("target_subagent") or result.get("action_type") or "autonomous_chat"
+        task_type = (
+            result.get("target_subagent")
+            or result.get("action_type")
+            or "autonomous_chat"
+        )
         db_task = AIAgentTask(
             task_type=task_type,
             status=AgentTaskStatus.COMPLETED,
@@ -105,7 +109,7 @@ def execute_agent_chat(request: AIAgentChatRequest, db: Session = Depends(get_db
                 "subagent_result": result.get("subagent_result"),
                 "tool_result": result.get("tool_result"),
                 "graph_steps_count": len(result.get("graph_steps", [])),
-                "_meta": result.get("telemetry", {})
+                "_meta": result.get("telemetry", {}),
             },
             confidence_score=result.get("confidence_score", 0.92),
             cost_estimate=0.0004,
@@ -126,32 +130,55 @@ def execute_agent_chat(request: AIAgentChatRequest, db: Session = Depends(get_db
 def get_ai_stats(db: Session = Depends(get_db)):
     """Get AI agent performance and telemetry statistics."""
     total_tasks = db.query(AIAgentTask).count()
-    completed = db.query(AIAgentTask).filter(AIAgentTask.status == AgentTaskStatus.COMPLETED).count()
-    failed = db.query(AIAgentTask).filter(AIAgentTask.status == AgentTaskStatus.FAILED).count()
-    running = db.query(AIAgentTask).filter(AIAgentTask.status == AgentTaskStatus.RUNNING).count()
+    completed = (
+        db.query(AIAgentTask)
+        .filter(AIAgentTask.status == AgentTaskStatus.COMPLETED)
+        .count()
+    )
+    failed = (
+        db.query(AIAgentTask)
+        .filter(AIAgentTask.status == AgentTaskStatus.FAILED)
+        .count()
+    )
+    running = (
+        db.query(AIAgentTask)
+        .filter(AIAgentTask.status == AgentTaskStatus.RUNNING)
+        .count()
+    )
 
     total_cost = db.query(func.coalesce(func.sum(AIAgentTask.actual_cost), 0)).scalar()
-    avg_latency = db.query(func.coalesce(func.avg(AIAgentTask.latency_ms), 0)).filter(
-        AIAgentTask.latency_ms.isnot(None)
-    ).scalar()
-    avg_confidence = db.query(func.coalesce(func.avg(AIAgentTask.confidence_score), 0)).filter(
-        AIAgentTask.confidence_score.isnot(None)
-    ).scalar()
+    avg_latency = (
+        db.query(func.coalesce(func.avg(AIAgentTask.latency_ms), 0))
+        .filter(AIAgentTask.latency_ms.isnot(None))
+        .scalar()
+    )
+    avg_confidence = (
+        db.query(func.coalesce(func.avg(AIAgentTask.confidence_score), 0))
+        .filter(AIAgentTask.confidence_score.isnot(None))
+        .scalar()
+    )
 
-    cost_by_type = db.query(
-        AIAgentTask.task_type,
-        func.sum(AIAgentTask.actual_cost),
-        func.count(AIAgentTask.id),
-        func.avg(AIAgentTask.latency_ms)
-    ).group_by(AIAgentTask.task_type).all()
+    cost_by_type = (
+        db.query(
+            AIAgentTask.task_type,
+            func.sum(AIAgentTask.actual_cost),
+            func.count(AIAgentTask.id),
+            func.avg(AIAgentTask.latency_ms),
+        )
+        .group_by(AIAgentTask.task_type)
+        .all()
+    )
 
     from app.config import settings
+
     return {
         "total_tasks": total_tasks,
         "completed": completed,
         "failed": failed,
         "running": running,
-        "success_rate": round(completed / total_tasks * 100, 1) if total_tasks > 0 else 0,
+        "success_rate": (
+            round(completed / total_tasks * 100, 1) if total_tasks > 0 else 0
+        ),
         "total_cost": round(total_cost, 4),
         "avg_latency_ms": round(avg_latency, 0),
         "avg_confidence": round(avg_confidence, 2),
@@ -159,16 +186,18 @@ def get_ai_stats(db: Session = Depends(get_db)):
         "real_ai_enabled": bool(settings.OPENROUTER_API_KEY),
         "cost_by_type": [
             {
-                "type": c[0].value if hasattr(c[0], 'value') else c[0],
+                "type": c[0].value if hasattr(c[0], "value") else c[0],
                 "cost": round(c[1] or 0, 4),
                 "count": c[2],
-                "avg_latency": round(c[3] or 0, 0)
+                "avg_latency": round(c[3] or 0, 0),
             }
             for c in cost_by_type
         ],
         "cost_efficiency": {
-            "cost_per_task": round(total_cost / total_tasks, 4) if total_tasks > 0 else 0,
+            "cost_per_task": (
+                round(total_cost / total_tasks, 4) if total_tasks > 0 else 0
+            ),
             "roi_estimate": round(total_cost * 150, 2),
             "time_saved_hours": round(total_tasks * 0.5, 1),
-        }
+        },
     }

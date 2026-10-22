@@ -4,6 +4,7 @@ Tests autonomous agent execution (lead scoring, churn prediction, email draft, d
 cost/latency tracking, confidence scoring, and performance analytics.
 """
 
+
 def test_execute_lead_scoring_agent(client):
     """Test AI agent executing lead scoring with confidence and cost tracking."""
     payload = {
@@ -12,9 +13,9 @@ def test_execute_lead_scoring_agent(client):
             "contact_name": "Dr. Aris Thorne",
             "company": "Neural Dynamics",
             "email_opens": 14,
-            "page_visits": 28
+            "page_visits": 28,
         },
-        "triggered_by": "test-runner"
+        "triggered_by": "test-runner",
     }
     response = client.post("/api/ai-agents/tasks", json=payload)
     assert response.status_code == 200
@@ -38,8 +39,8 @@ def test_execute_churn_prediction_agent(client):
         "input_data": {
             "account": "Enterprise Cloud Corp",
             "nps_score": 6,
-            "tickets_last_30d": 9
-        }
+            "tickets_last_30d": 9,
+        },
     }
     response = client.post("/api/ai-agents/tasks", json=payload)
     assert response.status_code == 200
@@ -57,8 +58,8 @@ def test_execute_email_draft_agent(client):
         "task_type": "email_draft",
         "input_data": {
             "recipient": "Sarah Chen",
-            "context": "Follow-up after product demo"
-        }
+            "context": "Follow-up after product demo",
+        },
     }
     response = client.post("/api/ai-agents/tasks", json=payload)
     assert response.status_code == 200
@@ -71,8 +72,14 @@ def test_execute_email_draft_agent(client):
 def test_ai_agent_stats_and_filtering(client):
     """Test listing AI tasks by task_type and verifying aggregate cost/performance stats."""
     # Execute two tasks
-    client.post("/api/ai-agents/tasks", json={"task_type": "deal_analysis", "input_data": {"deal_id": 1}})
-    client.post("/api/ai-agents/tasks", json={"task_type": "meeting_summary", "input_data": {"notes": "Call recap"}})
+    client.post(
+        "/api/ai-agents/tasks",
+        json={"task_type": "deal_analysis", "input_data": {"deal_id": 1}},
+    )
+    client.post(
+        "/api/ai-agents/tasks",
+        json={"task_type": "meeting_summary", "input_data": {"notes": "Call recap"}},
+    )
 
     # List tasks filtering by task_type
     filtered_res = client.get("/api/ai-agents/tasks?task_type=deal_analysis")
@@ -110,16 +117,12 @@ def test_openrouter_inference_and_dynamic_model(client, monkeypatch):
             {
                 "message": {
                     "role": "assistant",
-                    "content": '{"score": 96, "tier": "hot", "factors": ["High engagement", "Decision maker"], "recommendation": "Book demo today", "icp_match": 0.95}'
+                    "content": '{"score": 96, "tier": "hot", "factors": ["High engagement", "Decision maker"], "recommendation": "Book demo today", "icp_match": 0.95}',
                 },
-                "finish_reason": "stop"
+                "finish_reason": "stop",
             }
         ],
-        "usage": {
-            "prompt_tokens": 150,
-            "completion_tokens": 60,
-            "total_tokens": 210
-        }
+        "usage": {"prompt_tokens": 150, "completion_tokens": 60, "total_tokens": 210},
     }
 
     recorded_requests = []
@@ -127,7 +130,13 @@ def test_openrouter_inference_and_dynamic_model(client, monkeypatch):
 
     def mock_post(self, url, *args, **kwargs):
         if "openrouter.ai" in str(url):
-            recorded_requests.append({"url": str(url), "json": kwargs.get("json"), "headers": kwargs.get("headers")})
+            recorded_requests.append(
+                {
+                    "url": str(url),
+                    "json": kwargs.get("json"),
+                    "headers": kwargs.get("headers"),
+                }
+            )
             req = httpx.Request("POST", str(url))
             return httpx.Response(200, json=mock_response_data, request=req)
         return orig_post(self, url, *args, **kwargs)
@@ -136,7 +145,7 @@ def test_openrouter_inference_and_dynamic_model(client, monkeypatch):
 
     payload = {
         "task_type": "lead_scoring",
-        "input_data": {"contact_name": "Satya Nadella", "company": "Microsoft"}
+        "input_data": {"contact_name": "Satya Nadella", "company": "Microsoft"},
     }
     response = client.post("/api/ai-agents/tasks", json=payload)
     assert response.status_code == 200
@@ -147,7 +156,9 @@ def test_openrouter_inference_and_dynamic_model(client, monkeypatch):
     assert task["output_data"]["_meta"]["is_real_ai"] is True
     assert len(recorded_requests) == 1
     assert recorded_requests[0]["json"]["model"] == custom_model
-    assert "Bearer sk-or-test-mock-key" in recorded_requests[0]["headers"]["Authorization"]
+    assert (
+        "Bearer sk-or-test-mock-key" in recorded_requests[0]["headers"]["Authorization"]
+    )
 
 
 def test_ai_agents_chat_endpoint(client):
@@ -166,6 +177,7 @@ def test_calendar_meeting_parser():
     """Test natural language calendar meeting date/time and range parsing."""
     import sys
     from pathlib import Path
+
     repo_root = Path(__file__).resolve().parent.parent.parent
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
@@ -185,4 +197,3 @@ def test_calendar_meeting_parser():
     st2, en2, dur2 = parse_meeting_datetime("tomorrow at 3pm")
     assert st2.hour == 15
     assert dur2 == 45
-

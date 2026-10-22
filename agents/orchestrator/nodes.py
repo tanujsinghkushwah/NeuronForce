@@ -1,7 +1,7 @@
 """
-NeuronForce Multi-Agent LangGraph Orchestrator
-Coordinates intent classification, context retrieval from local CRM DB,
-specialized sub-agents, and CRM action execution tools.
+NeuronForce Multi-Agent LangGraph Orchestrator Nodes
+Implements individual execution nodes for prompt ingestion, CRM retrieval,
+intent routing, sub-agent delegation, CRM mutation execution, and synthesis.
 """
 
 import time
@@ -10,9 +10,8 @@ import os
 import sys
 from pathlib import Path
 from typing import Dict, Any, List, Optional
-from langgraph.graph import StateGraph, END
 
-CURRENT_DIR = Path(__file__).resolve().parent
+CURRENT_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = CURRENT_DIR.parent
 BACKEND_DIR = REPO_ROOT / "backend"
 if str(BACKEND_DIR) not in sys.path:
@@ -38,11 +37,10 @@ from agents.tools.contact_tools import create_contact, update_contact
 from agents.tools.campaign_tools import create_campaign
 from agents.tools.email_tools import send_email_message
 
-
-
 # ==============================================================================
 # LangGraph Node Implementations
 # ==============================================================================
+
 
 def node_prompt_ingestion(state: AgentState) -> Dict[str, Any]:
     """Node 1: Prompt Ingestion and Sanitization"""
@@ -55,16 +53,13 @@ def node_prompt_ingestion(state: AgentState) -> Dict[str, Any]:
         "label": "Prompt Ingestion",
         "latency_ms": max(1, int((time.time() - start) * 1000)),
         "summary": f"Ingested prompt ({len(prompt.split())} words)",
-        "data": {"prompt": prompt, "session_id": state.get("session_id", "default")}
+        "data": {"prompt": prompt, "session_id": state.get("session_id", "default")},
     }
 
     current_steps = list(state.get("graph_steps", []))
     current_steps.append(step)
 
-    return {
-        "active_node": "context_retrieval",
-        "graph_steps": current_steps
-    }
+    return {"active_node": "context_retrieval", "graph_steps": current_steps}
 
 
 def node_context_retrieval(state: AgentState) -> Dict[str, Any]:
@@ -84,9 +79,13 @@ def node_context_retrieval(state: AgentState) -> Dict[str, Any]:
             "matching_contacts_count": len(context.get("matching_contacts", [])),
             "matching_deals_count": len(context.get("matching_deals", [])),
             "upcoming_events_count": len(context.get("upcoming_events", [])),
-            "sample_contacts": [c.get("name") for c in context.get("matching_contacts", [])[:3]],
-            "sample_deals": [d.get("title") for d in context.get("matching_deals", [])[:3]]
-        }
+            "sample_contacts": [
+                c.get("name") for c in context.get("matching_contacts", [])[:3]
+            ],
+            "sample_deals": [
+                d.get("title") for d in context.get("matching_deals", [])[:3]
+            ],
+        },
     }
 
     current_steps = list(state.get("graph_steps", []))
@@ -95,7 +94,7 @@ def node_context_retrieval(state: AgentState) -> Dict[str, Any]:
     return {
         "context_data": context,
         "active_node": "intent_router",
-        "graph_steps": current_steps
+        "graph_steps": current_steps,
     }
 
 
@@ -114,62 +113,201 @@ def node_intent_router(state: AgentState) -> Dict[str, Any]:
 
     # 0. Check if user is asking a question/inquiry (read-only query vs CRM mutation)
     question_triggers = [
-        "what", "how many", "how much", "tell me", "show me", "list", "total",
-        "calculate", "find", "who is", "which", "give me", "overview", "status of"
+        "what",
+        "how many",
+        "how much",
+        "tell me",
+        "show me",
+        "list",
+        "total",
+        "calculate",
+        "find",
+        "who is",
+        "which",
+        "give me",
+        "overview",
+        "status of",
     ]
-    is_inquiry = any(lower.startswith(q) or f" {q} " in f" {lower} " for q in question_triggers)
+    is_inquiry = any(
+        lower.startswith(q) or f" {q} " in f" {lower} " for q in question_triggers
+    )
     mutation_verbs = [
-        "create deal", "new deal", "add deal", "create contact", "new contact",
-        "add contact", "create campaign", "schedule", "book", "set up meeting",
-        "update deal", "modify deal", "change deal", "move deal", "advance deal",
-        "close deal", "update contact", "modify contact", "change status",
-        "update email", "change email", "set email"
+        "create deal",
+        "new deal",
+        "add deal",
+        "create contact",
+        "new contact",
+        "add contact",
+        "create campaign",
+        "schedule",
+        "book",
+        "set up meeting",
+        "update deal",
+        "modify deal",
+        "change deal",
+        "move deal",
+        "advance deal",
+        "close deal",
+        "update contact",
+        "modify contact",
+        "change status",
+        "update email",
+        "change email",
+        "set email",
     ]
     has_mutation_verb = any(v in lower for v in mutation_verbs)
 
     # 1. Detect Action Types first (only if mutation intent or verb present)
     if not is_inquiry or has_mutation_verb:
-        if any(k in lower for k in ["schedule", "meeting", "calendar", "call with", "book a", "set up a meeting"]):
-            if any(action_kw in lower for action_kw in ["schedule", "create", "set up", "book", "add"]):
+        if any(
+            k in lower
+            for k in [
+                "schedule",
+                "meeting",
+                "calendar",
+                "call with",
+                "book a",
+                "set up a meeting",
+            ]
+        ):
+            if any(
+                action_kw in lower
+                for action_kw in ["schedule", "create", "set up", "book", "add"]
+            ):
                 intent = "crm_action"
                 action_type = "schedule_meeting"
-        elif any(k in lower for k in ["create deal", "new deal", "add deal", "create a deal"]):
+        elif any(
+            k in lower
+            for k in [
+                "create deal",
+                "new deal",
+                "add deal",
+                "create a deal",
+            ]
+        ):
             intent = "crm_action"
             action_type = "create_deal"
-        elif any(k in lower for k in ["move deal", "update deal", "change deal", "close deal", "advance deal"]):
+        elif any(
+            k in lower
+            for k in [
+                "move deal",
+                "update deal",
+                "change deal",
+                "close deal",
+                "advance deal",
+            ]
+        ):
             intent = "crm_action"
             action_type = "update_deal"
-        elif any(k in lower for k in ["create contact", "new contact", "add contact", "new lead", "add lead"]):
+        elif any(
+            k in lower
+            for k in [
+                "create contact",
+                "new contact",
+                "add contact",
+                "new lead",
+                "add lead",
+            ]
+        ):
             intent = "crm_action"
             action_type = "create_contact"
-        elif any(k in lower for k in ["update contact", "modify contact", "qualify contact", "update email", "change email", "set email"]):
+        elif any(
+            k in lower
+            for k in [
+                "update contact",
+                "modify contact",
+                "qualify contact",
+                "update email",
+                "change email",
+                "set email",
+            ]
+        ):
             intent = "crm_action"
             action_type = "update_contact"
-        elif any(k in lower for k in ["create campaign", "new campaign", "launch campaign", "draft campaign", "marketing campaign"]):
+        elif any(
+            k in lower
+            for k in [
+                "create campaign",
+                "new campaign",
+                "launch campaign",
+                "draft campaign",
+                "marketing campaign",
+            ]
+        ):
             intent = "crm_action"
             action_type = "create_campaign"
 
-
     # 2. Detect 5 Specialized Sub-Agents if not a direct CRUD action
     if intent != "crm_action":
-        if any(k in lower for k in ["lead score", "score lead", "score the lead", "buyer intent", "icp score", "scoring"]):
+        if any(
+            k in lower
+            for k in [
+                "lead score",
+                "score lead",
+                "score the lead",
+                "buyer intent",
+                "icp score",
+                "scoring",
+            ]
+        ):
             intent = "subagent"
             target_subagent = "lead_scoring"
-        elif any(k in lower for k in [
-            "draft email", "write email", "follow-up email", "sales email", "outreach email",
-            "send email", "send an email", "send a personalized email", "personalized email",
-            "draft a personalized email", "draft a follow-up"
-        ]) or bool(re.search(r'\b(?:send|draft|write)\b.*?\bemail\b', lower)):
+        elif any(
+            k in lower
+            for k in [
+                "draft email",
+                "write email",
+                "follow-up email",
+                "sales email",
+                "outreach email",
+                "send email",
+                "send an email",
+                "send a personalized email",
+                "personalized email",
+                "draft a personalized email",
+                "draft a follow-up",
+            ]
+        ) or bool(re.search(r"\b(?:send|draft|write)\b.*?\bemail\b", lower)):
             intent = "subagent"
             target_subagent = "email_draft"
 
-        elif any(k in lower for k in ["deal risk", "win probability", "risk and probability", "deal health", "stalled deal", "risk analysis"]):
+        elif any(
+            k in lower
+            for k in [
+                "deal risk",
+                "win probability",
+                "risk and probability",
+                "deal health",
+                "stalled deal",
+                "risk analysis",
+            ]
+        ):
             intent = "subagent"
             target_subagent = "deal_risk"
-        elif any(k in lower for k in ["churn", "retention", "at risk", "cancel subscription", "churn risk", "usage drop"]):
+        elif any(
+            k in lower
+            for k in [
+                "churn",
+                "retention",
+                "at risk",
+                "cancel subscription",
+                "churn risk",
+                "usage drop",
+            ]
+        ):
             intent = "subagent"
             target_subagent = "churn_prediction"
-        elif any(k in lower for k in ["summarize meeting", "meeting notes", "meeting summary", "action items", "takeaways", "notes from"]):
+        elif any(
+            k in lower
+            for k in [
+                "summarize meeting",
+                "meeting notes",
+                "meeting summary",
+                "action items",
+                "takeaways",
+                "notes from",
+            ]
+        ):
             intent = "subagent"
             target_subagent = "meeting_summary"
 
@@ -203,10 +341,13 @@ def node_intent_router(state: AgentState) -> Dict[str, Any]:
         '    "duration_minutes": <duration in minutes integer or null>,\n'
         '    "date_time": "<original or parsed date/time string>",\n'
         '    "subject": "<subject or title if mentioned>"\n'
-        '  }\n'
+        "  }\n"
         "}"
     )
-    llm_decision = call_llm_json(system_prompt, f"User Prompt: {prompt}\nContext Summary: {context.get('summary', '')}")
+    llm_decision = call_llm_json(
+        system_prompt,
+        f"User Prompt: {prompt}\nContext Summary: {context.get('summary', '')}",
+    )
     if llm_decision and "data" in llm_decision:
         parsed = llm_decision["data"]
         if parsed.get("route") in ("subagent", "crm_action", "general"):
@@ -217,7 +358,11 @@ def node_intent_router(state: AgentState) -> Dict[str, Any]:
             elif parsed.get("route") == "crm_action" and parsed.get("action_type"):
                 intent = "crm_action"
                 action_type = parsed.get("action_type")
-            elif parsed.get("route") == "general" and not target_subagent and not action_type:
+            elif (
+                parsed.get("route") == "general"
+                and not target_subagent
+                and not action_type
+            ):
                 intent = "general"
                 action_type = None
 
@@ -225,22 +370,37 @@ def node_intent_router(state: AgentState) -> Dict[str, Any]:
             entities = parsed.get("entities", {})
 
     # Fallback entity extractions for email and contact name
-    email_regex_match = re.search(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', prompt)
+    email_regex_match = re.search(
+        r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", prompt
+    )
     if email_regex_match and not entities.get("email"):
         entities["email"] = email_regex_match.group(0)
 
-    name_regex_match = re.search(r'(?:for|of)\s+([A-Za-z\s]+?)\s+(?:to|\b)', prompt, re.IGNORECASE)
+    name_regex_match = re.search(
+        r"(?:for|of)\s+([A-Za-z\s]+?)\s+(?:to|\b)", prompt, re.IGNORECASE
+    )
     if name_regex_match and not entities.get("name"):
         candidate = name_regex_match.group(1).strip()
         if candidate.lower() not in ("email", "contact", "lead", "a", "the"):
             entities["name"] = candidate
 
     # Detect if user prompt requests sequential personalized email outreach
-    has_email_request = any(k in lower for k in [
-        "send a personalized email", "send email", "send an email", "send outreach",
-        "draft email", "draft a personalized email", "write an email", "write email",
-        "email them", "email him", "email her"
-    ])
+    has_email_request = any(
+        k in lower
+        for k in [
+            "send a personalized email",
+            "send email",
+            "send an email",
+            "send outreach",
+            "draft email",
+            "draft a personalized email",
+            "write an email",
+            "write email",
+            "email them",
+            "email him",
+            "email her",
+        ]
+    )
     if has_email_request:
         entities["secondary_action"] = "email_draft"
 
@@ -249,35 +409,39 @@ def node_intent_router(state: AgentState) -> Dict[str, Any]:
         intent = "general"
         action_type = None
 
-
-
     elapsed_ms = max(10, int((time.time() - start) * 1000))
     summary_text = (
         f"Routed to {(target_subagent or 'agent').replace('_', ' ').title()} Sub-Agent"
         if intent == "subagent"
-        else f"Routed to CRM Action: {action_type}"
-        if intent == "crm_action"
-        else "Routed to Direct Synthesis"
+        else (
+            f"Routed to CRM Action: {action_type}"
+            if intent == "crm_action"
+            else "Routed to Direct Synthesis"
+        )
     )
 
     step: GraphNodeStep = {
         "node": "intent_router",
         "status": "completed",
-        "label": "Orchestrator Decision Router",
+        "label": "Intent Router & Semantic Classifier",
         "latency_ms": elapsed_ms,
         "summary": summary_text,
         "data": {
             "intent": intent,
             "target_subagent": target_subagent,
             "action_type": action_type,
-            "extracted_entities": entities
-        }
+            "extracted_entities": entities,
+        },
     }
 
     current_steps = list(state.get("graph_steps", []))
     current_steps.append(step)
 
-    next_node = "subagent_executor" if intent == "subagent" else "crm_action_executor" if intent == "crm_action" else "synthesizer"
+    next_node = (
+        "subagent_executor"
+        if intent == "subagent"
+        else "crm_action_executor" if intent == "crm_action" else "synthesizer"
+    )
 
     return {
         "intent": intent,
@@ -285,7 +449,7 @@ def node_intent_router(state: AgentState) -> Dict[str, Any]:
         "action_type": action_type,
         "entities": entities,
         "active_node": next_node,
-        "graph_steps": current_steps
+        "graph_steps": current_steps,
     }
 
 
@@ -304,7 +468,7 @@ def node_subagent_executor(state: AgentState) -> Dict[str, Any]:
         entities = state.get("entities", {})
         target_email = entities.get("email")
         if not target_email:
-            em = re.search(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', prompt)
+            em = re.search(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", prompt)
             if em:
                 target_email = em.group(0)
         if not target_email and context.get("matching_contacts"):
@@ -319,12 +483,11 @@ def node_subagent_executor(state: AgentState) -> Dict[str, Any]:
                 subject=subagent_result.get("subject", "Personalized Sales Outreach"),
                 body=subagent_result.get("body", ""),
                 to_name=contact_name,
-                contact_id=contact_id
+                contact_id=contact_id,
             )
             subagent_result["dispatch_status"] = dispatch_res
             subagent_result["dispatch_info"] = dispatch_res.get("delivery_status")
     elif subagent == "deal_risk":
-
         subagent_result = run_deal_risk_analysis(prompt, context)
     elif subagent == "churn_prediction":
         subagent_result = run_churn_sentinel(prompt, context)
@@ -339,7 +502,7 @@ def node_subagent_executor(state: AgentState) -> Dict[str, Any]:
         "label": f"{subagent.replace('_', ' ').title()} Sub-Agent",
         "latency_ms": elapsed_ms,
         "summary": f"Completed {subagent.replace('_', ' ')} analysis",
-        "data": subagent_result
+        "data": subagent_result,
     }
 
     current_steps = list(state.get("graph_steps", []))
@@ -349,7 +512,7 @@ def node_subagent_executor(state: AgentState) -> Dict[str, Any]:
         "subagent_result": subagent_result,
         "target_subagent": subagent,
         "active_node": "synthesizer",
-        "graph_steps": current_steps
+        "graph_steps": current_steps,
     }
 
 
@@ -361,7 +524,11 @@ def node_crm_action_executor(state: AgentState) -> Dict[str, Any]:
     entities = state.get("entities", {})
     context = state.get("context_data", {})
 
-    tool_result: Dict[str, Any] = {"success": False, "action": action, "message": "Unknown action"}
+    tool_result: Dict[str, Any] = {
+        "success": False,
+        "action": action,
+        "message": "Unknown action",
+    }
     subagent_result: Optional[Dict[str, Any]] = None
     email_dispatch_step: Optional[GraphNodeStep] = None
 
@@ -369,12 +536,22 @@ def node_crm_action_executor(state: AgentState) -> Dict[str, Any]:
     if action == "schedule_meeting":
         # Formulate clean, professional meeting title
         title = entities.get("title") or entities.get("subject")
-        if not title or any(cmd in title.lower() for cmd in ["schedule a meeting", "book a meeting", "set up a meeting", "meeting: schedule"]):
+        if not title or any(
+            cmd in title.lower()
+            for cmd in [
+                "schedule a meeting",
+                "book a meeting",
+                "set up a meeting",
+                "meeting: schedule",
+            ]
+        ):
             names = entities.get("name")
             if names:
                 title = f"Meeting: {names}"
             elif context.get("matching_contacts"):
-                names_str = " & ".join([c["name"] for c in context["matching_contacts"][:2]])
+                names_str = " & ".join(
+                    [c["name"] for c in context["matching_contacts"][:2]]
+                )
                 title = f"Meeting: {names_str}"
             else:
                 title = "Executive Sales Alignment Meeting"
@@ -394,12 +571,16 @@ def node_crm_action_executor(state: AgentState) -> Dict[str, Any]:
         if not raw_attendees and entities.get("email"):
             raw_attendees = [entities["email"]]
         if not raw_attendees and context.get("matching_contacts"):
-            raw_attendees = [c.get("email") for c in context["matching_contacts"] if c.get("email")][:2]
+            raw_attendees = [
+                c.get("email") for c in context["matching_contacts"] if c.get("email")
+            ][:2]
         if not raw_attendees and entities.get("name"):
             for n in entities["name"].split(","):
                 clean_n = n.strip()
                 if clean_n:
-                    raw_attendees.append(f"{clean_n.lower().replace(' ', '.')}@example.com")
+                    raw_attendees.append(
+                        f"{clean_n.lower().replace(' ', '.')}@example.com"
+                    )
 
         # Sanitize attendee emails: remove spaces, validate format
         attendees = []
@@ -413,12 +594,15 @@ def node_crm_action_executor(state: AgentState) -> Dict[str, Any]:
             start_time=start_time,
             end_time=end_time,
             duration_minutes=duration_mins,
-            attendees=attendees or ["team@neuronforce.ai"]
+            attendees=attendees or ["team@neuronforce.ai"],
         )
 
     # 2. Create Deal Action
     elif action == "create_deal":
-        title = entities.get("subject") or f"Deal: {entities.get('company') or 'New Opportunity'}"
+        title = (
+            entities.get("subject")
+            or f"Deal: {entities.get('company') or 'New Opportunity'}"
+        )
         raw_amount = entities.get("amount") or 150000.0
         try:
             value = float(raw_amount)
@@ -427,10 +611,7 @@ def node_crm_action_executor(state: AgentState) -> Dict[str, Any]:
         company = entities.get("company") or "Enterprise Client"
         stage = entities.get("stage") or "prospecting"
         tool_result = create_deal(
-            title=title,
-            value=value,
-            company=company,
-            stage=stage
+            title=title, value=value, company=company, stage=stage
         )
 
     # 3. Update Deal Action
@@ -439,11 +620,7 @@ def node_crm_action_executor(state: AgentState) -> Dict[str, Any]:
         stage = entities.get("stage")
         raw_amount = entities.get("amount")
         value = float(raw_amount) if raw_amount else None
-        tool_result = update_deal(
-            deal_identifier=company,
-            stage=stage,
-            value=value
-        )
+        tool_result = update_deal(deal_identifier=company, stage=stage, value=value)
 
     # 4. Create Contact Action
     elif action == "create_contact":
@@ -451,15 +628,17 @@ def node_crm_action_executor(state: AgentState) -> Dict[str, Any]:
         parts = name.split()
         first_name = parts[0]
         last_name = " ".join(parts[1:]) if len(parts) > 1 else "Contact"
-        email = entities.get("email") or f"{first_name.lower()}.{last_name.lower().replace(' ', '.')}@example.com"
+        email = (
+            entities.get("email")
+            or f"{first_name.lower()}.{last_name.lower().replace(' ', '.')}@example.com"
+        )
         company = entities.get("company") or "Acme Corp"
         tool_result = create_contact(
             first_name=first_name,
             last_name=last_name,
             email=email,
-            company=company
+            company=company,
         )
-
 
     # 5. Update Contact Action
     elif action == "update_contact":
@@ -468,32 +647,49 @@ def node_crm_action_executor(state: AgentState) -> Dict[str, Any]:
 
         # Fallback regex extraction if entities missed them
         if not email:
-            em = re.search(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', prompt)
+            em = re.search(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", prompt)
             if em:
                 email = em.group(0)
 
         if not name:
-            nm = re.search(r'(?:for|of)\s+([A-Za-z\s]+?)\s+(?:to|\b)', prompt, re.IGNORECASE)
+            nm = re.search(
+                r"(?:for|of)\s+([A-Za-z\s]+?)\s+(?:to|\b)",
+                prompt,
+                re.IGNORECASE,
+            )
             if nm:
                 candidate = nm.group(1).strip()
-                if candidate.lower() not in ("email", "contact", "lead", "a", "the"):
+                if candidate.lower() not in (
+                    "email",
+                    "contact",
+                    "lead",
+                    "a",
+                    "the",
+                ):
                     name = candidate
         if not name:
             name = entities.get("identifier") or prompt
 
         stage = entities.get("stage")
-        tool_result = update_contact(
-            identifier=name,
-            email=email,
-            lead_status=stage
-        )
+        tool_result = update_contact(identifier=name, email=email, lead_status=stage)
 
         # Check if the prompt also requests sequential drafting or sending an email
-        has_email_request = entities.get("secondary_action") == "email_draft" or any(k in prompt.lower() for k in [
-            "send a personalized email", "send email", "send an email", "send outreach",
-            "draft email", "draft a personalized email", "write an email", "write email",
-            "email them", "email him", "email her"
-        ])
+        has_email_request = entities.get("secondary_action") == "email_draft" or any(
+            k in prompt.lower()
+            for k in [
+                "send a personalized email",
+                "send email",
+                "send an email",
+                "send outreach",
+                "draft email",
+                "draft a personalized email",
+                "write an email",
+                "write email",
+                "email them",
+                "email him",
+                "email her",
+            ]
+        )
 
         if has_email_request and tool_result.get("success"):
             contact_data = tool_result.get("contact", {})
@@ -509,17 +705,25 @@ def node_crm_action_executor(state: AgentState) -> Dict[str, Any]:
 
             # 1. Run email drafter subagent
             email_draft_res = run_email_drafter(prompt, drafter_context)
-            if not email_draft_res.get("recipient") or email_draft_res.get("recipient") == "Sarah Chen":
-                email_draft_res["recipient"] = f"{contact_name} ({contact_data.get('company') or 'Acme Corp'})"
+            if (
+                not email_draft_res.get("recipient")
+                or email_draft_res.get("recipient") == "Sarah Chen"
+            ):
+                email_draft_res["recipient"] = (
+                    f"{contact_name} ({contact_data.get('company') or 'Acme Corp'})"
+                )
             email_draft_res["email_address"] = contact_email
 
             # 2. Dispatch/send or log email via email service
             send_res = send_email_message(
                 to_email=str(contact_email or ""),
-                subject=str(email_draft_res.get("subject") or "NeuronForce Autonomous Sales Platform"),
+                subject=str(
+                    email_draft_res.get("subject")
+                    or "NeuronForce Autonomous Sales Platform"
+                ),
                 body=str(email_draft_res.get("body") or ""),
                 to_name=contact_name,
-                contact_id=contact_id
+                contact_id=contact_id,
             )
 
             email_draft_res["dispatch_status"] = send_res
@@ -534,17 +738,19 @@ def node_crm_action_executor(state: AgentState) -> Dict[str, Any]:
                 "label": "Email Drafter & Dispatcher",
                 "latency_ms": 115,
                 "summary": f"Personalized email {('delivered live' if send_res.get('sent_live') else 'logged in CRM activities')} for {contact_email}",
-                "data": email_draft_res
+                "data": email_draft_res,
             }
 
     # 6. Create Campaign Action
     elif action == "create_campaign":
         name = entities.get("subject") or f"Campaign: {prompt[:40]}"
-        subject = entities.get("subject") or f"Accelerate Enterprise Growth with NeuronForce"
+        subject = (
+            entities.get("subject") or "Accelerate Enterprise Growth with NeuronForce"
+        )
         tool_result = create_campaign(
             name=name,
             subject=subject,
-            target_segment=entities.get("company") or "enterprise_leads"
+            target_segment=entities.get("company") or "enterprise_leads",
         )
 
     elapsed_ms = max(10, int((time.time() - start) * 1000))
@@ -555,7 +761,7 @@ def node_crm_action_executor(state: AgentState) -> Dict[str, Any]:
         "label": f"CRM Action: {action.replace('_', ' ').title()}",
         "latency_ms": elapsed_ms,
         "summary": tool_result.get("message", "Executed CRM action"),
-        "data": tool_result
+        "data": tool_result,
     }
 
     current_steps = list(state.get("graph_steps", []))
@@ -563,12 +769,11 @@ def node_crm_action_executor(state: AgentState) -> Dict[str, Any]:
     if email_dispatch_step:
         current_steps.append(email_dispatch_step)
 
-
     return_payload: Dict[str, Any] = {
         "tool_result": tool_result,
         "action_type": action,
         "active_node": "synthesizer",
-        "graph_steps": current_steps
+        "graph_steps": current_steps,
     }
     if subagent_result:
         return_payload["subagent_result"] = subagent_result
@@ -593,7 +798,9 @@ def node_synthesizer(state: AgentState) -> Dict[str, Any]:
         subj = subagent_result.get("subject", "")
         body = subagent_result.get("body", "")
         recipient = subagent_result.get("recipient", "Recipient")
-        email_addr = subagent_result.get("email_address") or (tool_result.get("contact", {}).get("email"))
+        email_addr = subagent_result.get("email_address") or (
+            tool_result.get("contact", {}).get("email")
+        )
         cta = subagent_result.get("call_to_action", "")
         dispatch_info = subagent_result.get("dispatch_info", "")
 
@@ -625,7 +832,6 @@ def node_synthesizer(state: AgentState) -> Dict[str, Any]:
         )
         confidence = 0.85
 
-
     elif subagent_result:
         subagent_key = (subagent or "").lower()
         if not subagent_key:
@@ -633,11 +839,19 @@ def node_synthesizer(state: AgentState) -> Dict[str, Any]:
                 subagent_key = "lead_scoring"
             elif "subject" in subagent_result and "body" in subagent_result:
                 subagent_key = "email_draft"
-            elif "win_probability" in subagent_result or "key_risk_factors" in subagent_result:
+            elif (
+                "win_probability" in subagent_result
+                or "key_risk_factors" in subagent_result
+            ):
                 subagent_key = "deal_risk"
-            elif "overall_churn_risk" in subagent_result or "at_risk_accounts" in subagent_result:
+            elif (
+                "overall_churn_risk" in subagent_result
+                or "at_risk_accounts" in subagent_result
+            ):
                 subagent_key = "churn_prediction"
-            elif "meeting_title" in subagent_result or "action_items" in subagent_result:
+            elif (
+                "meeting_title" in subagent_result or "action_items" in subagent_result
+            ):
                 subagent_key = "meeting_summary"
         if "lead" in subagent_key:
             name = subagent_result.get("lead_name", "Lead")
@@ -674,8 +888,12 @@ def node_synthesizer(state: AgentState) -> Dict[str, Any]:
             title = subagent_result.get("deal_title", "Deal")
             prob = round(float(subagent_result.get("win_probability", 0.75)) * 100)
             risk = str(subagent_result.get("risk_tier", "medium")).upper()
-            risks = "\n".join([f"• {r}" for r in subagent_result.get("key_risk_factors", [])])
-            mitigations = "\n".join([f"• {m}" for m in subagent_result.get("mitigation_actions", [])])
+            risks = "\n".join(
+                [f"• {r}" for r in subagent_result.get("key_risk_factors", [])]
+            )
+            mitigations = "\n".join(
+                [f"• {m}" for m in subagent_result.get("mitigation_actions", [])]
+            )
             final_response = (
                 f"### 🛡️ Deal Risk & Probability Assessment: **{title}**\n\n"
                 f"- **Win Probability**: `{prob}%`\n"
@@ -688,7 +906,12 @@ def node_synthesizer(state: AgentState) -> Dict[str, Any]:
 
         elif "churn" in subagent_key:
             arr = float(subagent_result.get("total_arr_at_risk", 180000.0))
-            playbooks = "\n".join([f"• {p}" for p in subagent_result.get("recommended_retention_playbook", [])])
+            playbooks = "\n".join(
+                [
+                    f"• {p}"
+                    for p in subagent_result.get("recommended_retention_playbook", [])
+                ]
+            )
             final_response = (
                 f"### ⚠️ Customer Churn Sentinel Report\n\n"
                 f"- **Overall Risk**: `{str(subagent_result.get('overall_churn_risk', 'moderate')).upper()}`\n"
@@ -701,10 +924,12 @@ def node_synthesizer(state: AgentState) -> Dict[str, Any]:
         elif "meeting" in subagent_key or "summary" in subagent_key:
             title = subagent_result.get("meeting_title", "Meeting")
             exec_sum = subagent_result.get("executive_summary", "")
-            actions = "\n".join([
-                f"• **{a.get('task')}** — Assigned to *{a.get('owner')}* (Due: {a.get('due_date')})"
-                for a in subagent_result.get("action_items", [])
-            ])
+            actions = "\n".join(
+                [
+                    f"• **{a.get('task')}** — Assigned to *{a.get('owner')}* (Due: {a.get('due_date')})"
+                    for a in subagent_result.get("action_items", [])
+                ]
+            )
             final_response = (
                 f"### 📝 Executive Meeting Summary: **{title}**\n\n"
                 f"{exec_sum}\n\n"
@@ -722,10 +947,12 @@ def node_synthesizer(state: AgentState) -> Dict[str, Any]:
         deals_overview = pipeline.get("all_deals_overview", [])
         deals_by_stage = pipeline.get("deals_by_stage", {})
 
-        stage_breakdown_str = "\n".join([
-            f"  - **{stg.replace('_', ' ').title()}**: {info['count']} deals totaling `${info['total_value']:,.2f}`"
-            for stg, info in deals_by_stage.items()
-        ])
+        stage_breakdown_str = "\n".join(
+            [
+                f"  - **{stg.replace('_', ' ').title()}**: {info['count']} deals totaling `${info['total_value']:,.2f}`"
+                for stg, info in deals_by_stage.items()
+            ]
+        )
 
         crm_metrics_context = (
             f"Live CRM Database Metrics:\n"
@@ -735,10 +962,13 @@ def node_synthesizer(state: AgentState) -> Dict[str, Any]:
             f"- Total Contacts in CRM: {pipeline.get('total_contacts_count', len(context.get('matching_contacts', [])))}\n"
             f"- Upcoming Calendar Events: {len(context.get('upcoming_events', []))}\n"
             f"- Active Campaigns: {len(context.get('recent_campaigns', []))}\n"
-            f"\nDeals in Pipeline:\n" + "\n".join([
-                f"  * {d.get('title')} ({d.get('company')}): ${float(d.get('value', 0) or 0):,.2f} [Stage: {d.get('stage')}]"
-                for d in deals_overview[:20]
-            ])
+            f"\nDeals in Pipeline:\n"
+            + "\n".join(
+                [
+                    f"  * {d.get('title')} ({d.get('company')}): ${float(d.get('value', 0) or 0):,.2f} [Stage: {d.get('stage')}]"
+                    for d in deals_overview[:20]
+                ]
+            )
         )
 
         sys_prompt = (
@@ -754,8 +984,8 @@ def node_synthesizer(state: AgentState) -> Dict[str, Any]:
             final_response = llm_reply
             confidence = 0.96
         else:
-            total_val = pipeline.get('total_pipeline_value', 0)
-            total_cnt = pipeline.get('total_deals_count', 0)
+            total_val = pipeline.get("total_pipeline_value", 0)
+            total_cnt = pipeline.get("total_deals_count", 0)
             final_response = (
                 f"### 📊 Live CRM Pipeline Overview\n\n"
                 f"- **Total Deals in Pipeline**: `{total_cnt}`\n"
@@ -763,7 +993,6 @@ def node_synthesizer(state: AgentState) -> Dict[str, Any]:
                 f"**Breakdown by Stage:**\n{stage_breakdown_str or 'No active deals.'}"
             )
             confidence = 0.90
-
 
     elapsed_ms = max(5, int((time.time() - start) * 1000))
 
@@ -773,7 +1002,10 @@ def node_synthesizer(state: AgentState) -> Dict[str, Any]:
         "label": "Response Synthesis & Telemetry",
         "latency_ms": elapsed_ms,
         "summary": "Synthesized executive response with telemetry payload",
-        "data": {"confidence": confidence, "response_length": len(final_response)}
+        "data": {
+            "confidence": confidence,
+            "response_length": len(final_response),
+        },
     }
 
     current_steps = list(state.get("graph_steps", []))
@@ -792,103 +1024,6 @@ def node_synthesizer(state: AgentState) -> Dict[str, Any]:
             "model": model_name,
             "total_latency_ms": total_latency,
             "confidence": confidence,
-            "cost": 0.0004
-        }
-    }
-
-
-# ==============================================================================
-# LangGraph Workflow Graph Assembly
-# ==============================================================================
-
-def route_after_intent(state: AgentState) -> str:
-    """Conditional router function for LangGraph"""
-    intent = state.get("intent")
-    if intent == "subagent":
-        return "subagent_executor"
-    elif intent == "crm_action":
-        return "crm_action_executor"
-    else:
-        return "synthesizer"
-
-
-def build_orchestrator_graph():
-    """Build and compile the LangGraph StateGraph"""
-    builder = StateGraph(AgentState)
-
-    # Add Nodes
-    builder.add_node("prompt_ingestion", node_prompt_ingestion)
-    builder.add_node("context_retrieval", node_context_retrieval)
-    builder.add_node("intent_router", node_intent_router)
-    builder.add_node("subagent_executor", node_subagent_executor)
-    builder.add_node("crm_action_executor", node_crm_action_executor)
-    builder.add_node("synthesizer", node_synthesizer)
-
-    # Add Edges
-    builder.set_entry_point("prompt_ingestion")
-    builder.add_edge("prompt_ingestion", "context_retrieval")
-    builder.add_edge("context_retrieval", "intent_router")
-
-    # Conditional Branching from Router
-    builder.add_conditional_edges(
-        "intent_router",
-        route_after_intent,
-        {
-            "subagent_executor": "subagent_executor",
-            "crm_action_executor": "crm_action_executor",
-            "synthesizer": "synthesizer"
-        }
-    )
-
-    # Return to Synthesizer
-    builder.add_edge("subagent_executor", "synthesizer")
-    builder.add_edge("crm_action_executor", "synthesizer")
-    builder.add_edge("synthesizer", END)
-
-    return builder.compile()
-
-
-# Compile graph singleton
-ORCHESTRATOR_GRAPH = build_orchestrator_graph()
-
-
-def run_agent_orchestrator(
-    prompt: str,
-    session_id: str = "default_session",
-    messages: Optional[List[Dict[str, Any]]] = None
-) -> Dict[str, Any]:
-    """
-    Execute the compiled LangGraph workflow.
-    Returns the complete state with graph steps, action result, subagent output, and synthesized text.
-    """
-    initial_state: AgentState = {
-        "user_prompt": prompt,
-        "session_id": session_id,
-        "messages": messages or [{"role": "user", "content": prompt}],
-        "intent": None,
-        "target_subagent": None,
-        "action_type": None,
-        "entities": {},
-        "context_data": {},
-        "subagent_result": None,
-        "tool_result": None,
-        "final_response": "",
-        "confidence_score": 0.9,
-        "active_node": "prompt_ingestion",
-        "graph_steps": [],
-        "telemetry": {}
-    }
-
-    final_state = ORCHESTRATOR_GRAPH.invoke(initial_state)
-
-    return {
-        "reply": final_state.get("final_response"),
-        "intent": final_state.get("intent"),
-        "target_subagent": final_state.get("target_subagent"),
-        "action_type": final_state.get("action_type"),
-        "subagent_result": final_state.get("subagent_result"),
-        "tool_result": final_state.get("tool_result"),
-        "graph_steps": final_state.get("graph_steps", []),
-        "telemetry": final_state.get("telemetry", {}),
-        "confidence_score": final_state.get("confidence_score", 0.92)
+            "cost": 0.0004,
+        },
     }

@@ -22,7 +22,7 @@ from app.auth import (
     get_current_user,
     decode_access_token,
     ACCESS_TOKEN_EXPIRE_MINUTES,
-    GOOGLE_CLIENT_ID
+    GOOGLE_CLIENT_ID,
 )
 
 from app.config import settings
@@ -62,17 +62,21 @@ def google_sso_login_redirect():
 async def google_sso_callback(
     code: Optional[str] = Query(None),
     error: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Handle Google OAuth 2.0 authorization code callback.
     Exchanges code for access & ID tokens and logs the user in.
     """
     if error:
-        return RedirectResponse(url=f"{FRONTEND_URL}/login?error={urllib.parse.quote(error)}")
+        return RedirectResponse(
+            url=f"{FRONTEND_URL}/login?error={urllib.parse.quote(error)}"
+        )
 
     if not code:
-        raise HTTPException(status_code=400, detail="Missing authorization code from Google")
+        raise HTTPException(
+            status_code=400, detail="Missing authorization code from Google"
+        )
 
     redirect_uri = f"{BACKEND_URL}/api/auth/google/callback"
 
@@ -97,7 +101,9 @@ async def google_sso_callback(
             id_token = token_json.get("id_token")
 
         if not id_token:
-            return RedirectResponse(url=f"{FRONTEND_URL}/login?error=Missing+Google+id_token")
+            return RedirectResponse(
+                url=f"{FRONTEND_URL}/login?error=Missing+Google+id_token"
+            )
 
         profile = await verify_google_id_token(id_token)
         user, session, access_token = authenticate_or_register_google_user(
@@ -107,14 +113,14 @@ async def google_sso_callback(
 
         return RedirectResponse(url=f"{FRONTEND_URL}/?sso_token={access_token}")
     except Exception as e:
-        return RedirectResponse(url=f"{FRONTEND_URL}/login?error={urllib.parse.quote(str(e))}")
+        return RedirectResponse(
+            url=f"{FRONTEND_URL}/login?error={urllib.parse.quote(str(e))}"
+        )
 
 
 @router.post("/google", response_model=AuthResponse)
 async def google_auth(
-    auth_req: GoogleAuthRequest,
-    request: Request,
-    db: Session = Depends(get_db)
+    auth_req: GoogleAuthRequest, request: Request, db: Session = Depends(get_db)
 ):
     """
     Sign up or log in using Google OAuth credentials or verified SSO token.
@@ -130,15 +136,17 @@ async def google_auth(
         if not auth_req.email:
             raise HTTPException(
                 status_code=400,
-                detail="Either Google credential token or email must be provided"
+                detail="Either Google credential token or email must be provided",
             )
         profile = {
             "sub": auth_req.sub or f"google_{auth_req.email}",
             "email": auth_req.email,
-            "name": auth_req.full_name or auth_req.email.split("@")[0].replace(".", " ").title(),
-            "picture": auth_req.avatar_url or f"https://api.dicebear.com/7.x/avataaars/svg?seed={auth_req.email}",
+            "name": auth_req.full_name
+            or auth_req.email.split("@")[0].replace(".", " ").title(),
+            "picture": auth_req.avatar_url
+            or f"https://api.dicebear.com/7.x/avataaars/svg?seed={auth_req.email}",
             "email_verified": True,
-            "raw": {"source": "google_sso"}
+            "raw": {"source": "google_sso"},
         }
 
     user, session, token = authenticate_or_register_google_user(
@@ -146,21 +154,19 @@ async def google_auth(
         profile=profile,
         role_preference=auth_req.role,
         ip_address=client_ip,
-        user_agent=user_agent
+        user_agent=user_agent,
     )
 
     return AuthResponse(
         access_token=token,
         token_type="bearer",
         expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        user=UserResponse.model_validate(user)
+        user=UserResponse.model_validate(user),
     )
 
 
 @router.get("/me", response_model=UserResponse)
-def get_current_user_profile(
-    current_user: User = Depends(get_current_user)
-):
+def get_current_user_profile(current_user: User = Depends(get_current_user)):
     """Get the currently authenticated user profile from Bearer token."""
     return UserResponse.model_validate(current_user)
 
@@ -169,7 +175,7 @@ def get_current_user_profile(
 def logout_current_user(
     request: Request,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Log out current user and revoke their active session."""
     raw_header = request.headers.get("Authorization", "")
@@ -178,7 +184,11 @@ def logout_current_user(
     if token:
         payload = decode_access_token(token)
         if payload and "session_id" in payload:
-            session = db.query(UserSession).filter(UserSession.id == payload["session_id"]).first()
+            session = (
+                db.query(UserSession)
+                .filter(UserSession.id == payload["session_id"])
+                .first()
+            )
             if session:
                 session.is_revoked = True
                 db.commit()
@@ -188,8 +198,7 @@ def logout_current_user(
 
 @router.get("/sessions", response_model=List[SessionResponse])
 def get_user_sessions(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     """Get all active sessions for the authenticated user."""
     sessions = (
@@ -211,7 +220,7 @@ def list_demo_accounts(db: Session = Depends(get_db)):
             "email": u.email,
             "full_name": u.full_name,
             "avatar_url": u.avatar_url,
-            "role": u.role
+            "role": u.role,
         }
         for u in users
     ]

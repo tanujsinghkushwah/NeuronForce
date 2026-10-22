@@ -3,7 +3,16 @@ Deal Model
 Core revenue pipeline entity.
 """
 
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text, Enum as SQLEnum, JSON
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Float,
+    DateTime,
+    Text,
+    Enum as SQLEnum,
+    JSON,
+)
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 
@@ -31,8 +40,14 @@ class Deal(Base):
     ai_win_probability = Column(Float)
     ai_insights = Column(JSON, default=dict)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
     # Relationships
     contacts = relationship("Contact", secondary=deal_contacts, back_populates="deals")
-    activities = relationship("Activity", back_populates="deal", cascade="all, delete-orphan")
+    activities = relationship(
+        "Activity", back_populates="deal", cascade="all, delete-orphan"
+    )

@@ -46,16 +46,16 @@ def run_deal_risk_analysis(prompt: str, context: Dict[str, Any]) -> Dict[str, An
         "key_risk_factors": [
             "Technical champion changed department 2 weeks ago",
             "Procurement requested additional SOC2 Type II audit artifacts",
-            "Single-threaded executive relationship at VP level"
+            "Single-threaded executive relationship at VP level",
         ],
         "buying_signals": [
             "Budget confirmed and allocated in Q4 OPEX envelope",
-            "Legal team completed initial Master Services Agreement redlines"
+            "Legal team completed initial Master Services Agreement redlines",
         ],
         "mitigation_actions": [
             "Engage CISO sponsor immediately with updated compliance pack",
-            "Multi-thread into Director of IT Infrastructure to reinforce business ROI"
+            "Multi-thread into Director of IT Infrastructure to reinforce business ROI",
         ],
         "decision_timeline": "Target close within 18 days (Month-End)",
-        "_meta": {"model": "simulation-fallback", "latency_ms": 130}
+        "_meta": {"model": "simulation-fallback", "latency_ms": 130},
     }

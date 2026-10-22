@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from "react";
 
-export type Theme = 'dark' | 'light';
+export type Theme = "dark" | "light";
 
 interface ThemeContextType {
   theme: Theme;
@@ -11,40 +11,40 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'dark',
+  theme: "dark",
   toggleTheme: () => {},
   setTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark');
+  const [theme, setThemeState] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('neuronforce_theme') as Theme | null;
-      if (saved === 'light' || saved === 'dark') {
+      const saved = localStorage.getItem("neuronforce_theme") as Theme | null;
+      if (saved === "light" || saved === "dark") {
         setThemeState(saved);
         applyTheme(saved);
       } else {
-        applyTheme('dark');
+        applyTheme("dark");
       }
     } catch {
-      applyTheme('dark');
+      applyTheme("dark");
     }
     setMounted(true);
   }, []);
 
   const applyTheme = (t: Theme) => {
-    if (typeof document === 'undefined') return;
+    if (typeof document === "undefined") return;
     const root = document.documentElement;
-    root.setAttribute('data-theme', t);
-    if (t === 'light') {
-      root.classList.remove('dark');
-      root.classList.add('light');
+    root.setAttribute("data-theme", t);
+    if (t === "light") {
+      root.classList.remove("dark");
+      root.classList.add("light");
     } else {
-      root.classList.remove('light');
-      root.classList.add('dark');
+      root.classList.remove("light");
+      root.classList.add("dark");
     }
   };
 
@@ -52,14 +52,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setThemeState(newTheme);
     applyTheme(newTheme);
     try {
-      localStorage.setItem('neuronforce_theme', newTheme);
+      localStorage.setItem("neuronforce_theme", newTheme);
     } catch {
       // Ignore storage errors
     }
   };
 
   const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    const nextTheme = theme === "dark" ? "light" : "dark";
     setTheme(nextTheme);
   };
 

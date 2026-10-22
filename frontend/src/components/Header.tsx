@@ -1,23 +1,38 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Plus, LogOut, ChevronDown, User as UserIcon, Shield, Sparkles } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import GoogleAuthModal, { GoogleIcon } from './GoogleAuthModal';
+import React, { useState, useRef, useEffect } from "react";
+import {
+  Search,
+  Bell,
+  Plus,
+  LogOut,
+  ChevronDown,
+  User as UserIcon,
+  Shield,
+  Sparkles,
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import GoogleAuthModal, { GoogleIcon } from "./GoogleAuthModal";
 
 interface HeaderProps {
   title?: string;
   subtitle?: string;
-  onActionClick?: (action: 'deal' | 'contact' | 'agent') => void;
+  onActionClick?: (action: "deal" | "contact" | "agent") => void;
 }
 
 export default function Header({
-  title = 'Enterprise Overview',
-  subtitle = 'Real-time sales telemetry, AI agents, and pipeline velocity',
-  onActionClick
+  title = "Enterprise Overview",
+  subtitle = "Real-time sales telemetry, AI agents, and pipeline velocity",
+  onActionClick,
 }: HeaderProps) {
-  const { user, isAuthenticated, logout, signInWithGoogleSSO, isFirebaseAvailable } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
+  const {
+    user,
+    isAuthenticated,
+    logout,
+    signInWithGoogleSSO,
+    isFirebaseAvailable,
+  } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -25,33 +40,36 @@ export default function Header({
   // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
+      .split(" ")
       .map((n) => n[0])
-      .join('')
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
 
   const formatRole = (role?: string) => {
     switch (role) {
-      case 'revops_lead':
-        return 'RevOps Lead';
-      case 'admin':
-        return 'Platform Admin';
-      case 'sales_rep':
-        return 'Sales Rep';
+      case "revops_lead":
+        return "RevOps Lead";
+      case "admin":
+        return "Platform Admin";
+      case "sales_rep":
+        return "Sales Rep";
       default:
-        return 'Workspace Member';
+        return "Workspace Member";
     }
   };
 
@@ -63,9 +81,7 @@ export default function Header({
           <h1 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
             {title}
           </h1>
-          <p className="text-xs text-slate-300 hidden md:block">
-            {subtitle}
-          </p>
+          <p className="text-xs text-slate-300 hidden md:block">{subtitle}</p>
         </div>
 
         {/* Right Controls */}
@@ -86,7 +102,7 @@ export default function Header({
           {onActionClick && (
             <div className="flex items-center gap-2">
               <button
-                onClick={() => onActionClick('deal')}
+                onClick={() => onActionClick("deal")}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/25 transition-all active:scale-95 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -119,7 +135,7 @@ export default function Header({
                   />
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-xs text-white ring-1 ring-white/20 shadow-sm">
-                    {getInitials(user.full_name || 'User')}
+                    {getInitials(user.full_name || "User")}
                   </div>
                 )}
                 <div className="hidden sm:flex flex-col text-left">
@@ -139,8 +155,12 @@ export default function Header({
               {showDropdown && (
                 <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-[#0e1424]/95 border border-white/15 p-2 shadow-2xl backdrop-blur-xl z-50 animate-fadeIn">
                   <div className="p-3 border-b border-white/10">
-                    <p className="text-xs font-bold text-white truncate">{user.full_name}</p>
-                    <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
+                    <p className="text-xs font-bold text-white truncate">
+                      {user.full_name}
+                    </p>
+                    <p className="text-[11px] text-slate-400 truncate">
+                      {user.email}
+                    </p>
                     <div className="mt-2 flex items-center gap-1.5">
                       <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                         {formatRole(user.role)}
@@ -187,7 +207,10 @@ export default function Header({
                       await signInWithGoogleSSO();
                       return;
                     } catch (e) {
-                      console.log('Firebase SSO popup cancelled or fallback needed', e);
+                      console.log(
+                        "Firebase SSO popup cancelled or fallback needed",
+                        e,
+                      );
                     }
                   }
                   setShowAuthModal(true);

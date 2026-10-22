@@ -1,15 +1,18 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { X, CheckCircle2, Clock, Terminal, Copy, Check } from 'lucide-react';
-import { GraphNodeStep } from '../../types/crm';
+import React from "react";
+import { X, CheckCircle2, Clock, Terminal, Copy, Check } from "lucide-react";
+import { GraphNodeStep } from "../../types/crm";
 
 interface NodeDetailModalProps {
   step: GraphNodeStep | null;
   onClose: () => void;
 }
 
-export default function NodeDetailModal({ step, onClose }: NodeDetailModalProps) {
+export default function NodeDetailModal({
+  step,
+  onClose,
+}: NodeDetailModalProps) {
   const [copied, setCopied] = React.useState(false);
 
   if (!step) return null;
@@ -22,7 +25,7 @@ export default function NodeDetailModal({ step, onClose }: NodeDetailModalProps)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-      <div 
+      <div
         className="w-full max-w-2xl bg-[#0f172a] border border-indigo-500/30 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
@@ -40,7 +43,8 @@ export default function NodeDetailModal({ step, onClose }: NodeDetailModalProps)
                 </span>
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Workflow Step: <span className="text-indigo-300">{step.label}</span>
+                Workflow Step:{" "}
+                <span className="text-indigo-300">{step.label}</span>
               </p>
             </div>
           </div>
@@ -79,12 +83,20 @@ export default function NodeDetailModal({ step, onClose }: NodeDetailModalProps)
                 onClick={handleCopy}
                 className="flex items-center gap-1 text-[11px] text-indigo-400 hover:text-indigo-300 cursor-pointer"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? 'Copied' : 'Copy Data'}</span>
+                {copied ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
+                <span>{copied ? "Copied" : "Copy Data"}</span>
               </button>
             </div>
             <pre className="p-4 rounded-xl bg-[#090d16] border border-white/10 text-[11px] font-mono text-cyan-300/90 overflow-x-auto max-h-72 leading-relaxed selection:bg-indigo-500/30">
-              {JSON.stringify(step.data || { note: 'No supplementary data emitted.' }, null, 2)}
+              {JSON.stringify(
+                step.data || { note: "No supplementary data emitted." },
+                null,
+                2,
+              )}
             </pre>
           </div>
         </div>

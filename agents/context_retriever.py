@@ -41,7 +41,7 @@ def retrieve_crm_context(prompt: str) -> Dict[str, Any]:
         "matching_deals": [],
         "upcoming_events": [],
         "recent_campaigns": [],
-        "summary": "No matching records found in CRM database."
+        "summary": "No matching records found in CRM database.",
     }
 
     if not SessionLocal:
@@ -60,21 +60,29 @@ def retrieve_crm_context(prompt: str) -> Dict[str, Any]:
             last_name = c.last_name.lower() if c.last_name else ""
             company = c.company.lower() if c.company else ""
 
-            if (first_name and first_name in lower_prompt) or \
-               (last_name and last_name in lower_prompt) or \
-               (full_name in lower_prompt) or \
-               (company and company in lower_prompt):
-                matching_contacts.append({
-                    "id": c.id,
-                    "name": f"{c.first_name} {c.last_name}",
-                    "email": c.email,
-                    "phone": c.phone,
-                    "company": c.company,
-                    "job_title": c.job_title,
-                    "lead_status": c.lead_status.value if hasattr(c.lead_status, "value") else str(c.lead_status),
-                    "lead_score": c.lead_score,
-                    "notes": c.notes,
-                })
+            if (
+                (first_name and first_name in lower_prompt)
+                or (last_name and last_name in lower_prompt)
+                or (full_name in lower_prompt)
+                or (company and company in lower_prompt)
+            ):
+                matching_contacts.append(
+                    {
+                        "id": c.id,
+                        "name": f"{c.first_name} {c.last_name}",
+                        "email": c.email,
+                        "phone": c.phone,
+                        "company": c.company,
+                        "job_title": c.job_title,
+                        "lead_status": (
+                            c.lead_status.value
+                            if hasattr(c.lead_status, "value")
+                            else str(c.lead_status)
+                        ),
+                        "lead_score": c.lead_score,
+                        "notes": c.notes,
+                    }
+                )
 
         # If no specific contact matched, grab top 3 active contacts as contextual background
         if not matching_contacts and all_contacts:
@@ -85,7 +93,11 @@ def retrieve_crm_context(prompt: str) -> Dict[str, Any]:
                     "email": c.email,
                     "company": c.company,
                     "job_title": c.job_title,
-                    "lead_status": c.lead_status.value if hasattr(c.lead_status, "value") else str(c.lead_status),
+                    "lead_status": (
+                        c.lead_status.value
+                        if hasattr(c.lead_status, "value")
+                        else str(c.lead_status)
+                    ),
                     "lead_score": c.lead_score,
                 }
                 for c in all_contacts[:3]
@@ -98,17 +110,23 @@ def retrieve_crm_context(prompt: str) -> Dict[str, Any]:
         for d in all_deals:
             title = d.title.lower() if d.title else ""
             company = d.company.lower() if d.company else ""
-            if (title and any(word in lower_prompt for word in title.split() if len(word) > 3)) or \
-               (company and company in lower_prompt):
-                matching_deals.append({
-                    "id": d.id,
-                    "title": d.title,
-                    "value": d.value,
-                    "stage": d.stage.value if hasattr(d.stage, "value") else str(d.stage),
-                    "company": d.company,
-                    "probability": d.probability,
-                    "ai_win_probability": d.ai_win_probability,
-                })
+            if (
+                title
+                and any(word in lower_prompt for word in title.split() if len(word) > 3)
+            ) or (company and company in lower_prompt):
+                matching_deals.append(
+                    {
+                        "id": d.id,
+                        "title": d.title,
+                        "value": d.value,
+                        "stage": (
+                            d.stage.value if hasattr(d.stage, "value") else str(d.stage)
+                        ),
+                        "company": d.company,
+                        "probability": d.probability,
+                        "ai_win_probability": d.ai_win_probability,
+                    }
+                )
 
         if not matching_deals and all_deals:
             matching_deals = [
@@ -116,7 +134,9 @@ def retrieve_crm_context(prompt: str) -> Dict[str, Any]:
                     "id": d.id,
                     "title": d.title,
                     "value": d.value,
-                    "stage": d.stage.value if hasattr(d.stage, "value") else str(d.stage),
+                    "stage": (
+                        d.stage.value if hasattr(d.stage, "value") else str(d.stage)
+                    ),
                     "company": d.company,
                     "probability": d.probability,
                 }
@@ -146,15 +166,22 @@ def retrieve_crm_context(prompt: str) -> Dict[str, Any]:
                     "title": d.title,
                     "company": d.company,
                     "value": d.value,
-                    "stage": d.stage.value if hasattr(d.stage, "value") else str(d.stage),
+                    "stage": (
+                        d.stage.value if hasattr(d.stage, "value") else str(d.stage)
+                    ),
                     "probability": d.probability,
                 }
                 for d in all_deals
-            ]
+            ],
         }
 
         # 3. Query Calendar Events
-        events = db.query(CalendarEvent).order_by(CalendarEvent.start_time.asc()).limit(5).all()
+        events = (
+            db.query(CalendarEvent)
+            .order_by(CalendarEvent.start_time.asc())
+            .limit(5)
+            .all()
+        )
         context["upcoming_events"] = [
             {
                 "id": e.id,
@@ -174,7 +201,11 @@ def retrieve_crm_context(prompt: str) -> Dict[str, Any]:
                 "id": cmp.id,
                 "name": cmp.name,
                 "type": cmp.type.value if hasattr(cmp.type, "value") else str(cmp.type),
-                "status": cmp.status.value if hasattr(cmp.status, "value") else str(cmp.status),
+                "status": (
+                    cmp.status.value
+                    if hasattr(cmp.status, "value")
+                    else str(cmp.status)
+                ),
                 "subject": cmp.subject,
             }
             for cmp in campaigns
@@ -194,4 +225,3 @@ def retrieve_crm_context(prompt: str) -> Dict[str, Any]:
         db.close()
 
     return context
-

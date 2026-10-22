@@ -40,17 +40,23 @@ def test_create_and_get_ticket(client):
 def test_list_tickets_and_filter(client):
     """Test listing tickets with filtering by status and priority."""
     # Create critical ticket
-    client.post("/api/tickets", json={
-        "title": "Production outage in auth service",
-        "priority": "critical",
-        "category": "bug",
-    })
+    client.post(
+        "/api/tickets",
+        json={
+            "title": "Production outage in auth service",
+            "priority": "critical",
+            "category": "bug",
+        },
+    )
     # Create low ticket
-    client.post("/api/tickets", json={
-        "title": "Dark mode theme toggle request",
-        "priority": "low",
-        "category": "feature_request",
-    })
+    client.post(
+        "/api/tickets",
+        json={
+            "title": "Dark mode theme toggle request",
+            "priority": "low",
+            "category": "feature_request",
+        },
+    )
 
     # List all
     res = client.get("/api/tickets")
@@ -67,30 +73,41 @@ def test_list_tickets_and_filter(client):
 
 def test_update_ticket_status(client):
     """Test updating ticket status and assigning an agent."""
-    create_res = client.post("/api/tickets", json={
-        "title": "SSO certificate renewal",
-        "priority": "medium",
-    })
+    create_res = client.post(
+        "/api/tickets",
+        json={
+            "title": "SSO certificate renewal",
+            "priority": "medium",
+        },
+    )
     t_id = create_res.json()["id"]
 
-    update_res = client.patch(f"/api/tickets/{t_id}", json={
-        "status": "in_progress",
-        "assigned_to": "Alex Rivera",
-        "internal_notes": "Assigned to Alex; awaiting vendor renewal cert.",
-    })
+    update_res = client.patch(
+        f"/api/tickets/{t_id}",
+        json={
+            "status": "in_progress",
+            "assigned_to": "Alex Rivera",
+            "internal_notes": "Assigned to Alex; awaiting vendor renewal cert.",
+        },
+    )
     assert update_res.status_code == 200
     updated = update_res.json()
     assert updated["status"] == "in_progress"
     assert updated["assigned_to"] == "Alex Rivera"
-    assert updated["internal_notes"] == "Assigned to Alex; awaiting vendor renewal cert."
+    assert (
+        updated["internal_notes"] == "Assigned to Alex; awaiting vendor renewal cert."
+    )
 
 
 def test_ticket_messages_thread(client):
     """Test adding conversation messages to a ticket."""
-    create_res = client.post("/api/tickets", json={
-        "title": "Custom report generation issue",
-        "priority": "medium",
-    })
+    create_res = client.post(
+        "/api/tickets",
+        json={
+            "title": "Custom report generation issue",
+            "priority": "medium",
+        },
+    )
     t_id = create_res.json()["id"]
 
     msg_payload = {

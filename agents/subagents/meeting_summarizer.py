@@ -20,7 +20,7 @@ def run_meeting_summarizer(prompt: str, context: Dict[str, Any]) -> Dict[str, An
         '  "key_decisions": ["<decision 1>", "<decision 2>"],\n'
         '  "action_items": [\n'
         '    {"task": "<action description>", "owner": "<name>", "due_date": "<e.g. Oct 28>"}\n'
-        '  ],\n'
+        "  ],\n"
         '  "sentiment": "<very_positive|positive|neutral|cautious>",\n'
         '  "crm_impact": "<impact on deal or relationship>"\n'
         "}"
@@ -45,13 +45,21 @@ def run_meeting_summarizer(prompt: str, context: Dict[str, Any]) -> Dict[str, An
         ),
         "key_decisions": [
             "Approved cloud tenant isolation model for EU data privacy compliance",
-            "Agreed to pilot 50 seats starting November 1st before full enterprise rollout"
+            "Agreed to pilot 50 seats starting November 1st before full enterprise rollout",
         ],
         "action_items": [
-            {"task": "Deliver revised 2-year pricing agreement with multi-year tier discount", "owner": "Account Executive", "due_date": "Oct 25"},
-            {"task": "Schedule SSO and SCIM provisioning workshop with IT security lead", "owner": "Solutions Engineer", "due_date": "Oct 27"}
+            {
+                "task": "Deliver revised 2-year pricing agreement with multi-year tier discount",
+                "owner": "Account Executive",
+                "due_date": "Oct 25",
+            },
+            {
+                "task": "Schedule SSO and SCIM provisioning workshop with IT security lead",
+                "owner": "Solutions Engineer",
+                "due_date": "Oct 27",
+            },
         ],
         "sentiment": "very_positive",
         "crm_impact": "Deal advanced to Negotiation stage; win probability increased to 85%.",
-        "_meta": {"model": "simulation-fallback", "latency_ms": 115}
+        "_meta": {"model": "simulation-fallback", "latency_ms": 115},
     }

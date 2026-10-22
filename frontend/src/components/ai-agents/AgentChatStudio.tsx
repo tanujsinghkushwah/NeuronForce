@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
+import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import {
   Send,
   Sparkles,
@@ -22,9 +22,9 @@ import {
   FileText,
   Clock,
   Trash2,
-  ExternalLink
-} from 'lucide-react';
-import { AgentChatMessage, AIAgentChatResponse } from '../../types/crm';
+  ExternalLink,
+} from "lucide-react";
+import { AgentChatMessage, AIAgentChatResponse } from "../../types/crm";
 
 interface AgentChatStudioProps {
   messages: AgentChatMessage[];
@@ -37,15 +37,47 @@ interface AgentChatStudioProps {
 }
 
 const QUICK_PROMPTS = [
-  { label: '📅 Schedule Demo', prompt: 'Schedule a product demo with Sarah Chen for tomorrow at 2:00 PM' },
-  { label: '💼 Create Deal', prompt: 'Create a $220,000 deal for Acme Corp in Proposal stage' },
-  { label: '🎯 Score Lead', prompt: 'Score lead Elena Rostova from HyperScale for enterprise buyer intent' },
-  { label: '✉️ Draft Email', prompt: 'Draft a follow-up email to Sarah Chen regarding architecture review' },
-  { label: '🛡️ Deal Risk', prompt: 'Analyze deal risk and win probability for TechCorp Enterprise Platform' },
-  { label: '⚠️ Churn Alert', prompt: 'Identify enterprise accounts with elevated churn risk' },
-  { label: '📝 Meeting Notes', prompt: 'Summarize meeting notes and action items for Stark Industries review' },
-  { label: '👥 Add Contact', prompt: 'Add new lead David Vance at CyberDyne Systems with email david@cyberdyne.io' },
-  { label: '📢 Create Campaign', prompt: 'Create a Q4 Expansion email campaign targeting SaaS leaders' }
+  {
+    label: "📅 Schedule Demo",
+    prompt: "Schedule a product demo with Sarah Chen for tomorrow at 2:00 PM",
+  },
+  {
+    label: "💼 Create Deal",
+    prompt: "Create a $220,000 deal for Acme Corp in Proposal stage",
+  },
+  {
+    label: "🎯 Score Lead",
+    prompt:
+      "Score lead Elena Rostova from HyperScale for enterprise buyer intent",
+  },
+  {
+    label: "✉️ Draft Email",
+    prompt:
+      "Draft a follow-up email to Sarah Chen regarding architecture review",
+  },
+  {
+    label: "🛡️ Deal Risk",
+    prompt:
+      "Analyze deal risk and win probability for TechCorp Enterprise Platform",
+  },
+  {
+    label: "⚠️ Churn Alert",
+    prompt: "Identify enterprise accounts with elevated churn risk",
+  },
+  {
+    label: "📝 Meeting Notes",
+    prompt:
+      "Summarize meeting notes and action items for Stark Industries review",
+  },
+  {
+    label: "👥 Add Contact",
+    prompt:
+      "Add new lead David Vance at CyberDyne Systems with email david@cyberdyne.io",
+  },
+  {
+    label: "📢 Create Campaign",
+    prompt: "Create a Q4 Expansion email campaign targeting SaaS leaders",
+  },
 ];
 
 export default function AgentChatStudio({
@@ -54,8 +86,8 @@ export default function AgentChatStudio({
   onSendMessage,
   onClearChat,
   onSelectGraphRun,
-  modelName = 'google/gemini-2.5-flash-lite',
-  initialInput = ''
+  modelName = "google/gemini-2.5-flash-lite",
+  initialInput = "",
 }: AgentChatStudioProps) {
   const [inputText, setInputText] = useState(initialInput);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -67,19 +99,19 @@ export default function AgentChatStudio({
   }, [initialInput]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isExecuting]);
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!inputText.trim() || isExecuting) return;
     const msg = inputText.trim();
-    setInputText('');
+    setInputText("");
     onSendMessage(msg);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
@@ -105,7 +137,12 @@ export default function AgentChatStudio({
             </div>
             <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5 font-mono">
               <Terminal className="w-3 h-3 text-cyan-400" />
-              <span>Model: <span className="text-indigo-300 font-semibold">{modelName}</span></span>
+              <span>
+                Model:{" "}
+                <span className="text-indigo-300 font-semibold">
+                  {modelName}
+                </span>
+              </span>
             </div>
           </div>
         </div>
@@ -126,7 +163,9 @@ export default function AgentChatStudio({
 
       {/* Quick Prompt Chips */}
       <div className="p-2.5 px-4 bg-slate-950/70 border-b border-white/5 overflow-x-auto flex items-center gap-2 scrollbar-none shrink-0">
-        <span className="text-[10px] uppercase font-bold text-slate-400 shrink-0">Quick Prompts:</span>
+        <span className="text-[10px] uppercase font-bold text-slate-400 shrink-0">
+          Quick Prompts:
+        </span>
         {QUICK_PROMPTS.map((qp, idx) => (
           <button
             key={idx}
@@ -151,36 +190,70 @@ export default function AgentChatStudio({
               Autonomous Sales Agent is Ready
             </h5>
             <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
-              Describe what you need in plain English. The agent will retrieve live CRM context, make decisions via LangGraph, and execute real actions or specialized workflows.
+              Describe what you need in plain English. The agent will retrieve
+              live CRM context, make decisions via LangGraph, and execute real
+              actions or specialized workflows.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-md w-full pt-2">
               <button
-                onClick={() => onSendMessage('Schedule a product demo with Sarah Chen for tomorrow at 2:00 PM')}
+                onClick={() =>
+                  onSendMessage(
+                    "Schedule a product demo with Sarah Chen for tomorrow at 2:00 PM",
+                  )
+                }
                 className="p-2.5 rounded-xl bg-slate-900/80 border border-white/10 hover:border-indigo-500/40 text-left text-xs text-slate-300 transition-colors cursor-pointer group"
               >
-                <div className="font-semibold text-white group-hover:text-indigo-300">📅 Schedule Meeting</div>
-                <div className="text-[10px] text-slate-500">Auto-books calendar slot</div>
+                <div className="font-semibold text-white group-hover:text-indigo-300">
+                  📅 Schedule Meeting
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  Auto-books calendar slot
+                </div>
               </button>
               <button
-                onClick={() => onSendMessage('Create a $220,000 deal for Acme Corp in Proposal stage')}
+                onClick={() =>
+                  onSendMessage(
+                    "Create a $220,000 deal for Acme Corp in Proposal stage",
+                  )
+                }
                 className="p-2.5 rounded-xl bg-slate-900/80 border border-white/10 hover:border-indigo-500/40 text-left text-xs text-slate-300 transition-colors cursor-pointer group"
               >
-                <div className="font-semibold text-white group-hover:text-indigo-300">💼 Create Deal</div>
-                <div className="text-[10px] text-slate-500">Mutates pipeline state</div>
+                <div className="font-semibold text-white group-hover:text-indigo-300">
+                  💼 Create Deal
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  Mutates pipeline state
+                </div>
               </button>
               <button
-                onClick={() => onSendMessage('Score lead Elena Rostova from HyperScale for enterprise buyer intent')}
+                onClick={() =>
+                  onSendMessage(
+                    "Score lead Elena Rostova from HyperScale for enterprise buyer intent",
+                  )
+                }
                 className="p-2.5 rounded-xl bg-slate-900/80 border border-white/10 hover:border-indigo-500/40 text-left text-xs text-slate-300 transition-colors cursor-pointer group"
               >
-                <div className="font-semibold text-white group-hover:text-indigo-300">🎯 Lead Scoring</div>
-                <div className="text-[10px] text-slate-500">Predicts buyer intent</div>
+                <div className="font-semibold text-white group-hover:text-indigo-300">
+                  🎯 Lead Scoring
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  Predicts buyer intent
+                </div>
               </button>
               <button
-                onClick={() => onSendMessage('Draft a follow-up email to Sarah Chen regarding architecture review')}
+                onClick={() =>
+                  onSendMessage(
+                    "Draft a follow-up email to Sarah Chen regarding architecture review",
+                  )
+                }
                 className="p-2.5 rounded-xl bg-slate-900/80 border border-white/10 hover:border-indigo-500/40 text-left text-xs text-slate-300 transition-colors cursor-pointer group"
               >
-                <div className="font-semibold text-white group-hover:text-indigo-300">✉️ Draft Email</div>
-                <div className="text-[10px] text-slate-500">Contextual sales outreach</div>
+                <div className="font-semibold text-white group-hover:text-indigo-300">
+                  ✉️ Draft Email
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  Contextual sales outreach
+                </div>
               </button>
             </div>
           </div>
@@ -188,41 +261,50 @@ export default function AgentChatStudio({
           messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+              className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}
             >
-              <div className={`flex items-start gap-3 max-w-[92%] ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
+              <div
+                className={`flex items-start gap-3 max-w-[92%] ${msg.sender === "user" ? "flex-row-reverse" : ""}`}
+              >
                 <div
                   className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                    msg.sender === 'user'
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gradient-to-tr from-cyan-600 to-indigo-600 text-white shadow-sm'
+                    msg.sender === "user"
+                      ? "bg-indigo-600 text-white"
+                      : "bg-gradient-to-tr from-cyan-600 to-indigo-600 text-white shadow-sm"
                   }`}
                 >
-                  {msg.sender === 'user' ? <UserIcon className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
+                  {msg.sender === "user" ? (
+                    <UserIcon className="w-3.5 h-3.5" />
+                  ) : (
+                    <Bot className="w-3.5 h-3.5" />
+                  )}
                 </div>
 
                 <div className="flex flex-col space-y-2">
                   <div
                     className={`p-4 rounded-2xl text-xs leading-relaxed ${
-                      msg.sender === 'user'
-                        ? 'bg-indigo-600 text-white rounded-tr-none'
-                        : 'bg-slate-900/90 border border-indigo-500/20 text-slate-200 rounded-tl-none shadow-md'
+                      msg.sender === "user"
+                        ? "bg-indigo-600 text-white rounded-tr-none"
+                        : "bg-slate-900/90 border border-indigo-500/20 text-slate-200 rounded-tl-none shadow-md"
                     }`}
                   >
                     <div className="whitespace-pre-wrap">{msg.text}</div>
 
                     {/* Rich Interactive Action Result Card */}
-                    {msg.response?.tool_result && msg.response.tool_result.success && (
-                      <div className="mt-3 pt-3 border-t border-white/10">
-                        <ActionResultCard toolResult={msg.response.tool_result} />
-                      </div>
-                    )}
+                    {msg.response?.tool_result &&
+                      msg.response.tool_result.success && (
+                        <div className="mt-3 pt-3 border-t border-white/10">
+                          <ActionResultCard
+                            toolResult={msg.response.tool_result}
+                          />
+                        </div>
+                      )}
 
                     {/* Specialized Sub-Agent Output Card */}
                     {msg.response?.subagent_result && (
                       <div className="mt-3 pt-3 border-t border-white/10">
                         <SubagentResultCard
-                          subagent={msg.response.target_subagent || ''}
+                          subagent={msg.response.target_subagent || ""}
                           data={msg.response.subagent_result}
                         />
                       </div>
@@ -234,9 +316,16 @@ export default function AgentChatStudio({
                     <div className="flex items-center gap-3 px-1 text-[10px] text-slate-400 font-mono">
                       <span>{msg.timestamp}</span>
                       <span>·</span>
-                      <span className="text-cyan-400">{msg.response.telemetry.total_latency_ms || 350}ms</span>
+                      <span className="text-cyan-400">
+                        {msg.response.telemetry.total_latency_ms || 350}ms
+                      </span>
                       <span>·</span>
-                      <span className="text-emerald-400">{Math.round((msg.response.confidence_score || 0.9) * 100)}% confidence</span>
+                      <span className="text-emerald-400">
+                        {Math.round(
+                          (msg.response.confidence_score || 0.9) * 100,
+                        )}
+                        % confidence
+                      </span>
                       {onSelectGraphRun && (
                         <>
                           <span>·</span>
@@ -244,7 +333,8 @@ export default function AgentChatStudio({
                             onClick={() => onSelectGraphRun(msg.response!)}
                             className="text-indigo-400 hover:text-indigo-300 underline cursor-pointer"
                           >
-                            Inspect Flow ({msg.response.graph_steps.length} nodes)
+                            Inspect Flow ({msg.response.graph_steps.length}{" "}
+                            nodes)
                           </button>
                         </>
                       )}
@@ -272,7 +362,10 @@ export default function AgentChatStudio({
       </div>
 
       {/* Chat Input Bar */}
-      <form onSubmit={handleSubmit} className="p-3.5 px-4 bg-slate-900/90 border-t border-white/10 flex items-center gap-2 shrink-0">
+      <form
+        onSubmit={handleSubmit}
+        className="p-3.5 px-4 bg-slate-900/90 border-t border-white/10 flex items-center gap-2 shrink-0"
+      >
         <textarea
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
@@ -305,7 +398,7 @@ export default function AgentChatStudio({
 function ActionResultCard({ toolResult }: { toolResult: Record<string, any> }) {
   const action = toolResult.action;
 
-  if (action === 'schedule_meeting' && toolResult.event) {
+  if (action === "schedule_meeting" && toolResult.event) {
     const e = toolResult.event;
     return (
       <div className="p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between gap-3">
@@ -314,9 +407,12 @@ function ActionResultCard({ toolResult }: { toolResult: Record<string, any> }) {
             <Calendar className="w-4 h-4" />
           </div>
           <div>
-            <div className="font-semibold text-white text-[11px]">{e.title}</div>
+            <div className="font-semibold text-white text-[11px]">
+              {e.title}
+            </div>
             <div className="text-[10px] text-slate-400">
-              {new Date(e.start_time).toLocaleString()} · {e.location || 'Google Meet'}
+              {new Date(e.start_time).toLocaleString()} ·{" "}
+              {e.location || "Google Meet"}
             </div>
           </div>
         </div>
@@ -331,7 +427,10 @@ function ActionResultCard({ toolResult }: { toolResult: Record<string, any> }) {
     );
   }
 
-  if ((action === 'create_deal' || action === 'update_deal') && toolResult.deal) {
+  if (
+    (action === "create_deal" || action === "update_deal") &&
+    toolResult.deal
+  ) {
     const d = toolResult.deal;
     return (
       <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between gap-3">
@@ -340,9 +439,14 @@ function ActionResultCard({ toolResult }: { toolResult: Record<string, any> }) {
             <Award className="w-4 h-4" />
           </div>
           <div>
-            <div className="font-semibold text-white text-[11px]">{d.title}</div>
+            <div className="font-semibold text-white text-[11px]">
+              {d.title}
+            </div>
             <div className="text-[10px] text-slate-400">
-              ${Number(d.value).toLocaleString()} · {d.company} · Stage: <span className="text-emerald-400 uppercase font-mono">{d.stage}</span>
+              ${Number(d.value).toLocaleString()} · {d.company} · Stage:{" "}
+              <span className="text-emerald-400 uppercase font-mono">
+                {d.stage}
+              </span>
             </div>
           </div>
         </div>
@@ -357,7 +461,10 @@ function ActionResultCard({ toolResult }: { toolResult: Record<string, any> }) {
     );
   }
 
-  if ((action === 'create_contact' || action === 'update_contact') && toolResult.contact) {
+  if (
+    (action === "create_contact" || action === "update_contact") &&
+    toolResult.contact
+  ) {
     const c = toolResult.contact;
     return (
       <div className="p-3 rounded-xl bg-blue-950/40 border border-blue-500/30 flex items-center justify-between gap-3">
@@ -368,7 +475,10 @@ function ActionResultCard({ toolResult }: { toolResult: Record<string, any> }) {
           <div>
             <div className="font-semibold text-white text-[11px]">{c.name}</div>
             <div className="text-[10px] text-slate-400">
-              {c.company || 'Contact'} · {c.email} · Status: <span className="text-cyan-400 font-mono">{c.lead_status || 'New'}</span>
+              {c.company || "Contact"} · {c.email} · Status:{" "}
+              <span className="text-cyan-400 font-mono">
+                {c.lead_status || "New"}
+              </span>
             </div>
           </div>
         </div>
@@ -383,7 +493,7 @@ function ActionResultCard({ toolResult }: { toolResult: Record<string, any> }) {
     );
   }
 
-  if (action === 'create_campaign' && toolResult.campaign) {
+  if (action === "create_campaign" && toolResult.campaign) {
     const cmp = toolResult.campaign;
     return (
       <div className="p-3 rounded-xl bg-pink-950/40 border border-pink-500/30 flex items-center justify-between gap-3">
@@ -392,9 +502,12 @@ function ActionResultCard({ toolResult }: { toolResult: Record<string, any> }) {
             <Megaphone className="w-4 h-4" />
           </div>
           <div>
-            <div className="font-semibold text-white text-[11px]">{cmp.name}</div>
+            <div className="font-semibold text-white text-[11px]">
+              {cmp.name}
+            </div>
             <div className="text-[10px] text-slate-400">
-              Subject: {cmp.subject} · Status: <span className="text-pink-400 font-mono">{cmp.status}</span>
+              Subject: {cmp.subject} · Status:{" "}
+              <span className="text-pink-400 font-mono">{cmp.status}</span>
             </div>
           </div>
         </div>
@@ -414,7 +527,13 @@ function ActionResultCard({ toolResult }: { toolResult: Record<string, any> }) {
 
 // ─── Sub-Agent Result Widget ───────────────────────────────────────────────
 
-function SubagentResultCard({ subagent, data }: { subagent: string; data: Record<string, any> }) {
+function SubagentResultCard({
+  subagent,
+  data,
+}: {
+  subagent: string;
+  data: Record<string, any>;
+}) {
   const [copied, setCopied] = useState(false);
 
   // Email Drafter Card
@@ -443,8 +562,12 @@ function SubagentResultCard({ subagent, data }: { subagent: string; data: Record
             onClick={handleCopy}
             className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-white cursor-pointer transition-colors"
           >
-            {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-            <span>{copied ? 'Copied' : 'Copy Email'}</span>
+            {copied ? (
+              <Check className="w-3 h-3 text-emerald-400" />
+            ) : (
+              <Copy className="w-3 h-3" />
+            )}
+            <span>{copied ? "Copied" : "Copy Email"}</span>
           </button>
         </div>
 
@@ -453,13 +576,23 @@ function SubagentResultCard({ subagent, data }: { subagent: string; data: Record
           <div
             className={`px-2.5 py-1.5 rounded-lg text-[10px] flex items-center justify-between gap-2 ${
               dispatch.sent_live
-                ? 'bg-emerald-950/60 border border-emerald-500/30 text-emerald-300'
-                : 'bg-slate-950/70 border border-indigo-500/20 text-slate-400'
+                ? "bg-emerald-950/60 border border-emerald-500/30 text-emerald-300"
+                : "bg-slate-950/70 border border-indigo-500/20 text-slate-400"
             }`}
           >
             <span className="flex items-center gap-1.5 leading-snug">
-              <span>{dispatch.sent_live ? '🚀 Live Dispatch:' : '📥 Activity Logged:'}</span>
-              <span className={dispatch.sent_live ? 'text-emerald-200 font-medium' : 'text-slate-300'}>
+              <span>
+                {dispatch.sent_live
+                  ? "🚀 Live Dispatch:"
+                  : "📥 Activity Logged:"}
+              </span>
+              <span
+                className={
+                  dispatch.sent_live
+                    ? "text-emerald-200 font-medium"
+                    : "text-slate-300"
+                }
+              >
                 {dispatch.delivery_status}
               </span>
             </span>
@@ -481,7 +614,6 @@ function SubagentResultCard({ subagent, data }: { subagent: string; data: Record
     );
   }
 
-
   // Lead Scoring Widget
   if (data.score !== undefined && data.factors) {
     return (
@@ -492,7 +624,7 @@ function SubagentResultCard({ subagent, data }: { subagent: string; data: Record
             Buyer Intent Rating
           </span>
           <div className="text-xs text-white font-semibold">
-            {data.lead_name || 'Prospect'} ({data.company || 'Enterprise'})
+            {data.lead_name || "Prospect"} ({data.company || "Enterprise"})
           </div>
           <div className="text-[10px] text-slate-400 mt-0.5">
             {data.recommendation}
@@ -501,7 +633,9 @@ function SubagentResultCard({ subagent, data }: { subagent: string; data: Record
 
         <div className="flex flex-col items-center justify-center px-3 py-1.5 rounded-xl bg-indigo-600/20 border border-indigo-500/40 shrink-0">
           <div className="text-lg font-black text-cyan-300">{data.score}</div>
-          <span className="text-[9px] uppercase font-bold text-indigo-300">{data.tier || 'HOT'}</span>
+          <span className="text-[9px] uppercase font-bold text-indigo-300">
+            {data.tier || "HOT"}
+          </span>
         </div>
       </div>
     );
@@ -522,9 +656,11 @@ function SubagentResultCard({ subagent, data }: { subagent: string; data: Record
         </div>
         {data.recommended_retention_playbook && (
           <ul className="text-[10px] text-slate-300 space-y-1 list-disc pl-4">
-            {data.recommended_retention_playbook.slice(0, 2).map((p: string, i: number) => (
-              <li key={i}>{p}</li>
-            ))}
+            {data.recommended_retention_playbook
+              .slice(0, 2)
+              .map((p: string, i: number) => (
+                <li key={i}>{p}</li>
+              ))}
           </ul>
         )}
       </div>

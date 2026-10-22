@@ -46,11 +46,14 @@ def test_create_and_get_campaign(client):
 
 def test_simulate_send_campaign(client):
     """Test launching and tracking metrics for a campaign."""
-    create_res = client.post("/api/campaigns", json={
-        "name": "Q3 Executive Summit",
-        "type": "email",
-        "subject": "Join us at the Executive Summit",
-    })
+    create_res = client.post(
+        "/api/campaigns",
+        json={
+            "name": "Q3 Executive Summit",
+            "type": "email",
+            "subject": "Join us at the Executive Summit",
+        },
+    )
     c_id = create_res.json()["id"]
 
     send_res = client.post(f"/api/campaigns/{c_id}/send")
@@ -65,11 +68,14 @@ def test_simulate_send_campaign(client):
 
 def test_ai_optimize_campaign(client):
     """Test triggering AI campaign optimization advice."""
-    create_res = client.post("/api/campaigns", json={
-        "name": "Product Launch Announcement",
-        "type": "email",
-        "subject": "Check out our newest features!",
-    })
+    create_res = client.post(
+        "/api/campaigns",
+        json={
+            "name": "Product Launch Announcement",
+            "type": "email",
+            "subject": "Check out our newest features!",
+        },
+    )
     c_id = create_res.json()["id"]
 
     opt_res = client.post(f"/api/campaigns/{c_id}/ai-optimize")

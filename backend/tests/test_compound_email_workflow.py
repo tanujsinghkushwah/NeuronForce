@@ -31,7 +31,7 @@ def test_compound_prompt_contact_email_and_send_personalized_email():
             last_name="Singh Kushwah",
             email="tanuj.singhkushwah@example.com",
             company="Acme Corp",
-            lead_score=50
+            lead_score=50,
         )
         db.add(contact)
         db.commit()
@@ -59,15 +59,22 @@ def test_compound_prompt_contact_email_and_send_personalized_email():
     # 3. Verify SQLite DB Contact record has updated email
     db = SessionLocal()
     try:
-        updated_contact = db.query(Contact).filter(Contact.first_name.ilike("%Tanuj%")).first()
+        updated_contact = (
+            db.query(Contact).filter(Contact.first_name.ilike("%Tanuj%")).first()
+        )
         assert updated_contact is not None
         assert updated_contact.email == target_new_email
 
         # 4. Verify Activity log has the email recorded
-        activity = db.query(Activity).filter(
-            Activity.contact_id == updated_contact.id,
-            Activity.type == ActivityType.EMAIL
-        ).order_by(Activity.id.desc()).first()
+        activity = (
+            db.query(Activity)
+            .filter(
+                Activity.contact_id == updated_contact.id,
+                Activity.type == ActivityType.EMAIL,
+            )
+            .order_by(Activity.id.desc())
+            .first()
+        )
         assert activity is not None
         assert target_new_email in activity.description
     finally:

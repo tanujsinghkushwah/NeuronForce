@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Sparkles,
   Code2,
@@ -19,7 +19,7 @@ import {
   Mail,
   Shield,
   Send,
-} from 'lucide-react';
+} from "lucide-react";
 
 export interface AgentPreset {
   name: string;
@@ -40,260 +40,270 @@ export interface AgentInputFormProps {
 const AGENT_PRESETS: Record<string, AgentPreset[]> = {
   lead_scoring: [
     {
-      name: 'Hot Inbound Enterprise',
-      badge: 'High Intent',
+      name: "Hot Inbound Enterprise",
+      badge: "High Intent",
       payload: {
-        contact_name: 'Dr. Elena Rostova',
-        company: 'HyperScale Corp',
+        contact_name: "Dr. Elena Rostova",
+        company: "HyperScale Corp",
         email_opens: 14,
         page_views: 32,
-        industry: 'Cloud Infrastructure',
+        industry: "Cloud Infrastructure",
       },
     },
     {
-      name: 'Mid-Funnel Evaluation',
-      badge: 'Nurture',
+      name: "Mid-Funnel Evaluation",
+      badge: "Nurture",
       payload: {
-        contact_name: 'Marcus Johnson',
-        company: 'Innovate AI Systems',
+        contact_name: "Marcus Johnson",
+        company: "Innovate AI Systems",
         email_opens: 6,
         page_views: 12,
-        industry: 'FinTech & Banking',
+        industry: "FinTech & Banking",
       },
     },
     {
-      name: 'Cold Outbound Prospect',
-      badge: 'Cold',
+      name: "Cold Outbound Prospect",
+      badge: "Cold",
       payload: {
-        contact_name: 'Thomas Wright',
-        company: 'Vanguard Retail',
+        contact_name: "Thomas Wright",
+        company: "Vanguard Retail",
         email_opens: 1,
         page_views: 2,
-        industry: 'Enterprise Retail',
+        industry: "Enterprise Retail",
       },
     },
   ],
   email_draft: [
     {
-      name: 'Architecture Scoping Follow-up',
-      badge: 'Executive',
+      name: "Architecture Scoping Follow-up",
+      badge: "Executive",
       payload: {
-        recipient: 'Sarah Chen',
-        context: 'Follow-up after product architecture review and POC scoping',
-        tone: 'executive',
-        focus_area: 'Implementation Timeline & Security',
+        recipient: "Sarah Chen",
+        context: "Follow-up after product architecture review and POC scoping",
+        tone: "executive",
+        focus_area: "Implementation Timeline & Security",
       },
     },
     {
-      name: 'Annual Renewal & Expansion',
-      badge: 'Consultative',
+      name: "Annual Renewal & Expansion",
+      badge: "Consultative",
       payload: {
-        recipient: 'David Vance',
-        context: 'Quarterly review discussion for contract renewal with seat expansion',
-        tone: 'consultative',
-        focus_area: 'Pricing & ROI Value',
+        recipient: "David Vance",
+        context:
+          "Quarterly review discussion for contract renewal with seat expansion",
+        tone: "consultative",
+        focus_area: "Pricing & ROI Value",
       },
     },
     {
-      name: 'Salesforce Migration Hook',
-      badge: 'Direct',
+      name: "Salesforce Migration Hook",
+      badge: "Direct",
       payload: {
-        recipient: 'Lisa Thompson (VP RevOps)',
-        context: 'Competitive displacement with 10x lower TCO and zero-data migration downtime',
-        tone: 'direct',
-        focus_area: 'Competitive Advantages',
+        recipient: "Lisa Thompson (VP RevOps)",
+        context:
+          "Competitive displacement with 10x lower TCO and zero-data migration downtime",
+        tone: "direct",
+        focus_area: "Competitive Advantages",
       },
     },
   ],
   deal_analysis: [
     {
-      name: 'Global Enterprise AI ($450K)',
-      badge: 'Late Stage',
+      name: "Global Enterprise AI ($450K)",
+      badge: "Late Stage",
       payload: {
         deal_id: 401,
-        title: 'Global Enterprise AI Automation',
+        title: "Global Enterprise AI Automation",
         deal_value: 450000,
-        stage: 'Proposal & Redlines',
-        competitor_present: 'Salesforce Agentforce',
+        stage: "Proposal & Redlines",
+        competitor_present: "Salesforce Agentforce",
       },
     },
     {
-      name: 'FinTech Cloud Acceleration ($85K)',
-      badge: 'Mid Stage',
+      name: "FinTech Cloud Acceleration ($85K)",
+      badge: "Mid Stage",
       payload: {
         deal_id: 402,
-        title: 'FinTech Cloud Pipeline Acceleration',
+        title: "FinTech Cloud Pipeline Acceleration",
         deal_value: 85000,
-        stage: 'Architecture Validation',
-        competitor_present: 'None / Incumbent',
+        stage: "Architecture Validation",
+        competitor_present: "None / Incumbent",
       },
     },
     {
-      name: 'Health System Expansion ($210K)',
-      badge: 'Closing',
+      name: "Health System Expansion ($210K)",
+      badge: "Closing",
       payload: {
         deal_id: 403,
-        title: 'Apex Health System Expansion',
+        title: "Apex Health System Expansion",
         deal_value: 210000,
-        stage: 'Executive Sign-off',
-        competitor_present: 'HubSpot',
+        stage: "Executive Sign-off",
+        competitor_present: "HubSpot",
       },
     },
   ],
   churn_prediction: [
     {
-      name: 'High ARR Accounts (> $100K)',
-      badge: 'Priority',
+      name: "High ARR Accounts (> $100K)",
+      badge: "Priority",
       payload: {
-        segment: 'enterprise_arr_100k_plus',
-        time_horizon: '90_days',
-        sensitivity: 'standard',
+        segment: "enterprise_arr_100k_plus",
+        time_horizon: "90_days",
+        sensitivity: "standard",
       },
     },
     {
-      name: 'Upcoming Q4 Renewals',
-      badge: 'Urgent',
+      name: "Upcoming Q4 Renewals",
+      badge: "Urgent",
       payload: {
-        segment: 'annual_renewals_q4',
-        time_horizon: '30_days',
-        sensitivity: 'high',
+        segment: "annual_renewals_q4",
+        time_horizon: "30_days",
+        sensitivity: "high",
       },
     },
     {
-      name: 'Mid-Market Retention Check',
-      badge: 'Tactical',
+      name: "Mid-Market Retention Check",
+      badge: "Tactical",
       payload: {
-        segment: 'mid_market_50k_to_100k',
-        time_horizon: '60_days',
-        sensitivity: 'standard',
+        segment: "mid_market_50k_to_100k",
+        time_horizon: "60_days",
+        sensitivity: "standard",
       },
     },
   ],
   forecast: [
     {
-      name: 'Q4 Conservative (Risk-Adjusted)',
-      badge: 'Safe',
+      name: "Q4 Conservative (Risk-Adjusted)",
+      badge: "Safe",
       payload: {
-        period: 'Q4_2026',
-        scenario: 'conservative_risk_adjusted',
+        period: "Q4_2026",
+        scenario: "conservative_risk_adjusted",
         include_weighted_deals: true,
       },
     },
     {
-      name: 'Q4 Baseline Run-Rate',
-      badge: 'Target',
+      name: "Q4 Baseline Run-Rate",
+      badge: "Target",
       payload: {
-        period: 'Q4_2026',
-        scenario: 'baseline_runrate',
+        period: "Q4_2026",
+        scenario: "baseline_runrate",
         include_weighted_deals: true,
       },
     },
     {
-      name: 'FY 2027 Strategic Growth',
-      badge: 'Expansion',
+      name: "FY 2027 Strategic Growth",
+      badge: "Expansion",
       payload: {
-        period: 'Full_Year_2027',
-        scenario: 'aggressive_pipeline',
+        period: "Full_Year_2027",
+        scenario: "aggressive_pipeline",
         include_weighted_deals: false,
       },
     },
   ],
   meeting_summary: [
     {
-      name: 'Security & Compliance Review',
-      badge: '45m Tech',
+      name: "Security & Compliance Review",
+      badge: "45m Tech",
       payload: {
-        meeting_title: 'Stark Industries Security & SOC2 Review',
+        meeting_title: "Stark Industries Security & SOC2 Review",
         duration_mins: 45,
-        attendee_group: 'Architecture Team',
+        attendee_group: "Architecture Team",
         discussion_highlights:
-          'Reviewed SOC2 compliance report. Customer requested custom encryption key management and 99.99% SLA commitment.',
+          "Reviewed SOC2 compliance report. Customer requested custom encryption key management and 99.99% SLA commitment.",
       },
     },
     {
-      name: 'Procurement Redline Call',
-      badge: '30m Commercial',
+      name: "Procurement Redline Call",
+      badge: "30m Commercial",
       payload: {
-        meeting_title: 'DataWise Annual Master Services Agreement',
+        meeting_title: "DataWise Annual Master Services Agreement",
         duration_mins: 30,
-        attendee_group: 'Procurement & Legal',
+        attendee_group: "Procurement & Legal",
         discussion_highlights:
-          'Agreed on payment terms Net-30 with 3-year upfront commitment for a 12% discount. Decision maker aligned.',
+          "Agreed on payment terms Net-30 with 3-year upfront commitment for a 12% discount. Decision maker aligned.",
       },
     },
     {
-      name: 'Quarterly Executive Review',
-      badge: '60m C-Suite',
+      name: "Quarterly Executive Review",
+      badge: "60m C-Suite",
       payload: {
-        meeting_title: 'Global Retail QBR with Executive Sponsors',
+        meeting_title: "Global Retail QBR with Executive Sponsors",
         duration_mins: 60,
-        attendee_group: 'Executive Sponsors',
+        attendee_group: "Executive Sponsors",
         discussion_highlights:
-          'Reported 44% reduction in lead conversion cycle. Leadership requested expanding rollout across European division.',
+          "Reported 44% reduction in lead conversion cycle. Leadership requested expanding rollout across European division.",
       },
     },
   ],
   ticket_triage: [
     {
-      name: 'Enterprise API Incident (P1)',
-      badge: 'Critical',
+      name: "Enterprise API Incident (P1)",
+      badge: "Critical",
       payload: {
-        ticket_title: 'API Rate Limiting exceeded during bulk sync',
-        customer_tier: 'enterprise',
-        urgency: 'high',
-        issue_text: 'HTTP 429 received when syncing batch contacts from production data warehouse.',
+        ticket_title: "API Rate Limiting exceeded during bulk sync",
+        customer_tier: "enterprise",
+        urgency: "high",
+        issue_text:
+          "HTTP 429 received when syncing batch contacts from production data warehouse.",
       },
     },
     {
-      name: 'Billing Seat Count Discrepancy',
-      badge: 'Billing',
+      name: "Billing Seat Count Discrepancy",
+      badge: "Billing",
       payload: {
-        ticket_title: 'Seat count adjustment not reflected on monthly invoice',
-        customer_tier: 'mid_market',
-        urgency: 'medium',
-        issue_text: 'Downgraded 4 inactive seats on the 1st of the month, invoice still shows previous seat count.',
+        ticket_title: "Seat count adjustment not reflected on monthly invoice",
+        customer_tier: "mid_market",
+        urgency: "medium",
+        issue_text:
+          "Downgraded 4 inactive seats on the 1st of the month, invoice still shows previous seat count.",
       },
     },
     {
-      name: 'Webhook Security Feature',
-      badge: 'Product',
+      name: "Webhook Security Feature",
+      badge: "Product",
       payload: {
-        ticket_title: 'Support for custom HMAC signatures in Zapier integration',
-        customer_tier: 'standard',
-        urgency: 'low',
-        issue_text: 'Requesting custom SHA-256 webhook signing headers for enterprise compliance auditing.',
+        ticket_title:
+          "Support for custom HMAC signatures in Zapier integration",
+        customer_tier: "standard",
+        urgency: "low",
+        issue_text:
+          "Requesting custom SHA-256 webhook signing headers for enterprise compliance auditing.",
       },
     },
   ],
   campaign_optimize: [
     {
-      name: 'Executive Webinar Invitation',
-      badge: 'High Impact',
+      name: "Executive Webinar Invitation",
+      badge: "High Impact",
       payload: {
-        subject: 'Exclusive Invite: Scaling Revenue Operations with Autonomous AI Agents',
-        preview_text: 'Join 500+ RevOps executives for live pipeline automation benchmarks',
-        target_segment: 'VP of Engineering / RevOps',
-        campaign_type: 'Webinar Invite',
+        subject:
+          "Exclusive Invite: Scaling Revenue Operations with Autonomous AI Agents",
+        preview_text:
+          "Join 500+ RevOps executives for live pipeline automation benchmarks",
+        target_segment: "VP of Engineering / RevOps",
+        campaign_type: "Webinar Invite",
       },
     },
     {
-      name: 'Salesforce Displacement Teaser',
-      badge: 'Competitive',
+      name: "Salesforce Displacement Teaser",
+      badge: "Competitive",
       payload: {
-        subject: 'Why 140+ RevOps teams moved from legacy CRM this quarter',
-        preview_text: 'Discover 10x lower total cost of ownership and transparent sub-second AI agents',
-        target_segment: 'Chief Revenue Officers (CRO)',
-        campaign_type: 'Product Announcement',
+        subject: "Why 140+ RevOps teams moved from legacy CRM this quarter",
+        preview_text:
+          "Discover 10x lower total cost of ownership and transparent sub-second AI agents",
+        target_segment: "Chief Revenue Officers (CRO)",
+        campaign_type: "Product Announcement",
       },
     },
     {
-      name: '2026 AI Benchmark Report',
-      badge: 'Content Nurture',
+      name: "2026 AI Benchmark Report",
+      badge: "Content Nurture",
       payload: {
-        subject: 'The 2026 State of Autonomous Sales Agents in Enterprise CRM',
-        preview_text: 'Benchmark insights across 1.4M automated customer pipeline interactions',
-        target_segment: 'Enterprise Sales Leaders',
-        campaign_type: 'Nurture Sequence',
+        subject: "The 2026 State of Autonomous Sales Agents in Enterprise CRM",
+        preview_text:
+          "Benchmark insights across 1.4M automated customer pipeline interactions",
+        target_segment: "Enterprise Sales Leaders",
+        campaign_type: "Nurture Sequence",
       },
     },
   ],
@@ -308,7 +318,7 @@ export default function AgentInputForm({
   onChangeJson,
 }: AgentInputFormProps) {
   // Mode: 'friendly' (Visual Form) or 'json' (Developer Mode)
-  const [mode, setMode] = useState<'friendly' | 'json'>('friendly');
+  const [mode, setMode] = useState<"friendly" | "json">("friendly");
   const [jsonError, setJsonError] = useState<string | null>(null);
 
   // Form field state extracted from parsed JSON
@@ -321,7 +331,7 @@ export default function AgentInputForm({
       setFormData(parsed);
       setJsonError(null);
     } catch {
-      setJsonError('Invalid JSON format');
+      setJsonError("Invalid JSON format");
     }
   }, [jsonValue]);
 
@@ -352,7 +362,7 @@ export default function AgentInputForm({
             Agent Parameters
           </span>
           <span className="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 font-medium border border-indigo-500/20">
-            {mode === 'friendly' ? 'Customer Friendly UI' : 'Raw JSON Mode'}
+            {mode === "friendly" ? "Customer Friendly UI" : "Raw JSON Mode"}
           </span>
         </div>
 
@@ -366,11 +376,11 @@ export default function AgentInputForm({
             <button
               type="button"
               id="agent-mode-friendly-btn"
-              onClick={() => setMode('friendly')}
+              onClick={() => setMode("friendly")}
               className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition-all cursor-pointer font-medium ${
-                mode === 'friendly'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                mode === "friendly"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
               }`}
             >
               <Sparkles className="w-3 h-3" />
@@ -379,11 +389,11 @@ export default function AgentInputForm({
             <button
               type="button"
               id="agent-mode-json-btn"
-              onClick={() => setMode('json')}
+              onClick={() => setMode("json")}
               className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition-all cursor-pointer font-medium ${
-                mode === 'json'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                mode === "json"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
               }`}
             >
               <Code2 className="w-3 h-3" />
@@ -421,10 +431,10 @@ export default function AgentInputForm({
       )}
 
       {/* ── View Body: Customer-Friendly Form vs Developer JSON ──────────── */}
-      {mode === 'friendly' ? (
+      {mode === "friendly" ? (
         <div className="p-4 rounded-xl bg-slate-950/70 border border-white/10 space-y-4 shadow-inner">
           {/* Agent Spec Specific Form Renderers */}
-          {agentType === 'lead_scoring' && (
+          {agentType === "lead_scoring" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5 mb-1">
@@ -433,8 +443,10 @@ export default function AgentInputForm({
                 </label>
                 <input
                   type="text"
-                  value={formData.contact_name || ''}
-                  onChange={(e) => handleFieldChange('contact_name', e.target.value)}
+                  value={formData.contact_name || ""}
+                  onChange={(e) =>
+                    handleFieldChange("contact_name", e.target.value)
+                  }
                   placeholder="e.g. Dr. Elena Rostova"
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                 />
@@ -447,8 +459,8 @@ export default function AgentInputForm({
                 </label>
                 <input
                   type="text"
-                  value={formData.company || ''}
-                  onChange={(e) => handleFieldChange('company', e.target.value)}
+                  value={formData.company || ""}
+                  onChange={(e) => handleFieldChange("company", e.target.value)}
                   placeholder="e.g. HyperScale Corp"
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                 />
@@ -469,7 +481,12 @@ export default function AgentInputForm({
                   min="0"
                   max="50"
                   value={formData.email_opens || 0}
-                  onChange={(e) => handleFieldChange('email_opens', parseInt(e.target.value, 10))}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      "email_opens",
+                      parseInt(e.target.value, 10),
+                    )
+                  }
                   className="w-full accent-indigo-500 cursor-pointer"
                 />
               </div>
@@ -489,14 +506,19 @@ export default function AgentInputForm({
                   min="0"
                   max="60"
                   value={formData.page_views || 0}
-                  onChange={(e) => handleFieldChange('page_views', parseInt(e.target.value, 10))}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      "page_views",
+                      parseInt(e.target.value, 10),
+                    )
+                  }
                   className="w-full accent-indigo-500 cursor-pointer"
                 />
               </div>
             </div>
           )}
 
-          {agentType === 'email_draft' && (
+          {agentType === "email_draft" && (
             <div className="space-y-3.5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -506,8 +528,10 @@ export default function AgentInputForm({
                   </label>
                   <input
                     type="text"
-                    value={formData.recipient || ''}
-                    onChange={(e) => handleFieldChange('recipient', e.target.value)}
+                    value={formData.recipient || ""}
+                    onChange={(e) =>
+                      handleFieldChange("recipient", e.target.value)
+                    }
                     placeholder="e.g. Sarah Chen (Chief Information Officer)"
                     className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
@@ -518,15 +542,15 @@ export default function AgentInputForm({
                     Communication Tone
                   </label>
                   <div className="grid grid-cols-3 gap-1.5">
-                    {['executive', 'consultative', 'direct'].map((tone) => (
+                    {["executive", "consultative", "direct"].map((tone) => (
                       <button
                         key={tone}
                         type="button"
-                        onClick={() => handleFieldChange('tone', tone)}
+                        onClick={() => handleFieldChange("tone", tone)}
                         className={`py-1.5 px-2 text-center rounded-lg text-xs capitalize font-medium transition-all cursor-pointer ${
                           formData.tone === tone
-                            ? 'bg-indigo-600 text-white shadow-sm'
-                            : 'bg-slate-900 border border-white/10 text-slate-400 hover:text-white'
+                            ? "bg-indigo-600 text-white shadow-sm"
+                            : "bg-slate-900 border border-white/10 text-slate-400 hover:text-white"
                         }`}
                       >
                         {tone}
@@ -543,8 +567,8 @@ export default function AgentInputForm({
                 </label>
                 <textarea
                   rows={2}
-                  value={formData.context || ''}
-                  onChange={(e) => handleFieldChange('context', e.target.value)}
+                  value={formData.context || ""}
+                  onChange={(e) => handleFieldChange("context", e.target.value)}
                   placeholder="e.g. Follow-up after product architecture review and POC scoping"
                   className="w-full p-2.5 text-xs rounded-lg bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                 />
@@ -552,7 +576,7 @@ export default function AgentInputForm({
             </div>
           )}
 
-          {agentType === 'deal_analysis' && (
+          {agentType === "deal_analysis" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5 mb-1">
@@ -561,8 +585,8 @@ export default function AgentInputForm({
                 </label>
                 <input
                   type="text"
-                  value={formData.title || ''}
-                  onChange={(e) => handleFieldChange('title', e.target.value)}
+                  value={formData.title || ""}
+                  onChange={(e) => handleFieldChange("title", e.target.value)}
                   placeholder="e.g. Global Enterprise AI Automation"
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                 />
@@ -576,7 +600,12 @@ export default function AgentInputForm({
                 <input
                   type="number"
                   value={formData.deal_value || 0}
-                  onChange={(e) => handleFieldChange('deal_value', parseFloat(e.target.value) || 0)}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      "deal_value",
+                      parseFloat(e.target.value) || 0,
+                    )
+                  }
                   placeholder="450000"
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                 />
@@ -587,14 +616,22 @@ export default function AgentInputForm({
                   Current Pipeline Stage
                 </label>
                 <select
-                  value={formData.stage || 'Proposal & Redlines'}
-                  onChange={(e) => handleFieldChange('stage', e.target.value)}
+                  value={formData.stage || "Proposal & Redlines"}
+                  onChange={(e) => handleFieldChange("stage", e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500 transition-colors"
                 >
-                  <option value="Discovery & Scoping">Discovery &amp; Scoping</option>
-                  <option value="Architecture Validation">Architecture Validation</option>
-                  <option value="Proposal & Redlines">Proposal &amp; Contract Redlines</option>
-                  <option value="Executive Sign-off">Executive Sign-off &amp; Procurement</option>
+                  <option value="Discovery & Scoping">
+                    Discovery &amp; Scoping
+                  </option>
+                  <option value="Architecture Validation">
+                    Architecture Validation
+                  </option>
+                  <option value="Proposal & Redlines">
+                    Proposal &amp; Contract Redlines
+                  </option>
+                  <option value="Executive Sign-off">
+                    Executive Sign-off &amp; Procurement
+                  </option>
                 </select>
               </div>
 
@@ -603,20 +640,28 @@ export default function AgentInputForm({
                   Competitor In Play
                 </label>
                 <select
-                  value={formData.competitor_present || 'Salesforce Agentforce'}
-                  onChange={(e) => handleFieldChange('competitor_present', e.target.value)}
+                  value={formData.competitor_present || "Salesforce Agentforce"}
+                  onChange={(e) =>
+                    handleFieldChange("competitor_present", e.target.value)
+                  }
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500 transition-colors"
                 >
-                  <option value="None / Incumbent">None / Incumbent Legacy Stack</option>
-                  <option value="Salesforce Agentforce">Salesforce Agentforce</option>
+                  <option value="None / Incumbent">
+                    None / Incumbent Legacy Stack
+                  </option>
+                  <option value="Salesforce Agentforce">
+                    Salesforce Agentforce
+                  </option>
                   <option value="HubSpot">HubSpot Enterprise</option>
-                  <option value="Microsoft Copilot">Microsoft Dynamics / Copilot</option>
+                  <option value="Microsoft Copilot">
+                    Microsoft Dynamics / Copilot
+                  </option>
                 </select>
               </div>
             </div>
           )}
 
-          {agentType === 'churn_prediction' && (
+          {agentType === "churn_prediction" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5 mb-1">
@@ -624,14 +669,22 @@ export default function AgentInputForm({
                   Customer Segment
                 </label>
                 <select
-                  value={formData.segment || 'enterprise_arr_100k_plus'}
-                  onChange={(e) => handleFieldChange('segment', e.target.value)}
+                  value={formData.segment || "enterprise_arr_100k_plus"}
+                  onChange={(e) => handleFieldChange("segment", e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500 transition-colors"
                 >
-                  <option value="enterprise_arr_100k_plus">Enterprise Accounts (ARR &gt; $100K)</option>
-                  <option value="mid_market_50k_to_100k">Mid-Market ($50K – $100K ARR)</option>
-                  <option value="annual_renewals_q4">Upcoming Q4 Annual Renewals</option>
-                  <option value="smb_rapid_growth">Fast-Growing SMB Accounts</option>
+                  <option value="enterprise_arr_100k_plus">
+                    Enterprise Accounts (ARR &gt; $100K)
+                  </option>
+                  <option value="mid_market_50k_to_100k">
+                    Mid-Market ($50K – $100K ARR)
+                  </option>
+                  <option value="annual_renewals_q4">
+                    Upcoming Q4 Annual Renewals
+                  </option>
+                  <option value="smb_rapid_growth">
+                    Fast-Growing SMB Accounts
+                  </option>
                 </select>
               </div>
 
@@ -642,18 +695,18 @@ export default function AgentInputForm({
                 </label>
                 <div className="grid grid-cols-3 gap-1.5">
                   {[
-                    { id: '30_days', label: '30 Days' },
-                    { id: '60_days', label: '60 Days' },
-                    { id: '90_days', label: '90 Days' },
+                    { id: "30_days", label: "30 Days" },
+                    { id: "60_days", label: "60 Days" },
+                    { id: "90_days", label: "90 Days" },
                   ].map((item) => (
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => handleFieldChange('time_horizon', item.id)}
+                      onClick={() => handleFieldChange("time_horizon", item.id)}
                       className={`py-1.5 px-2 text-center rounded-lg text-xs font-medium transition-all cursor-pointer ${
                         formData.time_horizon === item.id
-                          ? 'bg-indigo-600 text-white shadow-sm'
-                          : 'bg-slate-900 border border-white/10 text-slate-400 hover:text-white'
+                          ? "bg-indigo-600 text-white shadow-sm"
+                          : "bg-slate-900 border border-white/10 text-slate-400 hover:text-white"
                       }`}
                     >
                       {item.label}
@@ -664,7 +717,7 @@ export default function AgentInputForm({
             </div>
           )}
 
-          {agentType === 'forecast' && (
+          {agentType === "forecast" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5 mb-1">
@@ -672,8 +725,8 @@ export default function AgentInputForm({
                   Forecasting Period
                 </label>
                 <select
-                  value={formData.period || 'Q4_2026'}
-                  onChange={(e) => handleFieldChange('period', e.target.value)}
+                  value={formData.period || "Q4_2026"}
+                  onChange={(e) => handleFieldChange("period", e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500 transition-colors"
                 >
                   <option value="Q4_2026">Q4 2026 (Current Quarter)</option>
@@ -688,19 +741,27 @@ export default function AgentInputForm({
                   Forecast Model Scenario
                 </label>
                 <select
-                  value={formData.scenario || 'conservative_risk_adjusted'}
-                  onChange={(e) => handleFieldChange('scenario', e.target.value)}
+                  value={formData.scenario || "conservative_risk_adjusted"}
+                  onChange={(e) =>
+                    handleFieldChange("scenario", e.target.value)
+                  }
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500 transition-colors"
                 >
-                  <option value="conservative_risk_adjusted">Conservative (Risk-Adjusted)</option>
-                  <option value="baseline_runrate">Baseline (Historical Run-Rate)</option>
-                  <option value="aggressive_pipeline">Aggressive (High Growth Target)</option>
+                  <option value="conservative_risk_adjusted">
+                    Conservative (Risk-Adjusted)
+                  </option>
+                  <option value="baseline_runrate">
+                    Baseline (Historical Run-Rate)
+                  </option>
+                  <option value="aggressive_pipeline">
+                    Aggressive (High Growth Target)
+                  </option>
                 </select>
               </div>
             </div>
           )}
 
-          {agentType === 'meeting_summary' && (
+          {agentType === "meeting_summary" && (
             <div className="space-y-3.5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -710,8 +771,10 @@ export default function AgentInputForm({
                   </label>
                   <input
                     type="text"
-                    value={formData.meeting_title || ''}
-                    onChange={(e) => handleFieldChange('meeting_title', e.target.value)}
+                    value={formData.meeting_title || ""}
+                    onChange={(e) =>
+                      handleFieldChange("meeting_title", e.target.value)
+                    }
                     placeholder="e.g. Stark Industries Security Review"
                     className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
@@ -727,11 +790,11 @@ export default function AgentInputForm({
                       <button
                         key={mins}
                         type="button"
-                        onClick={() => handleFieldChange('duration_mins', mins)}
+                        onClick={() => handleFieldChange("duration_mins", mins)}
                         className={`py-1.5 px-2 text-center rounded-lg text-xs font-medium transition-all cursor-pointer ${
                           formData.duration_mins === mins
-                            ? 'bg-indigo-600 text-white shadow-sm'
-                            : 'bg-slate-900 border border-white/10 text-slate-400 hover:text-white'
+                            ? "bg-indigo-600 text-white shadow-sm"
+                            : "bg-slate-900 border border-white/10 text-slate-400 hover:text-white"
                         }`}
                       >
                         {mins}m
@@ -747,8 +810,10 @@ export default function AgentInputForm({
                 </label>
                 <textarea
                   rows={2}
-                  value={formData.discussion_highlights || ''}
-                  onChange={(e) => handleFieldChange('discussion_highlights', e.target.value)}
+                  value={formData.discussion_highlights || ""}
+                  onChange={(e) =>
+                    handleFieldChange("discussion_highlights", e.target.value)
+                  }
                   placeholder="Paste raw notes or audio transcript highlights here..."
                   className="w-full p-2.5 text-xs rounded-lg bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                 />
@@ -756,7 +821,7 @@ export default function AgentInputForm({
             </div>
           )}
 
-          {agentType === 'ticket_triage' && (
+          {agentType === "ticket_triage" && (
             <div className="space-y-3.5">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="md:col-span-2">
@@ -765,8 +830,10 @@ export default function AgentInputForm({
                   </label>
                   <input
                     type="text"
-                    value={formData.ticket_title || ''}
-                    onChange={(e) => handleFieldChange('ticket_title', e.target.value)}
+                    value={formData.ticket_title || ""}
+                    onChange={(e) =>
+                      handleFieldChange("ticket_title", e.target.value)
+                    }
                     placeholder="e.g. API Rate Limiting exceeded during bulk sync"
                     className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
@@ -777,8 +844,10 @@ export default function AgentInputForm({
                     Urgency / SLA
                   </label>
                   <select
-                    value={formData.urgency || 'high'}
-                    onChange={(e) => handleFieldChange('urgency', e.target.value)}
+                    value={formData.urgency || "high"}
+                    onChange={(e) =>
+                      handleFieldChange("urgency", e.target.value)
+                    }
                     className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500 transition-colors"
                   >
                     <option value="critical">Critical (P1 Outage)</option>
@@ -795,8 +864,10 @@ export default function AgentInputForm({
                 </label>
                 <textarea
                   rows={2}
-                  value={formData.issue_text || ''}
-                  onChange={(e) => handleFieldChange('issue_text', e.target.value)}
+                  value={formData.issue_text || ""}
+                  onChange={(e) =>
+                    handleFieldChange("issue_text", e.target.value)
+                  }
                   placeholder="Describe the issue reported by the customer..."
                   className="w-full p-2.5 text-xs rounded-lg bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                 />
@@ -804,7 +875,7 @@ export default function AgentInputForm({
             </div>
           )}
 
-          {agentType === 'campaign_optimize' && (
+          {agentType === "campaign_optimize" && (
             <div className="space-y-3.5">
               <div>
                 <label className="text-[11px] font-semibold text-slate-300 mb-1 block">
@@ -812,8 +883,8 @@ export default function AgentInputForm({
                 </label>
                 <input
                   type="text"
-                  value={formData.subject || ''}
-                  onChange={(e) => handleFieldChange('subject', e.target.value)}
+                  value={formData.subject || ""}
+                  onChange={(e) => handleFieldChange("subject", e.target.value)}
                   placeholder="e.g. Exclusive Invite: Scaling Revenue Operations with Autonomous AI Agents"
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                 />
@@ -826,8 +897,10 @@ export default function AgentInputForm({
                   </label>
                   <input
                     type="text"
-                    value={formData.preview_text || ''}
-                    onChange={(e) => handleFieldChange('preview_text', e.target.value)}
+                    value={formData.preview_text || ""}
+                    onChange={(e) =>
+                      handleFieldChange("preview_text", e.target.value)
+                    }
                     placeholder="e.g. Join 500+ RevOps executives for live pipeline automation benchmarks"
                     className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
@@ -838,14 +911,26 @@ export default function AgentInputForm({
                     Target Buyer Persona
                   </label>
                   <select
-                    value={formData.target_segment || 'VP of Engineering / RevOps'}
-                    onChange={(e) => handleFieldChange('target_segment', e.target.value)}
+                    value={
+                      formData.target_segment || "VP of Engineering / RevOps"
+                    }
+                    onChange={(e) =>
+                      handleFieldChange("target_segment", e.target.value)
+                    }
                     className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500 transition-colors"
                   >
-                    <option value="VP of Engineering / RevOps">VP of Engineering / RevOps</option>
-                    <option value="Chief Revenue Officers (CRO)">Chief Revenue Officers (CRO)</option>
-                    <option value="Enterprise Sales Leaders">Enterprise Sales Leaders</option>
-                    <option value="Growth Marketing Directors">Growth Marketing Directors</option>
+                    <option value="VP of Engineering / RevOps">
+                      VP of Engineering / RevOps
+                    </option>
+                    <option value="Chief Revenue Officers (CRO)">
+                      Chief Revenue Officers (CRO)
+                    </option>
+                    <option value="Enterprise Sales Leaders">
+                      Enterprise Sales Leaders
+                    </option>
+                    <option value="Growth Marketing Directors">
+                      Growth Marketing Directors
+                    </option>
                   </select>
                 </div>
               </div>
@@ -853,16 +938,27 @@ export default function AgentInputForm({
           )}
 
           {/* Fallback for generic or dynamic fields */}
-          {!['lead_scoring', 'email_draft', 'deal_analysis', 'churn_prediction', 'forecast', 'meeting_summary', 'ticket_triage', 'campaign_optimize'].includes(agentType) && (
+          {![
+            "lead_scoring",
+            "email_draft",
+            "deal_analysis",
+            "churn_prediction",
+            "forecast",
+            "meeting_summary",
+            "ticket_triage",
+            "campaign_optimize",
+          ].includes(agentType) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {Object.entries(formData).map(([k, v]) => (
                 <div key={k}>
                   <label className="text-[11px] font-semibold text-slate-300 capitalize mb-1 block">
-                    {k.replace(/_/g, ' ')}
+                    {k.replace(/_/g, " ")}
                   </label>
                   <input
                     type="text"
-                    value={typeof v === 'object' ? JSON.stringify(v) : String(v)}
+                    value={
+                      typeof v === "object" ? JSON.stringify(v) : String(v)
+                    }
                     onChange={(e) => handleFieldChange(k, e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500 transition-colors"
                   />
@@ -879,7 +975,7 @@ export default function AgentInputForm({
             </span>
             <button
               type="button"
-              onClick={() => setMode('json')}
+              onClick={() => setMode("json")}
               className="hover:text-indigo-400 underline transition-colors cursor-pointer"
             >
               Inspect underlying JSON
@@ -899,7 +995,7 @@ export default function AgentInputForm({
                 setFormData(parsed);
                 setJsonError(null);
               } catch (err: any) {
-                setJsonError('Syntax error: invalid JSON');
+                setJsonError("Syntax error: invalid JSON");
               }
             }}
             className="w-full p-3 rounded-xl bg-slate-950 border border-white/10 font-mono text-xs text-cyan-300 focus:outline-none focus:border-indigo-500 transition-colors shadow-inner"
@@ -914,7 +1010,7 @@ export default function AgentInputForm({
               <span>Valid JSON payload ready for OpenRouter AI inference</span>
               <button
                 type="button"
-                onClick={() => setMode('friendly')}
+                onClick={() => setMode("friendly")}
                 className="text-indigo-400 hover:text-indigo-300 underline cursor-pointer"
               >
                 Return to Friendly Form

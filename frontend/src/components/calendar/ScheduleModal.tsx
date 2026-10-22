@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { X, Calendar as CalendarIcon, Clock, Users, Video } from 'lucide-react';
+import React from "react";
+import { X, Calendar as CalendarIcon, Clock, Users, Video } from "lucide-react";
 
 interface ScheduleModalProps {
   show: boolean;
@@ -62,35 +62,47 @@ export default function ScheduleModal({
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="block font-medium text-slate-300 mb-1">Meeting Title</label>
+            <label className="block font-medium text-slate-300 mb-1">
+              Meeting Title
+            </label>
             <input
               required
               type="text"
               placeholder="e.g. Solution Demo & Architecture Walkthrough"
               value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, title: e.target.value }))
+              }
               className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all text-xs"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-medium text-slate-300 mb-1">Start Time</label>
+              <label className="block font-medium text-slate-300 mb-1">
+                Start Time
+              </label>
               <input
                 required
                 type="datetime-local"
                 value={form.start_time}
-                onChange={(e) => setForm((f) => ({ ...f, start_time: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, start_time: e.target.value }))
+                }
                 className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500 transition-all text-xs"
               />
             </div>
             <div>
-              <label className="block font-medium text-slate-300 mb-1">End Time</label>
+              <label className="block font-medium text-slate-300 mb-1">
+                End Time
+              </label>
               <input
                 required
                 type="datetime-local"
                 value={form.end_time}
-                onChange={(e) => setForm((f) => ({ ...f, end_time: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, end_time: e.target.value }))
+                }
                 className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500 transition-all text-xs"
               />
             </div>
@@ -98,10 +110,14 @@ export default function ScheduleModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-medium text-slate-300 mb-1">Type</label>
+              <label className="block font-medium text-slate-300 mb-1">
+                Type
+              </label>
               <select
                 value={form.event_type}
-                onChange={(e) => setForm((f) => ({ ...f, event_type: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, event_type: e.target.value }))
+                }
                 className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white focus:outline-none focus:border-indigo-500 transition-all text-xs"
               >
                 <option value="meeting">Executive Meeting</option>
@@ -112,34 +128,45 @@ export default function ScheduleModal({
               </select>
             </div>
             <div>
-              <label className="block font-medium text-slate-300 mb-1">Badge Color</label>
+              <label className="block font-medium text-slate-300 mb-1">
+                Badge Color
+              </label>
               <div className="flex items-center gap-2 mt-1">
-                {['#6366f1', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'].map(
-                  (col) => (
-                    <button
-                      key={col}
-                      type="button"
-                      onClick={() => setForm((f) => ({ ...f, color: col }))}
-                      className={`w-6 h-6 rounded-full border-2 transition-transform cursor-pointer ${
-                        form.color === col
-                          ? 'border-white scale-110 shadow-md'
-                          : 'border-transparent hover:scale-105'
-                      }`}
-                      style={{ backgroundColor: col }}
-                    />
-                  )
-                )}
+                {[
+                  "#6366f1",
+                  "#10b981",
+                  "#f59e0b",
+                  "#8b5cf6",
+                  "#ef4444",
+                  "#06b6d4",
+                ].map((col) => (
+                  <button
+                    key={col}
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, color: col }))}
+                    className={`w-6 h-6 rounded-full border-2 transition-transform cursor-pointer ${
+                      form.color === col
+                        ? "border-white scale-110 shadow-md"
+                        : "border-transparent hover:scale-105"
+                    }`}
+                    style={{ backgroundColor: col }}
+                  />
+                ))}
               </div>
             </div>
           </div>
 
           <div>
-            <label className="block font-medium text-slate-300 mb-1">Location / Video Room</label>
+            <label className="block font-medium text-slate-300 mb-1">
+              Location / Video Room
+            </label>
             <input
               type="text"
               placeholder="e.g. Zoom Meeting / Google Meet"
               value={form.location}
-              onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, location: e.target.value }))
+              }
               className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all text-xs"
             />
           </div>
@@ -152,7 +179,9 @@ export default function ScheduleModal({
               type="text"
               placeholder="alex@neuronforce.ai, customer@megacorp.com"
               value={form.attendees}
-              onChange={(e) => setForm((f) => ({ ...f, attendees: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, attendees: e.target.value }))
+              }
               className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all text-xs"
             />
           </div>

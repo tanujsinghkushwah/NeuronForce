@@ -1,0 +1,38 @@
+# NeuronForce Pre-Commit Configuration
+# Enforces code formatting, styling, and linting across agents/, backend/, and frontend/
+
+default_stages: [pre-commit]
+
+repos:
+  # 1. Black formatting and style check for Python
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        name: black (Python code style in agents/ & backend/)
+        files: ^(agents|backend)/
+        types: [python]
+
+  # 2. General file hygiene hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(frontend/\.next/|frontend/node_modules/|\.git/)
+      - id: end-of-file-fixer
+        exclude: ^(frontend/\.next/|frontend/node_modules/|\.git/)
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-json
+      - id: check-added-large-files
+        args: [--maxkb=2000]
+
+  # 3. Local hook for Frontend Build & Style
+  - repo: local
+    hooks:
+      - id: frontend-style-build
+        name: frontend typecheck & lint (frontend/)
+        entry: bash -c "cd frontend && npm run build && npm run lint"
+        language: system
+        pass_filenames: false
+        files: ^frontend/

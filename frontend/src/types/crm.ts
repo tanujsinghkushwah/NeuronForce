@@ -3,19 +3,20 @@
  * Corresponds to backend Pydantic models & REST schemas.
  */
 
-export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'unqualified' | 'converted';
+export type LeadStatus =
+  "new" | "contacted" | "qualified" | "unqualified" | "converted";
 
-export type DealStage = 
-  | 'prospecting' 
-  | 'qualification' 
-  | 'proposal' 
-  | 'negotiation' 
-  | 'closed_won' 
-  | 'closed_lost';
+export type DealStage =
+  | "prospecting"
+  | "qualification"
+  | "proposal"
+  | "negotiation"
+  | "closed_won"
+  | "closed_lost";
 
-export type Priority = 'low' | 'medium' | 'high' | 'critical';
+export type Priority = "low" | "medium" | "high" | "critical";
 
-export type TaskStatus = 'todo' | 'in_progress' | 'completed' | 'cancelled';
+export type TaskStatus = "todo" | "in_progress" | "completed" | "cancelled";
 
 export interface Contact {
   id: number;
@@ -96,19 +97,22 @@ export interface DealCreateInput {
 }
 
 export interface PipelineView {
-  stages: Record<string, Array<{
-    id: number;
-    title: string;
-    value: number;
-    company?: string;
-    probability: number;
-    owner?: string;
-    priority: Priority;
-    expected_close_date?: string | null;
-    ai_win_probability?: number | null;
-    tags: string[];
-    contacts: Array<{ id: number; name: string; avatar_url?: string | null }>;
-  }>>;
+  stages: Record<
+    string,
+    Array<{
+      id: number;
+      title: string;
+      value: number;
+      company?: string;
+      probability: number;
+      owner?: string;
+      priority: Priority;
+      expected_close_date?: string | null;
+      ai_win_probability?: number | null;
+      tags: string[];
+      contacts: Array<{ id: number; name: string; avatar_url?: string | null }>;
+    }>
+  >;
   total_value: number;
   weighted_value: number;
 }
@@ -144,7 +148,7 @@ export interface Task {
 export interface AIAgentTask {
   id: number;
   task_type: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
+  status: "pending" | "running" | "completed" | "failed";
   input_data: Record<string, any>;
   output_data: Record<string, any>;
   confidence_score?: number | null;
@@ -294,7 +298,7 @@ export interface User {
   email: string;
   full_name: string;
   avatar_url?: string | null;
-  role: 'admin' | 'revops_lead' | 'sales_rep' | 'viewer' | string;
+  role: "admin" | "revops_lead" | "sales_rep" | "viewer" | string;
   is_active: boolean;
   is_verified: boolean;
   last_login_at?: string | null;
@@ -332,9 +336,16 @@ export interface UserSession {
 
 // ─── Service Cloud (Support Tickets & Cases) ──────────────────────────────────
 
-export type TicketStatus = 'open' | 'in_progress' | 'pending_customer' | 'resolved' | 'closed';
-export type TicketPriority = 'low' | 'medium' | 'high' | 'critical';
-export type TicketCategory = 'bug' | 'billing' | 'feature_request' | 'technical' | 'general' | 'onboarding';
+export type TicketStatus =
+  "open" | "in_progress" | "pending_customer" | "resolved" | "closed";
+export type TicketPriority = "low" | "medium" | "high" | "critical";
+export type TicketCategory =
+  | "bug"
+  | "billing"
+  | "feature_request"
+  | "technical"
+  | "general"
+  | "onboarding";
 
 export interface TicketMessage {
   id: number;
@@ -397,8 +408,10 @@ export interface TicketStats {
 
 // ─── Marketing Cloud (Campaigns & Email Marketing) ───────────────────────────
 
-export type CampaignStatus = 'draft' | 'scheduled' | 'active' | 'paused' | 'completed' | 'cancelled';
-export type CampaignType = 'email' | 'sms' | 'nurture_sequence' | 'announcement' | 'promotional';
+export type CampaignStatus =
+  "draft" | "scheduled" | "active" | "paused" | "completed" | "cancelled";
+export type CampaignType =
+  "email" | "sms" | "nurture_sequence" | "announcement" | "promotional";
 
 export interface Campaign {
   id: number;
@@ -499,7 +512,7 @@ export interface RevenueForecast {
 
 export interface GraphNodeStep {
   node: string;
-  status: 'idle' | 'running' | 'completed' | 'skipped' | 'failed';
+  status: "idle" | "running" | "completed" | "skipped" | "failed";
   label: string;
   latency_ms: number;
   summary: string;
@@ -525,10 +538,9 @@ export interface AIAgentChatResponse {
 
 export interface AgentChatMessage {
   id: string;
-  sender: 'user' | 'agent';
+  sender: "user" | "agent";
   text: string;
   timestamp: string;
   response?: AIAgentChatResponse;
   isStreaming?: boolean;
 }
-

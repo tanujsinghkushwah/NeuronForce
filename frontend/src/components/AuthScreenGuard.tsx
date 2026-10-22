@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import {
   Lock,
   ShieldCheck,
@@ -11,35 +11,35 @@ import {
   Loader2,
   Users,
   KeyRound,
-  ExternalLink
-} from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import GoogleAuthModal, { GoogleIcon } from './GoogleAuthModal';
+  ExternalLink,
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import GoogleAuthModal, { GoogleIcon } from "./GoogleAuthModal";
 
 const DEMO_PERSONAS = [
   {
-    email: 'alex.rivera@neuronforce.ai',
-    name: 'Alex Rivera',
-    role: 'revops_lead',
-    roleLabel: 'RevOps Lead',
-    tag: 'Full Access & AI Mesh',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
+    email: "alex.rivera@neuronforce.ai",
+    name: "Alex Rivera",
+    role: "revops_lead",
+    roleLabel: "RevOps Lead",
+    tag: "Full Access & AI Mesh",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
   },
   {
-    email: 'sarah.jenkins@neuronforce.ai',
-    name: 'Sarah Jenkins',
-    role: 'admin',
-    roleLabel: 'Platform Admin',
-    tag: 'Security & Governance',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SarahJ',
+    email: "sarah.jenkins@neuronforce.ai",
+    name: "Sarah Jenkins",
+    role: "admin",
+    roleLabel: "Platform Admin",
+    tag: "Security & Governance",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=SarahJ",
   },
   {
-    email: 'jordan.lee@neuronforce.ai',
-    name: 'Jordan Lee',
-    role: 'sales_rep',
-    roleLabel: 'Enterprise Sales Rep',
-    tag: 'Deals & Outreach',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan',
+    email: "jordan.lee@neuronforce.ai",
+    name: "Jordan Lee",
+    role: "sales_rep",
+    roleLabel: "Enterprise Sales Rep",
+    tag: "Deals & Outreach",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan",
   },
 ];
 
@@ -63,7 +63,7 @@ export default function AuthScreenGuard({ children }: AuthScreenGuardProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
-  const [unlockedUser, setUnlockedUser] = useState<string>('');
+  const [unlockedUser, setUnlockedUser] = useState<string>("");
   const [isAnimatingUnlock, setIsAnimatingUnlock] = useState(false);
 
   const prevAuthRef = React.useRef(isAuthenticated);
@@ -88,7 +88,7 @@ export default function AuthScreenGuard({ children }: AuthScreenGuardProps) {
   }, [isAuthenticated, user]);
 
   // Don't apply blur guard on the dedicated /login page
-  if (pathname === '/login') {
+  if (pathname === "/login") {
     return <>{children}</>;
   }
 
@@ -109,7 +109,9 @@ export default function AuthScreenGuard({ children }: AuthScreenGuardProps) {
       setJustUnlocked(true);
       setTimeout(() => setJustUnlocked(false), 3500);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Authentication failed. Please try again.');
+      setErrorMessage(
+        err.message || "Authentication failed. Please try again.",
+      );
     } finally {
       setIsSubmitting(false);
       setSelectedEmail(null);
@@ -128,7 +130,10 @@ export default function AuthScreenGuard({ children }: AuthScreenGuardProps) {
         setTimeout(() => setJustUnlocked(false), 3500);
         return;
       } catch (err: any) {
-        console.warn('Google SSO direct popup failed, falling back to modal:', err);
+        console.warn(
+          "Google SSO direct popup failed, falling back to modal:",
+          err,
+        );
       } finally {
         setIsSubmitting(false);
       }
@@ -142,8 +147,8 @@ export default function AuthScreenGuard({ children }: AuthScreenGuardProps) {
 
   return (
     <div className="relative min-h-screen flex-1 flex flex-col">
-      {/* 
-        Main Screen Page Content 
+      {/*
+        Main Screen Page Content
         Applies smooth blur transition:
         - When unauthenticated: blur-md / blur-[14px], slightly dimmed, pointer-events-none
         - When transitioning to authenticated: blur-0 smoothly over 700ms
@@ -153,10 +158,10 @@ export default function AuthScreenGuard({ children }: AuthScreenGuardProps) {
       <div
         className={`flex-1 flex flex-col min-w-0 ${
           isLocked
-            ? 'filter blur-[12px] md:blur-[14px] brightness-90 md:brightness-75 pointer-events-none select-none transition-all duration-700 ease-out'
+            ? "filter blur-[12px] md:blur-[14px] brightness-90 md:brightness-75 pointer-events-none select-none transition-all duration-700 ease-out"
             : isAnimatingUnlock
-            ? 'filter blur-0 brightness-100 pointer-events-auto select-auto transition-all duration-700 ease-out'
-            : ''
+              ? "filter blur-0 brightness-100 pointer-events-auto select-auto transition-all duration-700 ease-out"
+              : ""
         }`}
         aria-hidden={isLocked}
       >
@@ -186,7 +191,8 @@ export default function AuthScreenGuard({ children }: AuthScreenGuardProps) {
                   Sign in to Access NeuronForce
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-sm mx-auto leading-relaxed">
-                  Real-time ARR telemetry, proprietary deal pipeline, and autonomous AI agents require an authenticated session.
+                  Real-time ARR telemetry, proprietary deal pipeline, and
+                  autonomous AI agents require an authenticated session.
                 </p>
               </div>
             </div>
@@ -227,7 +233,8 @@ export default function AuthScreenGuard({ children }: AuthScreenGuardProps) {
               {/* 1-Click Demo Persona Fast-Track */}
               <div className="grid grid-cols-1 gap-2">
                 {DEMO_PERSONAS.map((persona) => {
-                  const isThisSelected = selectedEmail === persona.email && isSubmitting;
+                  const isThisSelected =
+                    selectedEmail === persona.email && isSubmitting;
                   return (
                     <button
                       key={persona.email}
@@ -303,7 +310,8 @@ export default function AuthScreenGuard({ children }: AuthScreenGuardProps) {
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             </div>
             <div className="text-[11px] text-emerald-300">
-              Authenticated as <span className="font-semibold text-white">{unlockedUser}</span>
+              Authenticated as{" "}
+              <span className="font-semibold text-white">{unlockedUser}</span>
             </div>
           </div>
         </div>

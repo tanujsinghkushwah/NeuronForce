@@ -1,9 +1,14 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Header from '../../components/Header';
-import { api } from '../../lib/api';
-import { PerformanceMetrics, RevenueSnapshot, ConversionFunnel, RevenueForecast } from '../../types/crm';
+import React, { useEffect, useState } from "react";
+import Header from "../../components/Header";
+import { api } from "../../lib/api";
+import {
+  PerformanceMetrics,
+  RevenueSnapshot,
+  ConversionFunnel,
+  RevenueForecast,
+} from "../../types/crm";
 import {
   BarChart3,
   TrendingUp,
@@ -22,8 +27,8 @@ import {
   LifeBuoy,
   Megaphone,
   Layers,
-  ArrowRight
-} from 'lucide-react';
+  ArrowRight,
+} from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -34,12 +39,14 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-  Cell
-} from 'recharts';
+  Cell,
+} from "recharts";
 
 export default function AnalyticsPage() {
   const [revenueData, setRevenueData] = useState<RevenueSnapshot[]>([]);
-  const [performance, setPerformance] = useState<PerformanceMetrics | null>(null);
+  const [performance, setPerformance] = useState<PerformanceMetrics | null>(
+    null,
+  );
   const [funnel, setFunnel] = useState<ConversionFunnel | null>(null);
   const [forecast, setForecast] = useState<RevenueForecast | null>(null);
   const [ticketReport, setTicketReport] = useState<any>(null);
@@ -69,7 +76,7 @@ export default function AnalyticsPage() {
       setTicketReport(tktRep);
       setCampaignReport(cmpRep);
     } catch (err) {
-      console.error('Failed to load BI analytics:', err);
+      console.error("Failed to load BI analytics:", err);
     } finally {
       setLoading(false);
     }
@@ -98,11 +105,13 @@ export default function AnalyticsPage() {
                 <BarChart3 className="w-5 h-5" />
               </span>
               <h1 className="text-2xl font-bold text-white tracking-tight">
-                Tableau &amp; BI Intelligence <span className="text-indigo-400 font-normal">/ Analytics</span>
+                Tableau &amp; BI Intelligence{" "}
+                <span className="text-indigo-400 font-normal">/ Analytics</span>
               </h1>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Cross-cloud funnel attribution, AI pipeline forecasting, SLA resolution metrics, and raw CSV data export.
+              Cross-cloud funnel attribution, AI pipeline forecasting, SLA
+              resolution metrics, and raw CSV data export.
             </p>
           </div>
 
@@ -132,17 +141,35 @@ export default function AnalyticsPage() {
         {/* Top KPI Strip */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Closed Revenue</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Total Closed Revenue
+            </span>
             <div className="text-2xl font-extrabold text-white mt-1">
-              ${((funnel?.total_revenue || performance?.overall.total_revenue || 0) / 1000).toFixed(0)}k
+              $
+              {(
+                (funnel?.total_revenue ||
+                  performance?.overall.total_revenue ||
+                  0) / 1000
+              ).toFixed(0)}
+              k
             </div>
-            <span className="text-xs text-emerald-400 mt-1 block">Surpassing Q3 baseline by 22%</span>
+            <span className="text-xs text-emerald-400 mt-1 block">
+              Surpassing Q3 baseline by 22%
+            </span>
           </div>
 
           <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Pipeline</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Total Pipeline
+            </span>
             <div className="text-2xl font-extrabold text-cyan-400 mt-1">
-              ${((forecast?.total_pipeline || performance?.overall.total_pipeline || 0) / 1000).toFixed(0)}k
+              $
+              {(
+                (forecast?.total_pipeline ||
+                  performance?.overall.total_pipeline ||
+                  0) / 1000
+              ).toFixed(0)}
+              k
             </div>
             <span className="text-xs text-slate-400 mt-1 block">
               {forecast?.deals_in_pipeline || 0} active opportunities
@@ -150,7 +177,9 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">AI-Weighted Forecast</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              AI-Weighted Forecast
+            </span>
             <div className="text-2xl font-extrabold text-purple-300 mt-1">
               ${((forecast?.ai_weighted_forecast || 0) / 1000).toFixed(0)}k
             </div>
@@ -161,11 +190,15 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Overall Lead Conversion</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Overall Lead Conversion
+            </span>
             <div className="text-2xl font-extrabold text-amber-400 mt-1">
               {funnel?.overall_conversion || 25.8}%
             </div>
-            <span className="text-xs text-slate-400 mt-1 block">Lead-to-closed-won ratio</span>
+            <span className="text-xs text-slate-400 mt-1 block">
+              Lead-to-closed-won ratio
+            </span>
           </div>
         </div>
 
@@ -178,7 +211,8 @@ export default function AnalyticsPage() {
                 Conversion Funnel: Lead &rarr; Qualified &rarr; Deal &rarr; Won
               </h3>
               <p className="text-xs text-slate-400">
-                End-to-end sales lifecycle pipeline velocity and conversion efficiency
+                End-to-end sales lifecycle pipeline velocity and conversion
+                efficiency
               </p>
             </div>
             <span className="text-xs px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-300 font-semibold border border-indigo-500/20">
@@ -194,8 +228,12 @@ export default function AnalyticsPage() {
                   className="p-4 rounded-xl bg-slate-900/60 border border-white/5 relative overflow-hidden"
                 >
                   <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span className="font-semibold text-white">Step {idx + 1}</span>
-                    <span className="text-[11px] font-mono text-cyan-400">{step.rate}%</span>
+                    <span className="font-semibold text-white">
+                      Step {idx + 1}
+                    </span>
+                    <span className="text-[11px] font-mono text-cyan-400">
+                      {step.rate}%
+                    </span>
                   </div>
 
                   <div className="text-lg font-bold text-white mt-1">
@@ -236,23 +274,34 @@ export default function AnalyticsPage() {
 
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <AreaChart
+                data={revenueData}
+                margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+              >
                 <defs>
                   <linearGradient id="areaRev" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
                     <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.05)"
+                />
                 <XAxis
                   dataKey="date"
                   stroke="#64748b"
                   fontSize={11}
                   tickLine={false}
                   tickFormatter={(str) => {
-                    if (!str) return '';
+                    if (!str) return "";
                     const d = new Date(str);
-                    return !isNaN(d.getTime()) ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : str;
+                    return !isNaN(d.getTime())
+                      ? d.toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                        })
+                      : str;
                   }}
                 />
                 <YAxis
@@ -263,15 +312,24 @@ export default function AnalyticsPage() {
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#0f172a',
-                    borderColor: 'rgba(255,255,255,0.1)',
-                    borderRadius: '12px',
-                    color: '#fff',
-                    fontSize: '12px',
+                    backgroundColor: "#0f172a",
+                    borderColor: "rgba(255,255,255,0.1)",
+                    borderRadius: "12px",
+                    color: "#fff",
+                    fontSize: "12px",
                   }}
-                  formatter={(val: any) => [`$${Number(val).toLocaleString()}`, 'Revenue']}
+                  formatter={(val: any) => [
+                    `$${Number(val).toLocaleString()}`,
+                    "Revenue",
+                  ]}
                 />
-                <Area type="monotone" dataKey="total_revenue" stroke="#6366f1" strokeWidth={2.5} fill="url(#areaRev)" />
+                <Area
+                  type="monotone"
+                  dataKey="total_revenue"
+                  stroke="#6366f1"
+                  strokeWidth={2.5}
+                  fill="url(#areaRev)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -299,26 +357,41 @@ export default function AnalyticsPage() {
             <div className="grid grid-cols-3 gap-3 text-xs">
               <div className="p-3 rounded-xl bg-white/5">
                 <span className="text-slate-400 text-[10px]">Total Cases</span>
-                <div className="text-lg font-bold text-white mt-0.5">{ticketReport?.summary?.total || 4}</div>
+                <div className="text-lg font-bold text-white mt-0.5">
+                  {ticketReport?.summary?.total || 4}
+                </div>
               </div>
               <div className="p-3 rounded-xl bg-white/5">
                 <span className="text-slate-400 text-[10px]">Open Cases</span>
-                <div className="text-lg font-bold text-emerald-400 mt-0.5">{ticketReport?.summary?.open || 2}</div>
+                <div className="text-lg font-bold text-emerald-400 mt-0.5">
+                  {ticketReport?.summary?.open || 2}
+                </div>
               </div>
               <div className="p-3 rounded-xl bg-white/5">
                 <span className="text-slate-400 text-[10px]">SLA Breached</span>
-                <div className="text-lg font-bold text-red-400 mt-0.5">{ticketReport?.summary?.sla_breached || 0}</div>
+                <div className="text-lg font-bold text-red-400 mt-0.5">
+                  {ticketReport?.summary?.sla_breached || 0}
+                </div>
               </div>
             </div>
 
             {ticketReport?.by_priority && (
               <div className="space-y-2 pt-2 border-t border-white/5">
-                <span className="text-xs text-slate-400 font-semibold">Volume by Priority</span>
+                <span className="text-xs text-slate-400 font-semibold">
+                  Volume by Priority
+                </span>
                 <div className="space-y-1.5 text-xs">
                   {ticketReport.by_priority.map((p: any) => (
-                    <div key={p.priority} className="flex items-center justify-between">
-                      <span className="capitalize text-slate-300">{p.priority}</span>
-                      <span className="font-mono text-white font-semibold">{p.count} cases</span>
+                    <div
+                      key={p.priority}
+                      className="flex items-center justify-between"
+                    >
+                      <span className="capitalize text-slate-300">
+                        {p.priority}
+                      </span>
+                      <span className="font-mono text-white font-semibold">
+                        {p.count} cases
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -339,37 +412,64 @@ export default function AnalyticsPage() {
                 </p>
               </div>
               <span className="text-xs font-bold text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-full border border-pink-500/20">
-                ${(campaignReport?.summary?.total_revenue_attributed || 136700).toLocaleString()} Attributed
+                $
+                {(
+                  campaignReport?.summary?.total_revenue_attributed || 136700
+                ).toLocaleString()}{" "}
+                Attributed
               </span>
             </div>
 
             <div className="grid grid-cols-3 gap-3 text-xs">
               <div className="p-3 rounded-xl bg-white/5">
-                <span className="text-slate-400 text-[10px]">Campaigns Sent</span>
-                <div className="text-lg font-bold text-white mt-0.5">{campaignReport?.summary?.total_campaigns || 3}</div>
-              </div>
-              <div className="p-3 rounded-xl bg-white/5">
-                <span className="text-slate-400 text-[10px]">Avg Open Rate</span>
-                <div className="text-lg font-bold text-emerald-400 mt-0.5">
-                  {((campaignReport?.summary?.avg_open_rate || 0.37) * 100).toFixed(1)}%
+                <span className="text-slate-400 text-[10px]">
+                  Campaigns Sent
+                </span>
+                <div className="text-lg font-bold text-white mt-0.5">
+                  {campaignReport?.summary?.total_campaigns || 3}
                 </div>
               </div>
               <div className="p-3 rounded-xl bg-white/5">
-                <span className="text-slate-400 text-[10px]">Avg Click Rate</span>
+                <span className="text-slate-400 text-[10px]">
+                  Avg Open Rate
+                </span>
+                <div className="text-lg font-bold text-emerald-400 mt-0.5">
+                  {(
+                    (campaignReport?.summary?.avg_open_rate || 0.37) * 100
+                  ).toFixed(1)}
+                  %
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-white/5">
+                <span className="text-slate-400 text-[10px]">
+                  Avg Click Rate
+                </span>
                 <div className="text-lg font-bold text-cyan-400 mt-0.5">
-                  {((campaignReport?.summary?.avg_click_rate || 0.12) * 100).toFixed(1)}%
+                  {(
+                    (campaignReport?.summary?.avg_click_rate || 0.12) * 100
+                  ).toFixed(1)}
+                  %
                 </div>
               </div>
             </div>
 
             {campaignReport?.records && (
               <div className="space-y-2 pt-2 border-t border-white/5">
-                <span className="text-xs text-slate-400 font-semibold">Top Performing Campaigns</span>
+                <span className="text-xs text-slate-400 font-semibold">
+                  Top Performing Campaigns
+                </span>
                 <div className="space-y-1.5 text-xs">
                   {campaignReport.records.slice(0, 3).map((r: any) => (
-                    <div key={r.id} className="flex items-center justify-between">
-                      <span className="text-slate-300 truncate max-w-[200px]">{r.name}</span>
-                      <span className="font-mono text-amber-400 font-semibold">${(r.revenue_attributed || 0).toLocaleString()}</span>
+                    <div
+                      key={r.id}
+                      className="flex items-center justify-between"
+                    >
+                      <span className="text-slate-300 truncate max-w-[200px]">
+                        {r.name}
+                      </span>
+                      <span className="font-mono text-amber-400 font-semibold">
+                        ${(r.revenue_attributed || 0).toLocaleString()}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -388,7 +488,8 @@ export default function AnalyticsPage() {
                   Team Performance Leaderboard
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Revenue contribution and deal closure efficiency by account executive
+                  Revenue contribution and deal closure efficiency by account
+                  executive
                 </p>
               </div>
               <Users className="w-5 h-5 text-indigo-400" />
@@ -405,8 +506,12 @@ export default function AnalyticsPage() {
                       #{idx + 1}
                     </span>
                     <div>
-                      <div className="text-sm font-semibold text-white">{rep.owner}</div>
-                      <div className="text-[11px] text-slate-400">{rep.deal_count} deals closed</div>
+                      <div className="text-sm font-semibold text-white">
+                        {rep.owner}
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        {rep.deal_count} deals closed
+                      </div>
                     </div>
                   </div>
 
@@ -414,7 +519,9 @@ export default function AnalyticsPage() {
                     <div className="text-sm font-extrabold text-emerald-400">
                       ${(rep.total_value / 1000).toFixed(0)}k
                     </div>
-                    <div className="text-[10px] text-slate-400">Avg: ${(rep.avg_value / 1000).toFixed(0)}k</div>
+                    <div className="text-[10px] text-slate-400">
+                      Avg: ${(rep.avg_value / 1000).toFixed(0)}k
+                    </div>
                   </div>
                 </div>
               ))}
@@ -455,7 +562,9 @@ export default function AnalyticsPage() {
               <div>
                 <div className="flex justify-between text-slate-300 font-medium mb-1">
                   <span>Manual Hours Spent on CRM Admin / Week</span>
-                  <span className="font-bold text-white">{manualHoursPerRep} hrs</span>
+                  <span className="font-bold text-white">
+                    {manualHoursPerRep} hrs
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -486,14 +595,18 @@ export default function AnalyticsPage() {
             {/* Calculated Results Box */}
             <div className="p-4 rounded-xl bg-slate-950/80 border border-white/10 grid grid-cols-2 gap-4">
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400">Annual AE Time Saved</span>
+                <span className="text-[10px] uppercase font-bold text-slate-400">
+                  Annual AE Time Saved
+                </span>
                 <div className="text-xl font-extrabold text-cyan-300 mt-0.5">
                   {(weeklyHoursSaved * 52).toLocaleString()} hrs
                 </div>
               </div>
 
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400">Annual Net Savings</span>
+                <span className="text-[10px] uppercase font-bold text-slate-400">
+                  Annual Net Savings
+                </span>
                 <div className="text-xl font-extrabold text-emerald-400 mt-0.5">
                   ${Math.round(annualSavings).toLocaleString()}
                 </div>
@@ -502,7 +615,9 @@ export default function AnalyticsPage() {
 
             <div className="mt-4 flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-white/5">
               <span>Estimated Agent Token Cost / yr:</span>
-              <span className="text-white font-mono font-bold">${Math.round(annualAgentCost)}</span>
+              <span className="text-white font-mono font-bold">
+                ${Math.round(annualAgentCost)}
+              </span>
             </div>
           </div>
         </div>

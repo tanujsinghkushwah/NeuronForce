@@ -34,15 +34,24 @@ GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
 bearer_security = HTTPBearer(auto_error=False)
 
 
-def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(
+    data: Dict[str, Any], expires_delta: Optional[timedelta] = None
+) -> str:
     """Create a signed JWT token with expiry and standard claims."""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(
+            minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+        )
 
-    to_encode.update({"exp": int(expire.timestamp()), "iat": int(datetime.now(timezone.utc).timestamp())})
+    to_encode.update(
+        {
+            "exp": int(expire.timestamp()),
+            "iat": int(datetime.now(timezone.utc).timestamp()),
+        }
+    )
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
     return encoded_jwt
 
@@ -152,12 +161,15 @@ def authenticate_or_register_google_user(
         if not user:
             # 3. First user becomes RevOps Lead/Admin, others default to sales_rep
             total_users = db.query(User).count()
-            assigned_role = role_preference or ("revops_lead" if total_users == 0 else "sales_rep")
+            assigned_role = role_preference or (
+                "revops_lead" if total_users == 0 else "sales_rep"
+            )
 
             user = User(
                 email=email,
                 full_name=full_name,
-                avatar_url=avatar_url or f"https://api.dicebear.com/7.x/avataaars/svg?seed={email}",
+                avatar_url=avatar_url
+                or f"https://api.dicebear.com/7.x/avataaars/svg?seed={email}",
                 role=assigned_role,
                 is_active=True,
                 is_verified=profile.get("email_verified", True),
@@ -178,7 +190,9 @@ def authenticate_or_register_google_user(
 
     # 4. Create an active UserSession record
     session_token = str(uuid.uuid4())
-    session_expires = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    session_expires = datetime.now(timezone.utc) + timedelta(
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+    )
 
     user_session = UserSession(
         user_id=user.id,
@@ -256,7 +270,9 @@ def get_current_user(
     # Validate session status if session_id is in claims
     session_id = payload.get("session_id")
     if session_id:
-        active_session = db.query(UserSession).filter(UserSession.id == session_id).first()
+        active_session = (
+            db.query(UserSession).filter(UserSession.id == session_id).first()
+        )
         if active_session and active_session.is_revoked:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

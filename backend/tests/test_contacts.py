@@ -3,6 +3,7 @@ Unit Tests for Contacts API
 Tests CRUD operations, searching, filtering, and validation.
 """
 
+
 def test_create_and_get_contact(client):
     """Test creating a contact and retrieving it by ID."""
     payload = {
@@ -18,7 +19,7 @@ def test_create_and_get_contact(client):
         "lead_score": 85,
         "source": "referral",
         "tags": ["enterprise", "decision-maker"],
-        "notes": "Met at AI Summit 2026."
+        "notes": "Met at AI Summit 2026.",
     }
     create_res = client.post("/api/contacts", json=payload)
     assert create_res.status_code == 200
@@ -42,22 +43,28 @@ def test_create_and_get_contact(client):
 def test_list_contacts_with_search_and_filter(client):
     """Test listing contacts with search text and lead status filtering."""
     # Seed 2 contacts
-    client.post("/api/contacts", json={
-        "first_name": "Marcus",
-        "last_name": "Vance",
-        "email": "marcus@vancetech.io",
-        "company": "Vance Technologies",
-        "lead_status": "new",
-        "lead_score": 30
-    })
-    client.post("/api/contacts", json={
-        "first_name": "Sarah",
-        "last_name": "Connor",
-        "email": "sarah@cyberdyne.org",
-        "company": "Cyberdyne Systems",
-        "lead_status": "converted",
-        "lead_score": 95
-    })
+    client.post(
+        "/api/contacts",
+        json={
+            "first_name": "Marcus",
+            "last_name": "Vance",
+            "email": "marcus@vancetech.io",
+            "company": "Vance Technologies",
+            "lead_status": "new",
+            "lead_score": 30,
+        },
+    )
+    client.post(
+        "/api/contacts",
+        json={
+            "first_name": "Sarah",
+            "last_name": "Connor",
+            "email": "sarah@cyberdyne.org",
+            "company": "Cyberdyne Systems",
+            "lead_status": "converted",
+            "lead_score": 95,
+        },
+    )
 
     # List all
     all_res = client.get("/api/contacts")
@@ -81,20 +88,23 @@ def test_list_contacts_with_search_and_filter(client):
 
 def test_update_contact(client):
     """Test updating fields on an existing contact."""
-    create_res = client.post("/api/contacts", json={
-        "first_name": "Dev",
-        "last_name": "Patel",
-        "email": "dev@fintech.co",
-        "company": "Fintech Global",
-        "lead_status": "new",
-        "lead_score": 40
-    })
+    create_res = client.post(
+        "/api/contacts",
+        json={
+            "first_name": "Dev",
+            "last_name": "Patel",
+            "email": "dev@fintech.co",
+            "company": "Fintech Global",
+            "lead_status": "new",
+            "lead_score": 40,
+        },
+    )
     contact_id = create_res.json()["id"]
 
     update_payload = {
         "job_title": "Chief Technology Officer",
         "lead_status": "qualified",
-        "lead_score": 90
+        "lead_score": 90,
     }
     update_res = client.put(f"/api/contacts/{contact_id}", json=update_payload)
     assert update_res.status_code == 200
@@ -107,11 +117,10 @@ def test_update_contact(client):
 
 def test_delete_contact(client):
     """Test deleting a contact."""
-    create_res = client.post("/api/contacts", json={
-        "first_name": "Delete",
-        "last_name": "Me",
-        "email": "delete.me@test.com"
-    })
+    create_res = client.post(
+        "/api/contacts",
+        json={"first_name": "Delete", "last_name": "Me", "email": "delete.me@test.com"},
+    )
     contact_id = create_res.json()["id"]
 
     # Delete
@@ -127,5 +136,8 @@ def test_delete_contact(client):
 def test_contact_not_found_errors(client):
     """Test 404 responses for non-existent contacts."""
     assert client.get("/api/contacts/99999").status_code == 404
-    assert client.put("/api/contacts/99999", json={"first_name": "Test"}).status_code == 404
+    assert (
+        client.put("/api/contacts/99999", json={"first_name": "Test"}).status_code
+        == 404
+    )
     assert client.delete("/api/contacts/99999").status_code == 404

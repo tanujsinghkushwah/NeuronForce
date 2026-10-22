@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/calendar", tags=["Calendar"])
 def list_calendar_events(
     start: Optional[str] = None,
     end: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """List calendar events with optional date range filter."""
     query = db.query(CalendarEvent)

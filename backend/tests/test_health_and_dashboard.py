@@ -2,6 +2,7 @@
 Unit Tests for Health Check & Dashboard API
 """
 
+
 def test_health_check(client):
     """Test /api/health endpoint returns 200 and healthy status."""
     response = client.get("/api/health")

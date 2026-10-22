@@ -20,6 +20,7 @@ router = APIRouter(prefix="/api/campaigns", tags=["Campaigns"])
 
 # ─── Pydantic schemas ───────────────────────────────────────────────────────
 
+
 class CampaignCreate(BaseModel):
     name: str
     type: Optional[str] = "email"
@@ -50,6 +51,7 @@ class CampaignUpdate(BaseModel):
 
 
 # ─── Helpers ───────────────────────────────────────────────────────────────
+
 
 def _compute_recipient_count(db: Session, audience_filter: dict) -> int:
     """Estimate recipient count from audience filter criteria."""
@@ -124,6 +126,7 @@ def _campaign_to_dict(c: Campaign) -> dict:
 
 # ─── Routes ────────────────────────────────────────────────────────────────
 
+
 @router.get("")
 def list_campaigns(
     skip: int = 0,
@@ -134,7 +137,9 @@ def list_campaigns(
     query = db.query(Campaign)
     if status:
         query = query.filter(Campaign.status == status)
-    campaigns = query.order_by(desc(Campaign.created_at)).offset(skip).limit(limit).all()
+    campaigns = (
+        query.order_by(desc(Campaign.created_at)).offset(skip).limit(limit).all()
+    )
     return [_campaign_to_dict(c) for c in campaigns]
 
 
@@ -163,13 +168,16 @@ def create_campaign(payload: CampaignCreate, db: Session = Depends(get_db)):
 
     # Run AI optimization analysis if subject line is provided
     if payload.subject:
-        ai_result = run_ai_task("campaign_optimize", {
-            "subject": payload.subject,
-            "preview_text": payload.preview_text,
-            "campaign_type": payload.type,
-            "audience_filter": payload.audience_filter,
-            "recipient_count": recipient_count,
-        })
+        ai_result = run_ai_task(
+            "campaign_optimize",
+            {
+                "subject": payload.subject,
+                "preview_text": payload.preview_text,
+                "campaign_type": payload.type,
+                "audience_filter": payload.audience_filter,
+                "recipient_count": recipient_count,
+            },
+        )
         output = ai_result["output"]
         campaign.ai_score = output.get("subject_line_score", 70)
         campaign.ai_insights = {
@@ -200,7 +208,10 @@ def list_campaign_templates():
             "preview_text": "Join 500+ RevOps executives for live pipeline automation benchmarks.",
             "body_html": "<p>Hi {{first_name}},</p><p>Enterprise sales teams are eliminating 80% of manual CRM data entry using autonomous agents.</p><p><a href='#'>Register for the live briefing &rarr;</a></p>",
             "body_text": "Hi {{first_name}},\n\nEnterprise sales teams are eliminating 80% of manual CRM data entry using autonomous agents.\n\nRegister for the live briefing: https://neuronforce.ai/webinar-q4",
-            "suggested_audience": {"industry": "Technology", "lead_status": "qualified"},
+            "suggested_audience": {
+                "industry": "Technology",
+                "lead_status": "qualified",
+            },
         },
         {
             "id": "closed_lost_nurture",
@@ -240,12 +251,24 @@ def campaign_stats(db: Session = Depends(get_db)):
     """Get Marketing Cloud KPIs."""
     total = db.query(Campaign).count()
     active = db.query(Campaign).filter(Campaign.status == CampaignStatus.ACTIVE).count()
-    completed = db.query(Campaign).filter(Campaign.status == CampaignStatus.COMPLETED).count()
+    completed = (
+        db.query(Campaign).filter(Campaign.status == CampaignStatus.COMPLETED).count()
+    )
     draft = db.query(Campaign).filter(Campaign.status == CampaignStatus.DRAFT).count()
     total_sent = db.query(func.coalesce(func.sum(Campaign.emails_sent), 0)).scalar()
-    total_revenue = db.query(func.coalesce(func.sum(Campaign.revenue_attributed), 0)).scalar()
-    avg_open_rate = db.query(func.coalesce(func.avg(Campaign.open_rate), 0)).filter(Campaign.emails_sent > 0).scalar()
-    avg_click_rate = db.query(func.coalesce(func.avg(Campaign.click_rate), 0)).filter(Campaign.emails_sent > 0).scalar()
+    total_revenue = db.query(
+        func.coalesce(func.sum(Campaign.revenue_attributed), 0)
+    ).scalar()
+    avg_open_rate = (
+        db.query(func.coalesce(func.avg(Campaign.open_rate), 0))
+        .filter(Campaign.emails_sent > 0)
+        .scalar()
+    )
+    avg_click_rate = (
+        db.query(func.coalesce(func.avg(Campaign.click_rate), 0))
+        .filter(Campaign.emails_sent > 0)
+        .scalar()
+    )
 
     return {
         "total": total,
@@ -271,7 +294,9 @@ def get_campaign(campaign_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{campaign_id}")
-def update_campaign(campaign_id: int, payload: CampaignUpdate, db: Session = Depends(get_db)):
+def update_campaign(
+    campaign_id: int, payload: CampaignUpdate, db: Session = Depends(get_db)
+):
     c = db.query(Campaign).filter(Campaign.id == campaign_id).first()
     if not c:
         raise HTTPException(status_code=404, detail="Campaign not found")
@@ -291,7 +316,9 @@ def send_campaign(campaign_id: int, db: Session = Depends(get_db)):
     if not c:
         raise HTTPException(status_code=404, detail="Campaign not found")
     if c.status not in [CampaignStatus.DRAFT, CampaignStatus.SCHEDULED]:
-        raise HTTPException(status_code=400, detail=f"Cannot send campaign in status: {c.status.value}")
+        raise HTTPException(
+            status_code=400, detail=f"Cannot send campaign in status: {c.status.value}"
+        )
     if not c.recipient_count:
         c.recipient_count = _compute_recipient_count(db, c.audience_filter or {})
         if not c.recipient_count:
@@ -315,23 +342,29 @@ def ai_optimize_campaign(campaign_id: int, db: Session = Depends(get_db)):
     if not c:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    result = run_ai_task("campaign_optimize", {
-        "subject": c.subject,
-        "preview_text": c.preview_text,
-        "body_text": (c.body_text or "")[:500],
-        "current_open_rate": c.open_rate,
-        "current_click_rate": c.click_rate,
-        "recipient_count": c.recipient_count,
-    })
+    result = run_ai_task(
+        "campaign_optimize",
+        {
+            "subject": c.subject,
+            "preview_text": c.preview_text,
+            "body_text": (c.body_text or "")[:500],
+            "current_open_rate": c.open_rate,
+            "current_click_rate": c.click_rate,
+            "recipient_count": c.recipient_count,
+        },
+    )
     output = result["output"]
     c.ai_score = output.get("subject_line_score", c.ai_score or 70)
-    c.ai_insights = {**(c.ai_insights or {}), **{
-        "predicted_open_rate": output.get("predicted_open_rate"),
-        "improvements": output.get("improvements", []),
-        "optimal_send_time": output.get("optimal_send_time"),
-        "ab_test_suggestion": output.get("ab_test_suggestion"),
-        "is_real_ai": result.get("is_real_ai", False),
-    }}
+    c.ai_insights = {
+        **(c.ai_insights or {}),
+        **{
+            "predicted_open_rate": output.get("predicted_open_rate"),
+            "improvements": output.get("improvements", []),
+            "optimal_send_time": output.get("optimal_send_time"),
+            "ab_test_suggestion": output.get("ab_test_suggestion"),
+            "is_real_ai": result.get("is_real_ai", False),
+        },
+    }
     db.commit()
     return {"ai_score": c.ai_score, "ai_insights": c.ai_insights}
 

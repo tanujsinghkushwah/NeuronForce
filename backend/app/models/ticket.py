@@ -3,7 +3,17 @@ Support Ticket & Case Data Models (Service Cloud)
 """
 
 import enum
-from sqlalchemy import Column, Integer, String, DateTime, Text, Enum as SQLEnum, ForeignKey, JSON, Boolean
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Text,
+    Enum as SQLEnum,
+    ForeignKey,
+    JSON,
+    Boolean,
+)
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 
@@ -42,7 +52,9 @@ class Ticket(Base):
     title = Column(String(300), nullable=False)
     description = Column(Text)
     status = Column(SQLEnum(TicketStatus), default=TicketStatus.OPEN, index=True)
-    priority = Column(SQLEnum(TicketPriority), default=TicketPriority.MEDIUM, index=True)
+    priority = Column(
+        SQLEnum(TicketPriority), default=TicketPriority.MEDIUM, index=True
+    )
     category = Column(SQLEnum(TicketCategory), default=TicketCategory.GENERAL)
 
     # Relationships to CRM entities
@@ -68,21 +80,34 @@ class Ticket(Base):
     internal_notes = Column(Text)
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
     # Relationships
-    messages = relationship("TicketMessage", back_populates="ticket", cascade="all, delete-orphan", order_by="TicketMessage.created_at")
+    messages = relationship(
+        "TicketMessage",
+        back_populates="ticket",
+        cascade="all, delete-orphan",
+        order_by="TicketMessage.created_at",
+    )
 
 
 class TicketMessage(Base):
     __tablename__ = "ticket_messages"
 
     id = Column(Integer, primary_key=True, index=True)
-    ticket_id = Column(Integer, ForeignKey("tickets.id", ondelete="CASCADE"), nullable=False)
+    ticket_id = Column(
+        Integer, ForeignKey("tickets.id", ondelete="CASCADE"), nullable=False
+    )
     author_name = Column(String(200), nullable=False)
     author_email = Column(String(255))
     body = Column(Text, nullable=False)
-    is_internal = Column(Boolean, default=False)  # internal agent notes vs customer-visible
+    is_internal = Column(
+        Boolean, default=False
+    )  # internal agent notes vs customer-visible
     is_ai_generated = Column(Boolean, default=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 

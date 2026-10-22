@@ -24,7 +24,13 @@ from app.models.activity import Activity, Task
 from app.models.agent import AIAgentTask
 from app.models.analytics import AnalyticsSnapshot
 from app.models.calendar import CalendarEvent
-from app.models.ticket import Ticket, TicketMessage, TicketStatus, TicketPriority, TicketCategory
+from app.models.ticket import (
+    Ticket,
+    TicketMessage,
+    TicketStatus,
+    TicketPriority,
+    TicketCategory,
+)
 from app.models.campaign import Campaign, CampaignStatus, CampaignType
 
 __all__ = [

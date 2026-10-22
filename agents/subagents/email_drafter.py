@@ -53,7 +53,7 @@ def run_email_drafter(prompt: str, context: Dict[str, Any]) -> Dict[str, Any]:
         "tone": "executive",
         "alternative_subjects": [
             f"Quick question regarding {company}'s Q4 RevOps tech stack",
-            f"Cutting enterprise sales cycle friction at {company}"
+            f"Cutting enterprise sales cycle friction at {company}",
         ],
-        "_meta": {"model": "simulation-fallback", "latency_ms": 140}
+        "_meta": {"model": "simulation-fallback", "latency_ms": 140},
     }

@@ -6,6 +6,7 @@ Tests calendar event scheduling, historical analytics snapshots, team performanc
 from datetime import datetime, timezone, timedelta
 from app.models import AnalyticsSnapshot
 
+
 def test_calendar_events_crud(client):
     """Test creating, listing, and deleting calendar events."""
     start_time = datetime.now(timezone.utc) + timedelta(days=1)
@@ -21,7 +22,7 @@ def test_calendar_events_crud(client):
         "attendees": ["tony@stark.com", "sales@neuronforce.ai"],
         "color": "#6366f1",
         "is_all_day": False,
-        "reminder_minutes": 15
+        "reminder_minutes": 15,
     }
     create_res = client.post("/api/calendar/events", json=event_payload)
     assert create_res.status_code == 200
@@ -59,7 +60,7 @@ def test_analytics_revenue(client, db_session):
         avg_deal_size=31250.0,
         new_contacts=15,
         ai_tasks_run=42,
-        ai_total_cost=0.1850
+        ai_total_cost=0.1850,
     )
     db_session.add(snapshot)
     db_session.commit()
@@ -75,12 +76,15 @@ def test_analytics_revenue(client, db_session):
 def test_analytics_performance(client):
     """Test /api/analytics/performance returns team performance and pipeline metrics."""
     # Seed a deal with an owner
-    client.post("/api/deals", json={
-        "title": "Performance Test Deal",
-        "value": 120000.0,
-        "stage": "closed_won",
-        "owner": "Alex Rivera"
-    })
+    client.post(
+        "/api/deals",
+        json={
+            "title": "Performance Test Deal",
+            "value": 120000.0,
+            "stage": "closed_won",
+            "owner": "Alex Rivera",
+        },
+    )
 
     res = client.get("/api/analytics/performance")
     assert res.status_code == 200

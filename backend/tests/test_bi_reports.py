@@ -57,7 +57,10 @@ def test_export_deals_csv(client):
     response = client.get("/api/analytics/export/deals")
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/csv")
-    assert "attachment; filename=deals_export.csv" in response.headers["content-disposition"]
+    assert (
+        "attachment; filename=deals_export.csv"
+        in response.headers["content-disposition"]
+    )
     content = response.text
     assert "ID,Title,Value,Stage" in content
 
@@ -67,6 +70,9 @@ def test_export_contacts_csv(client):
     response = client.get("/api/analytics/export/contacts")
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/csv")
-    assert "attachment; filename=contacts_export.csv" in response.headers["content-disposition"]
+    assert (
+        "attachment; filename=contacts_export.csv"
+        in response.headers["content-disposition"]
+    )
     content = response.text
     assert "ID,First Name,Last Name,Email" in content

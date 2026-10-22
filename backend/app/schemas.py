@@ -333,4 +333,3 @@ class SessionResponse(BaseModel):
     last_active_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
-

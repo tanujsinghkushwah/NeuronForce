@@ -1,8 +1,16 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { CalendarEvent } from '../../types/crm';
-import { Clock, Video, Trash2, MapPin, Users, Calendar, ArrowUpRight } from 'lucide-react';
+import React from "react";
+import { CalendarEvent } from "../../types/crm";
+import {
+  Clock,
+  Video,
+  Trash2,
+  MapPin,
+  Users,
+  Calendar,
+  ArrowUpRight,
+} from "lucide-react";
 
 interface CardsViewProps {
   events: CalendarEvent[];
@@ -21,9 +29,12 @@ export default function CardsView({
         <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto">
           <Calendar className="w-6 h-6" />
         </div>
-        <h3 className="text-base font-bold text-white">No Scheduled Engagements</h3>
+        <h3 className="text-base font-bold text-white">
+          No Scheduled Engagements
+        </h3>
         <p className="text-xs text-slate-400 max-w-sm mx-auto">
-          Click "+ Schedule" in the top toolbar to organize a client meeting, demo, or follow-up.
+          Click "+ Schedule" in the top toolbar to organize a client meeting,
+          demo, or follow-up.
         </p>
       </div>
     );
@@ -38,7 +49,7 @@ export default function CardsView({
     if (diffMins < 60) return `${diffMins} mins`;
     const hrs = Math.floor(diffMins / 60);
     const mins = diffMins % 60;
-    return mins > 0 ? `${hrs}h ${mins}m` : `${hrs} hr${hrs > 1 ? 's' : ''}`;
+    return mins > 0 ? `${hrs}h ${mins}m` : `${hrs} hr${hrs > 1 ? "s" : ""}`;
   };
 
   return (
@@ -48,30 +59,30 @@ export default function CardsView({
         const endDate = new Date(evt.end_time);
 
         const dateStr = startDate.toLocaleDateString(undefined, {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
         });
 
         const startTimeStr = startDate.toLocaleTimeString([], {
-          hour: 'numeric',
-          minute: '2-digit',
+          hour: "numeric",
+          minute: "2-digit",
         });
 
         const endTimeStr = endDate.toLocaleTimeString([], {
-          hour: 'numeric',
-          minute: '2-digit',
+          hour: "numeric",
+          minute: "2-digit",
         });
 
         const durationStr = getDurationString(evt.start_time, evt.end_time);
-        const color = evt.color || '#6366f1';
+        const color = evt.color || "#6366f1";
 
         const isVideoMeeting =
-          evt.location?.toLowerCase().includes('zoom') ||
-          evt.location?.toLowerCase().includes('meet') ||
-          evt.location?.toLowerCase().includes('teams') ||
-          evt.location?.toLowerCase().includes('virtual');
+          evt.location?.toLowerCase().includes("zoom") ||
+          evt.location?.toLowerCase().includes("meet") ||
+          evt.location?.toLowerCase().includes("teams") ||
+          evt.location?.toLowerCase().includes("virtual");
 
         return (
           <div
@@ -94,7 +105,7 @@ export default function CardsView({
                       backgroundColor: `${color}15`,
                     }}
                   >
-                    {evt.event_type.replace('_', ' ')}
+                    {evt.event_type.replace("_", " ")}
                   </span>
 
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-300">

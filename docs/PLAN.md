@@ -48,7 +48,7 @@ graph TB
     ORM --> DB
     API --> AI
     AI --> DB
-    
+
     style Frontend fill:#1e1b4b,color:#e0e7ff
     style Backend fill:#064e3b,color:#d1fae5
     style Database fill:#7c2d12,color:#fed7aa
