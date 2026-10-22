@@ -29,21 +29,31 @@ export default function LoginPage() {
   const handleFirebaseSSO = async () => {
     setIsSubmitting(true);
     setErrorMessage("");
-    try {
-      await signInWithGoogleSSO();
-      router.push("/");
-    } catch (err: any) {
-      if (err.message !== "FIREBASE_CONFIG_REQUIRED") {
-        setErrorMessage(err.message || "Google SSO failed");
-      } else {
-        // Fallback: prompt for 1-click select
-        setErrorMessage(
-          "Firebase credentials not set in env; please pick one of the 1-click accounts below.",
+
+    const isLocalhost =
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1");
+
+    if (isFirebaseAvailable && isLocalhost) {
+      try {
+        await signInWithGoogleSSO();
+        router.push("/");
+        return;
+      } catch (err: any) {
+        console.warn(
+          "Firebase popup failed on local, launching OAuth flow:",
+          err,
         );
       }
-    } finally {
-      setIsSubmitting(false);
     }
+
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL !== undefined
+        ? process.env.NEXT_PUBLIC_BACKEND_URL
+        : "";
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    window.location.href = `${backendUrl}/api/auth/google/login?return_to=${encodeURIComponent(origin)}`;
   };
 
   const handleDemoSelect = async (demo: {

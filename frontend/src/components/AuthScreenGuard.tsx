@@ -118,11 +118,26 @@ export default function AuthScreenGuard({ children }: AuthScreenGuardProps) {
     }
   };
 
+  const launchGoogleAuthFlow = () => {
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL !== undefined
+        ? process.env.NEXT_PUBLIC_BACKEND_URL
+        : "";
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    window.location.href = `${backendUrl}/api/auth/google/login?return_to=${encodeURIComponent(origin)}`;
+  };
+
   const handleGoogleSSOClick = async () => {
     setIsSubmitting(true);
     setErrorMessage(null);
 
-    if (isFirebaseAvailable) {
+    const isLocalhost =
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1");
+
+    // On localhost with Firebase configured, try instant popup
+    if (isFirebaseAvailable && isLocalhost) {
       try {
         const loggedUser = await signInWithGoogleSSO();
         setUnlockedUser(loggedUser.full_name);
@@ -131,16 +146,14 @@ export default function AuthScreenGuard({ children }: AuthScreenGuardProps) {
         return;
       } catch (err: any) {
         console.warn(
-          "Google SSO direct popup failed, falling back to modal:",
+          "Google SSO direct popup failed on local, launching OAuth flow:",
           err,
         );
-      } finally {
-        setIsSubmitting(false);
       }
     }
 
-    setIsSubmitting(false);
-    setShowGoogleModal(true);
+    // Direct Google OAuth flow launch on first click
+    launchGoogleAuthFlow();
   };
 
   const isLocked = !isAuthenticated;

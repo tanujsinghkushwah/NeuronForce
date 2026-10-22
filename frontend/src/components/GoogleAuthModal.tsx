@@ -135,7 +135,8 @@ export default function GoogleAuthModal({
       process.env.NEXT_PUBLIC_BACKEND_URL !== undefined
         ? process.env.NEXT_PUBLIC_BACKEND_URL
         : "";
-    window.location.href = `${backendUrl}/api/auth/google/login`;
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    window.location.href = `${backendUrl}/api/auth/google/login?return_to=${encodeURIComponent(origin)}`;
   };
 
   return (

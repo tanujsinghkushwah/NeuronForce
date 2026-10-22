@@ -35,12 +35,19 @@ BACKEND_URL = settings.BACKEND_URL
 
 
 @router.get("/google/login")
-def google_sso_login_redirect():
+def google_sso_login_redirect(request: Request, return_to: Optional[str] = Query(None)):
     """
     Initiate Google SSO redirect.
     If GOOGLE_CLIENT_ID is configured, redirects to Google's live OAuth screen.
-    Otherwise, directs to the frontend SSO account chooser.
+    Preserves return_to origin (e.g. Cloudflare tunnel or localhost) via OAuth state.
     """
+    target_origin = return_to or request.headers.get("referer") or FRONTEND_URL
+    if target_origin and target_origin.startswith("http"):
+        parsed = urllib.parse.urlparse(target_origin)
+        target_origin = f"{parsed.scheme}://{parsed.netloc}"
+    else:
+        target_origin = FRONTEND_URL
+
     if GOOGLE_CLIENT_ID:
         redirect_uri = f"{BACKEND_URL}/api/auth/google/callback"
         params = {
@@ -50,27 +57,31 @@ def google_sso_login_redirect():
             "scope": "openid email profile",
             "access_type": "offline",
             "prompt": "select_account",
+            "state": target_origin,
         }
         auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params)}"
         return RedirectResponse(url=auth_url)
     else:
         # Development fallback: redirect to frontend Google SSO interface
-        return RedirectResponse(url=f"{FRONTEND_URL}/login?sso=prompt")
+        return RedirectResponse(url=f"{target_origin}/login?sso=prompt")
 
 
 @router.get("/google/callback")
 async def google_sso_callback(
     code: Optional[str] = Query(None),
     error: Optional[str] = Query(None),
+    state: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     """
     Handle Google OAuth 2.0 authorization code callback.
-    Exchanges code for access & ID tokens and logs the user in.
+    Exchanges code for access & ID tokens and redirects to the origin frontend with sso_token.
     """
+    target_frontend = state if state and state.startswith("http") else FRONTEND_URL
+
     if error:
         return RedirectResponse(
-            url=f"{FRONTEND_URL}/login?error={urllib.parse.quote(error)}"
+            url=f"{target_frontend}/login?error={urllib.parse.quote(error)}"
         )
 
     if not code:
@@ -95,14 +106,14 @@ async def google_sso_callback(
             resp = await client.post(token_url, data=token_data)
             if resp.status_code != 200:
                 return RedirectResponse(
-                    url=f"{FRONTEND_URL}/login?error=Google+token+exchange+failed"
+                    url=f"{target_frontend}/login?error=Google+token+exchange+failed"
                 )
             token_json = resp.json()
             id_token = token_json.get("id_token")
 
         if not id_token:
             return RedirectResponse(
-                url=f"{FRONTEND_URL}/login?error=Missing+Google+id_token"
+                url=f"{target_frontend}/login?error=Missing+Google+id_token"
             )
 
         profile = await verify_google_id_token(id_token)
@@ -111,10 +122,10 @@ async def google_sso_callback(
             profile=profile,
         )
 
-        return RedirectResponse(url=f"{FRONTEND_URL}/?sso_token={access_token}")
+        return RedirectResponse(url=f"{target_frontend}/?sso_token={access_token}")
     except Exception as e:
         return RedirectResponse(
-            url=f"{FRONTEND_URL}/login?error={urllib.parse.quote(str(e))}"
+            url=f"{target_frontend}/login?error={urllib.parse.quote(str(e))}"
         )
 
 
