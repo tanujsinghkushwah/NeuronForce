@@ -456,3 +456,63 @@ html.light ::-webkit-scrollbar-thumb:hover,
 html[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.35);
 }
+
+/* Auth Guard Card & Persona Buttons in Light Mode */
+html.light .auth-guard-card,
+html[data-theme="light"] .auth-guard-card {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.2) !important;
+  color: #0f172a !important;
+}
+
+html.light .auth-guard-card h2,
+html[data-theme="light"] .auth-guard-card h2 {
+  color: #0f172a !important;
+}
+
+html.light .auth-guard-card p,
+html[data-theme="light"] .auth-guard-card p {
+  color: #475569 !important;
+}
+
+html.light .auth-guard-card button[class*="bg-white"],
+html[data-theme="light"] .auth-guard-card button[class*="bg-white"] {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+}
+
+html.light .auth-guard-card button[class*="bg-white"]:hover,
+html[data-theme="light"] .auth-guard-card button[class*="bg-white"]:hover {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+}
+
+html.light .auth-guard-card button[class*="bg-white"] span,
+html[data-theme="light"] .auth-guard-card button[class*="bg-white"] span {
+  color: #ffffff !important;
+}
+
+html.light .auth-guard-persona-btn,
+html[data-theme="light"] .auth-guard-persona-btn {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .auth-guard-persona-btn:hover,
+html[data-theme="light"] .auth-guard-persona-btn:hover {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light .auth-guard-persona-btn span,
+html[data-theme="light"] .auth-guard-persona-btn span {
+  color: #0f172a !important;
+}
+
+html.light .auth-guard-persona-btn div,
+html[data-theme="light"] .auth-guard-persona-btn div {
+  color: #475569 !important;
+}
+

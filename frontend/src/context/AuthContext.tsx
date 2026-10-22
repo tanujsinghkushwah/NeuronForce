@@ -69,22 +69,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(null);
           }
         } else {
-          // If fresh session with no user, seed default session with Alex Rivera (RevOps Lead)
-          try {
-            const res = await api.googleAuth({
-              email: 'alex.rivera@neuronforce.ai',
-              full_name: 'Alex Rivera',
-              avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
-              sub: 'google_alex_rivera_101',
-              role: 'revops_lead'
-            });
-            localStorage.setItem('neuronforce_token', res.access_token);
-            localStorage.setItem('neuronforce_user', JSON.stringify(res.user));
-            setToken(res.access_token);
-            setUser(res.user);
-          } catch (initErr) {
-            console.error('Initial demo auth failed:', initErr);
-          }
+          // No stored session found, user remains unauthenticated until they sign in
+          setToken(null);
+          setUser(null);
         }
       } catch (err) {
         console.error('Failed to initialize authentication state:', err);

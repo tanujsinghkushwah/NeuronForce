@@ -5,6 +5,7 @@ import './theme.css';
 import Sidebar from '../components/Sidebar';
 import { AuthProvider } from '../context/AuthContext';
 import { ThemeProvider } from '../context/ThemeContext';
+import AuthScreenGuard from '../components/AuthScreenGuard';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -40,7 +41,9 @@ export default function RootLayout({
               {/* Ambient Glow */}
               <div className="absolute top-0 left-1/4 right-1/4 h-64 bg-indigo-600/10 blur-[120px] pointer-events-none -z-10 rounded-full" />
               <div className="absolute top-1/2 right-10 w-96 h-96 bg-cyan-500/5 blur-[140px] pointer-events-none -z-10 rounded-full" />
-              {children}
+              <AuthScreenGuard>
+                {children}
+              </AuthScreenGuard>
             </main>
           </AuthProvider>
         </ThemeProvider>
