@@ -568,13 +568,43 @@ function MicroAgentNode({
 
 function ConnectorLine({ active }: { active: boolean }) {
   return (
-    <div className="agent-connector-line h-2 w-0.5 relative my-0.5 flex items-center justify-center shrink-0">
-      <div
-        className={`agent-connector-bar w-0.5 h-full transition-colors ${active ? "bg-gradient-to-b from-cyan-400 to-indigo-500" : "bg-slate-800"}`}
-      />
-      {active && (
-        <span className="absolute w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400 animate-pulse" />
-      )}
+    <div className="agent-connector-line flex flex-col items-center justify-center my-0.5 shrink-0 select-none">
+      <svg
+        className={`w-5 h-6 transition-all duration-300 ${
+          active
+            ? "text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.7)]"
+            : "text-slate-400"
+        }`}
+        viewBox="0 0 20 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* Animated flow pulse when active */}
+        {active && (
+          <circle
+            cx="10"
+            cy="5"
+            r="2"
+            fill="#38bdf8"
+            className="animate-ping"
+          />
+        )}
+        {/* Vertical Flow Stem */}
+        <path
+          d="M10 1 V16"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        {/* Directed Chevron Arrow Head */}
+        <path
+          d="M5.5 11.5 L10 16.5 L14.5 11.5"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
     </div>
   );
 }
