@@ -184,8 +184,8 @@ export default function AIAgentsPage() {
               </h3>
             </div>
 
-            <div className="text-xs text-slate-400 font-mono hidden md:block">
-              LangGraph StateGraph Engine · Direct CRM Mutation
+            <div className="text-xs text-slate-400 font-medium hidden md:block">
+              Autonomous AI Engine · Live CRM Synchronization
             </div>
           </div>
 

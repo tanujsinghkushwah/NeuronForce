@@ -39,14 +39,14 @@ export default function NodeDetailModal({ step, onClose }: NodeDetailModalProps)
                   {step.status.toUpperCase()}
                 </span>
               </h3>
-              <p className="text-xs text-slate-400 font-mono mt-0.5">
-                Node ID: <span className="text-indigo-300">{step.node}</span>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Workflow Step: <span className="text-indigo-300">{step.label}</span>
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-slate-300 font-mono">
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-slate-300 font-medium">
               <Clock className="w-3.5 h-3.5 text-cyan-400" />
               <span>{step.latency_ms} ms</span>
             </div>
@@ -63,7 +63,7 @@ export default function NodeDetailModal({ step, onClose }: NodeDetailModalProps)
         <div className="p-6 overflow-y-auto space-y-4">
           <div>
             <span className="text-xs uppercase tracking-wider font-semibold text-slate-400 block mb-1">
-              Execution Summary
+              Summary
             </span>
             <div className="p-3 rounded-xl bg-slate-900/60 border border-white/5 text-xs text-slate-200">
               {step.summary}
@@ -73,14 +73,14 @@ export default function NodeDetailModal({ step, onClose }: NodeDetailModalProps)
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-xs uppercase tracking-wider font-semibold text-slate-400">
-                Node Telemetry & State Payload
+                Step Details &amp; Output Data
               </span>
               <button
                 onClick={handleCopy}
                 className="flex items-center gap-1 text-[11px] text-indigo-400 hover:text-indigo-300 cursor-pointer"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? 'Copied' : 'Copy JSON'}</span>
+                <span>{copied ? 'Copied' : 'Copy Data'}</span>
               </button>
             </div>
             <pre className="p-4 rounded-xl bg-[#090d16] border border-white/10 text-[11px] font-mono text-cyan-300/90 overflow-x-auto max-h-72 leading-relaxed selection:bg-indigo-500/30">
@@ -95,7 +95,7 @@ export default function NodeDetailModal({ step, onClose }: NodeDetailModalProps)
             onClick={onClose}
             className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition-colors cursor-pointer"
           >
-            Close Inspector
+            Close
           </button>
         </div>
       </div>

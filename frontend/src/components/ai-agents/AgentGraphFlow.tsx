@@ -17,9 +17,8 @@ import {
   CheckCircle2,
   Clock,
   RotateCw,
-  Info,
   Layers,
-  ArrowRight
+  ArrowDown
 } from 'lucide-react';
 import { GraphNodeStep } from '../../types/crm';
 import NodeDetailModal from './NodeDetailModal';
@@ -51,7 +50,6 @@ export default function AgentGraphFlow({
     if (step) return 'completed';
     if (isExecuting) {
       if (activeNodeId === nodeId) return 'running';
-      // If we are executing and this node matches target subagent or action
       if (nodeId.startsWith('subagent_') && targetSubagent && nodeId.includes(targetSubagent)) {
         return 'running';
       }
@@ -72,79 +70,93 @@ export default function AgentGraphFlow({
         status: getNodeState(nodeId),
         label: fallbackLabel,
         latency_ms: 0,
-        summary: `Node '${fallbackLabel}' in LangGraph workflow. Awaiting execution trigger.`,
-        data: { description: `LangGraph StateGraph node: ${nodeId}` }
+        summary: `${fallbackLabel} is ready in the workflow. It executes automatically when relevant prompts are received.`,
+        data: { step: fallbackLabel, status: 'Ready' }
       });
     }
   };
 
-  const totalGraphLatency = steps.reduce((acc, curr) => acc + (curr.latency_ms || 0), 0);
+  const isAnySubagentActive = [
+    'subagent_lead_scoring',
+    'subagent_email_draft',
+    'subagent_deal_risk',
+    'subagent_churn_prediction',
+    'subagent_meeting_summary'
+  ].some(id => getNodeState(id) !== 'idle');
+
+  const isAnyActionActive = [
+    'action_schedule_meeting',
+    'action_create_deal',
+    'action_create_contact',
+    'action_create_campaign'
+  ].some(id => getNodeState(id) !== 'idle');
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-[#080d1a] border border-indigo-500/20 rounded-2xl overflow-hidden shadow-xl">
-      {/* Top Telemetry Header */}
-      <div className="p-3.5 px-4 border-b border-white/10 bg-slate-900/80 flex items-center justify-between flex-wrap gap-2 shrink-0">
-        <div className="flex items-center gap-2">
+      {/* Top Header */}
+      <div className="p-3 px-4 border-b border-white/10 bg-slate-900/80 flex items-center justify-between flex-wrap gap-2 shrink-0">
+        <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-cyan-400">
             <GitFork className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-                LangGraph Multi-Agent Flow
+              <h4 className="text-xs font-bold text-white tracking-wide">
+                Agent Reasoning Workflow
               </h4>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono border border-cyan-500/30">
-                v1.2 StateGraph
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-medium border border-emerald-500/30">
+                Live Flow
               </span>
             </div>
             <p className="text-[11px] text-slate-400">
-              Interactive execution topology &amp; token routing
+              Visual tracking of autonomous AI decisions &amp; CRM actions
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {isExecuting ? (
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-xs font-medium">
-              <RotateCw className="w-3.5 h-3.5 animate-spin text-cyan-400" />
-              <span>Traversing Graph...</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-[11px] font-medium">
+              <RotateCw className="w-3 h-3 animate-spin text-cyan-400" />
+              <span>Analyzing...</span>
             </div>
           ) : steps.length > 0 ? (
-            <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>{steps.length} Nodes · {totalGraphLatency}ms</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-medium">
+              <CheckCircle2 className="w-3 h-3" />
+              <span>{steps.length} Steps Completed</span>
             </div>
           ) : (
-            <div className="text-[11px] text-slate-500 font-mono">
-              Graph Idle · Awaiting Prompt
+            <div className="text-[11px] text-slate-400 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+              <span>Ready for request</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* Main Graph Flow Canvas */}
-      <div className="flex-1 min-h-0 p-4 overflow-y-auto space-y-3 relative selection:bg-indigo-500/30">
-        {/* Step 1: Prompt Ingestion Node */}
+      {/* Main Graph Flow Canvas - Zero scroll layout: fits completely in single view */}
+      <div className="flex-1 min-h-0 p-3.5 flex flex-col justify-between overflow-hidden relative">
+        {/* Step 1: Request Understanding */}
         <div className="flex flex-col items-center">
           <NodeCard
-            nodeId="prompt_ingestion"
-            title="Prompt Ingestion"
-            subtitle="Input Sanitization &amp; Token Counting"
+            stepNumber="1"
+            title="Request Understanding"
+            subtitle="Interpreting prompt goals, intent &amp; target details"
             icon={Sparkles}
             color="from-blue-600 to-indigo-600"
             state={getNodeState('prompt_ingestion')}
             step={getStep('prompt_ingestion')}
-            onClick={() => handleNodeClick('prompt_ingestion', 'Prompt Ingestion')}
+            onClick={() => handleNodeClick('prompt_ingestion', 'Request Understanding')}
           />
           <ConnectorLine active={getNodeState('prompt_ingestion') === 'completed' || isExecuting} />
         </div>
 
-        {/* Step 2: Context Retrieval Node */}
+        {/* Step 2: CRM Data Retrieval */}
         <div className="flex flex-col items-center">
           <NodeCard
-            nodeId="context_retrieval"
-            title="CRM Context Extractor"
-            subtitle="Local DB SQLite Entity Queries"
+            stepNumber="2"
+            title="CRM Data Gathering"
+            subtitle="Checking customer, deal &amp; calendar records"
             icon={Database}
             color="from-cyan-600 to-blue-600"
             state={getNodeState('context_retrieval')}
@@ -152,166 +164,178 @@ export default function AgentGraphFlow({
             badgeText={
               getStep('context_retrieval')?.data?.matching_contacts_count !== undefined
                 ? `${getStep('context_retrieval')?.data?.matching_contacts_count} Contacts · ${getStep('context_retrieval')?.data?.matching_deals_count} Deals`
-                : 'Contacts / Deals / Events'
+                : 'Live CRM Sync'
             }
-            onClick={() => handleNodeClick('context_retrieval', 'CRM Context Retrieval')}
+            onClick={() => handleNodeClick('context_retrieval', 'CRM Data Gathering')}
           />
           <ConnectorLine active={getNodeState('context_retrieval') === 'completed' || isExecuting} />
         </div>
 
-        {/* Step 3: Intent Router Node */}
+        {/* Step 3: Decision Router */}
         <div className="flex flex-col items-center">
           <NodeCard
-            nodeId="intent_router"
-            title="Orchestrator Decision Router"
-            subtitle="Intent Classification &amp; Entity Parser"
+            stepNumber="3"
+            title="Intelligent Decision Router"
+            subtitle="Directing to the best specialized agent or CRM tool"
             icon={GitFork}
             color="from-purple-600 to-indigo-600"
             state={getNodeState('intent_router')}
             step={getStep('intent_router')}
             badgeText={
               targetSubagent
-                ? `Route: ${targetSubagent.replace('_', ' ').toUpperCase()}`
+                ? `Agent: ${targetSubagent.replace('_', ' ').toUpperCase()}`
                 : actionType
                 ? `Action: ${actionType.replace('_', ' ').toUpperCase()}`
-                : 'Dynamic Branching'
+                : 'Routing'
             }
             onClick={() => handleNodeClick('intent_router', 'Decision Router')}
           />
           <ConnectorLine active={getNodeState('intent_router') === 'completed' || isExecuting} />
         </div>
 
-        {/* Step 4: Split Branches (Sub-Agents vs CRM Actions) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl mx-auto w-full pt-1">
-          {/* Branch A: Specialized Sub-Agents Container */}
-          <div className="p-3.5 rounded-2xl bg-slate-900/40 border border-indigo-500/20 flex flex-col space-y-2.5">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
+        {/* Step 4: Compact Dual-Branch Container (Specialized Agents vs CRM Actions) */}
+        <div className="grid grid-cols-2 gap-3 max-w-xl mx-auto w-full">
+          {/* Branch A: Specialized Agents */}
+          <div className={`p-2.5 rounded-xl transition-all border ${
+            isAnySubagentActive
+              ? 'bg-indigo-950/40 border-indigo-400/50 shadow-md shadow-indigo-500/10'
+              : 'bg-slate-900/40 border-white/5'
+          } flex flex-col space-y-1.5`}>
+            <div className="flex items-center justify-between px-1 pb-1 border-b border-white/5">
+              <span className="text-[10px] font-bold tracking-wider text-indigo-300 flex items-center gap-1">
                 <Layers className="w-3 h-3 text-indigo-400" />
-                Branch A: Specialized Agents
+                Specialized Agents
               </span>
-              <span className="text-[10px] font-mono text-slate-400">5 Active</span>
+              <span className="text-[9px] text-slate-400">5 Ready</span>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               <MicroAgentNode
                 nodeId="subagent_lead_scoring"
-                name="Lead Scoring Agent"
+                name="Lead Scoring"
                 icon={Zap}
                 color="text-indigo-400"
                 state={getNodeState('subagent_lead_scoring')}
                 step={getStep('subagent_lead_scoring')}
-                onClick={() => handleNodeClick('subagent_lead_scoring', 'Lead Scoring Sub-Agent')}
+                onClick={() => handleNodeClick('subagent_lead_scoring', 'Lead Scoring Agent')}
               />
 
               <MicroAgentNode
                 nodeId="subagent_email_draft"
-                name="Personalized Email Drafter"
+                name="Email Drafter"
                 icon={Mail}
                 color="text-purple-400"
                 state={getNodeState('subagent_email_draft')}
                 step={getStep('subagent_email_draft')}
-                onClick={() => handleNodeClick('subagent_email_draft', 'Email Drafter Sub-Agent')}
+                onClick={() => handleNodeClick('subagent_email_draft', 'Email Drafter')}
               />
 
               <MicroAgentNode
                 nodeId="subagent_deal_risk"
-                name="Deal Risk &amp; Probability"
+                name="Deal Risk Analysis"
                 icon={Award}
                 color="text-cyan-400"
                 state={getNodeState('subagent_deal_risk')}
                 step={getStep('subagent_deal_risk')}
-                onClick={() => handleNodeClick('subagent_deal_risk', 'Deal Risk Sub-Agent')}
+                onClick={() => handleNodeClick('subagent_deal_risk', 'Deal Risk Assessment')}
               />
 
               <MicroAgentNode
                 nodeId="subagent_churn_prediction"
-                name="Customer Churn Sentinel"
+                name="Churn Sentinel"
                 icon={ShieldAlert}
                 color="text-rose-400"
                 state={getNodeState('subagent_churn_prediction')}
                 step={getStep('subagent_churn_prediction')}
-                onClick={() => handleNodeClick('subagent_churn_prediction', 'Churn Sentinel Sub-Agent')}
+                onClick={() => handleNodeClick('subagent_churn_prediction', 'Churn Sentinel')}
               />
 
               <MicroAgentNode
                 nodeId="subagent_meeting_summary"
-                name="Executive Meeting Summarizer"
+                name="Meeting Summarizer"
                 icon={FileText}
                 color="text-amber-400"
                 state={getNodeState('subagent_meeting_summary')}
                 step={getStep('subagent_meeting_summary')}
-                onClick={() => handleNodeClick('subagent_meeting_summary', 'Meeting Summarizer Sub-Agent')}
+                onClick={() => handleNodeClick('subagent_meeting_summary', 'Meeting Summarizer')}
               />
             </div>
           </div>
 
-          {/* Branch B: CRM Action Tools Container */}
-          <div className="p-3.5 rounded-2xl bg-slate-900/40 border border-cyan-500/20 flex flex-col space-y-2.5">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300 flex items-center gap-1.5">
+          {/* Branch B: CRM Action Tools */}
+          <div className={`p-2.5 rounded-xl transition-all border ${
+            isAnyActionActive
+              ? 'bg-cyan-950/40 border-cyan-400/50 shadow-md shadow-cyan-500/10'
+              : 'bg-slate-900/40 border-white/5'
+          } flex flex-col space-y-1.5`}>
+            <div className="flex items-center justify-between px-1 pb-1 border-b border-white/5">
+              <span className="text-[10px] font-bold tracking-wider text-cyan-300 flex items-center gap-1">
                 <Briefcase className="w-3 h-3 text-cyan-400" />
-                Branch B: CRM Action Tools
+                Direct CRM Actions
               </span>
-              <span className="text-[10px] font-mono text-slate-400">Direct DB CRUD</span>
+              <span className="text-[9px] text-slate-400">4 Tools</span>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               <MicroAgentNode
                 nodeId="action_schedule_meeting"
-                name="Calendar Meeting Scheduler"
+                name="Calendar Scheduler"
                 icon={Calendar}
                 color="text-emerald-400"
                 state={getNodeState('action_schedule_meeting')}
                 step={getStep('action_schedule_meeting')}
-                onClick={() => handleNodeClick('action_schedule_meeting', 'Calendar Scheduler Tool')}
+                onClick={() => handleNodeClick('action_schedule_meeting', 'Calendar Scheduler')}
               />
 
               <MicroAgentNode
                 nodeId="action_create_deal"
-                name="Pipeline Deal Creator"
+                name="Pipeline Deals"
                 icon={Award}
                 color="text-indigo-400"
                 state={getNodeState('action_create_deal') !== 'idle' ? getNodeState('action_create_deal') : getNodeState('action_update_deal')}
                 step={getStep('action_create_deal') || getStep('action_update_deal')}
-                onClick={() => handleNodeClick('action_create_deal', 'Deal Pipeline Tool')}
+                onClick={() => handleNodeClick('action_create_deal', 'Pipeline Deals')}
               />
 
               <MicroAgentNode
                 nodeId="action_create_contact"
-                name="Contact &amp; Lead Manager"
+                name="Contact &amp; Leads"
                 icon={Users}
                 color="text-blue-400"
                 state={getNodeState('action_create_contact') !== 'idle' ? getNodeState('action_create_contact') : getNodeState('action_update_contact')}
                 step={getStep('action_create_contact') || getStep('action_update_contact')}
-                onClick={() => handleNodeClick('action_create_contact', 'Contact Manager Tool')}
+                onClick={() => handleNodeClick('action_create_contact', 'Contact Manager')}
               />
 
               <MicroAgentNode
                 nodeId="action_create_campaign"
-                name="Marketing Campaign Creator"
+                name="Marketing Campaigns"
                 icon={Megaphone}
                 color="text-pink-400"
                 state={getNodeState('action_create_campaign')}
                 step={getStep('action_create_campaign')}
-                onClick={() => handleNodeClick('action_create_campaign', 'Campaign Creator Tool')}
+                onClick={() => handleNodeClick('action_create_campaign', 'Marketing Campaigns')}
               />
+
+              <div className="py-1 px-2 rounded-lg bg-white/[0.02] border border-white/5 text-[10px] text-slate-400 flex items-center justify-center gap-1">
+                <span>Direct CRM Sync</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Step 5: Synthesizer Node */}
-        <div className="flex flex-col items-center pt-2">
+        {/* Step 5: Outcome & CRM Sync */}
+        <div className="flex flex-col items-center">
           <ConnectorLine active={getNodeState('synthesizer') === 'completed' || isExecuting} />
           <NodeCard
-            nodeId="synthesizer"
-            title="Response Synthesis &amp; Telemetry"
-            subtitle="Executive Markdown + Action Confirmation"
-            icon={Sparkles}
+            stepNumber="4"
+            title="Outcome &amp; Database Sync"
+            subtitle="Finalizing response &amp; synchronizing CRM state"
+            icon={CheckCircle2}
             color="from-emerald-600 to-teal-500"
             state={getNodeState('synthesizer')}
             step={getStep('synthesizer')}
-            onClick={() => handleNodeClick('synthesizer', 'Response Synthesizer')}
+            onClick={() => handleNodeClick('synthesizer', 'Outcome & Database Sync')}
           />
         </div>
       </div>
@@ -330,7 +354,7 @@ export default function AgentGraphFlow({
 // ─── Sub-Components ─────────────────────────────────────────────────────────
 
 function NodeCard({
-  nodeId,
+  stepNumber,
   title,
   subtitle,
   icon: Icon,
@@ -340,7 +364,7 @@ function NodeCard({
   badgeText,
   onClick
 }: {
-  nodeId: string;
+  stepNumber: string;
   title: string;
   subtitle: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -356,54 +380,57 @@ function NodeCard({
   return (
     <div
       onClick={onClick}
-      className={`w-full max-w-md p-3.5 rounded-xl border transition-all cursor-pointer relative group ${
+      className={`w-full max-w-md p-2.5 px-3 rounded-xl border transition-all cursor-pointer relative group ${
         isRunning
-          ? 'bg-indigo-950/60 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-2 ring-cyan-400/50 scale-[1.02]'
+          ? 'bg-indigo-950/70 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400'
           : isCompleted
-          ? 'bg-slate-900/90 border-emerald-500/50 hover:border-emerald-400 shadow-md shadow-emerald-500/10'
+          ? 'bg-slate-900/90 border-emerald-500/50 hover:border-emerald-400 shadow-sm shadow-emerald-500/10'
           : 'bg-slate-900/60 border-white/10 hover:border-white/20 hover:bg-slate-900/90'
       }`}
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-lg bg-gradient-to-tr ${color} flex items-center justify-center text-white shadow-md relative`}>
+        <div className="flex items-center gap-2.5">
+          <div className={`w-8 h-8 rounded-lg bg-gradient-to-tr ${color} flex items-center justify-center text-white shadow-md relative shrink-0`}>
             <Icon className="w-4 h-4" />
             {isRunning && (
-              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
               </span>
             )}
           </div>
 
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-white/5 border border-white/10 text-slate-300 font-medium">
+                Step {stepNumber}
+              </span>
               <h5 className="text-xs font-bold text-white group-hover:text-cyan-300 transition-colors">
                 {title}
               </h5>
               {badgeText && (
-                <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/5 border border-white/10 text-slate-300 font-mono">
+                <span className="text-[9px] px-1.5 py-0.2 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 font-medium">
                   {badgeText}
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-slate-400 mt-0.5">{subtitle}</p>
+            <p className="text-[11px] text-slate-400 line-clamp-1">{subtitle}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {step ? (
-            <div className="flex items-center gap-1 text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+        <div className="flex items-center gap-1.5 shrink-0">
+          {isCompleted ? (
+            <div className="flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
               <CheckCircle2 className="w-3 h-3" />
-              <span>{step.latency_ms}ms</span>
+              <span>Done</span>
             </div>
           ) : isRunning ? (
-            <div className="flex items-center gap-1 text-[11px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/30">
+            <div className="flex items-center gap-1 text-[11px] font-medium text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/30">
               <RotateCw className="w-3 h-3 animate-spin" />
-              <span>active</span>
+              <span>Active</span>
             </div>
           ) : (
-            <span className="text-[10px] text-slate-500 font-mono">idle</span>
+            <span className="text-[10px] text-slate-500 px-1.5">Ready</span>
           )}
         </div>
       </div>
@@ -434,32 +461,26 @@ function MicroAgentNode({
   return (
     <div
       onClick={onClick}
-      className={`p-2.5 px-3 rounded-xl border text-xs flex items-center justify-between transition-all cursor-pointer ${
+      className={`py-1 px-2.5 rounded-lg border text-xs flex items-center justify-between transition-all cursor-pointer ${
         isRunning
-          ? 'bg-indigo-950/80 border-cyan-400 shadow-md shadow-cyan-500/20 ring-1 ring-cyan-400'
+          ? 'bg-indigo-950/90 border-cyan-400 shadow-sm shadow-cyan-500/20 ring-1 ring-cyan-400 text-white'
           : isCompleted
-          ? 'bg-slate-900 border-emerald-500/50 text-white'
+          ? 'bg-slate-900 border-emerald-500/50 text-white font-medium'
           : 'bg-slate-900/50 border-white/5 hover:border-white/10 text-slate-400 hover:text-white'
       }`}
     >
-      <div className="flex items-center gap-2">
-        <Icon className={`w-3.5 h-3.5 ${color}`} />
-        <span className="font-medium text-[11px]">{name}</span>
+      <div className="flex items-center gap-1.5 truncate pr-1">
+        <Icon className={`w-3.5 h-3.5 shrink-0 ${color}`} />
+        <span className="text-[11px] truncate">{name}</span>
       </div>
 
-      <div>
-        {step ? (
-          <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" />
-            <span>{step.latency_ms}ms</span>
-          </span>
+      <div className="shrink-0">
+        {isCompleted ? (
+          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
         ) : isRunning ? (
-          <span className="text-[10px] font-mono text-cyan-400 flex items-center gap-1">
-            <RotateCw className="w-3 h-3 animate-spin" />
-            <span>running</span>
-          </span>
+          <RotateCw className="w-3 h-3 animate-spin text-cyan-400" />
         ) : (
-          <span className="text-[9px] font-mono text-slate-600">standby</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-slate-700 block" />
         )}
       </div>
     </div>
@@ -468,7 +489,7 @@ function MicroAgentNode({
 
 function ConnectorLine({ active }: { active: boolean }) {
   return (
-    <div className="h-3.5 w-0.5 relative my-0 flex items-center justify-center shrink-0">
+    <div className="h-2 w-0.5 relative my-0.5 flex items-center justify-center shrink-0">
       <div className={`w-0.5 h-full transition-colors ${active ? 'bg-gradient-to-b from-cyan-400 to-indigo-500' : 'bg-slate-800'}`} />
       {active && (
         <span className="absolute w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400 animate-pulse" />
