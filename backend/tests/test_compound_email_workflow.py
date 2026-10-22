@@ -24,7 +24,7 @@ def test_compound_prompt_contact_email_and_send_personalized_email():
     """
     # Verify contact Tanuj exists or create if needed
     db = SessionLocal()
-    contact = db.query(Contact).filter(Contact.first_name.ilike("%Tanuj%")).first()
+    contact = db.query(Contact).filter(Contact.first_name == "Tanuj").first()
     if not contact:
         contact = Contact(
             first_name="Tanuj",
@@ -60,7 +60,7 @@ def test_compound_prompt_contact_email_and_send_personalized_email():
     db = SessionLocal()
     try:
         updated_contact = (
-            db.query(Contact).filter(Contact.first_name.ilike("%Tanuj%")).first()
+            db.query(Contact).filter(Contact.first_name == "Tanuj").first()
         )
         assert updated_contact is not None
         assert updated_contact.email == target_new_email

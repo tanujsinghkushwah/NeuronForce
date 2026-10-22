@@ -304,25 +304,50 @@ export default function AgentChatStudio({
                   >
                     <div className="whitespace-pre-wrap">{msg.text}</div>
 
-                    {/* Rich Interactive Action Result Card */}
-                    {msg.response?.tool_result &&
-                      msg.response.tool_result.success && (
-                        <div className="mt-3 pt-3 border-t border-white/10">
-                          <ActionResultCard
-                            toolResult={msg.response.tool_result}
-                          />
-                        </div>
-                      )}
+                    {/* Rich Interactive Action Result Cards */}
+                    {(() => {
+                      const toolList =
+                        msg.response?.tool_results &&
+                        msg.response.tool_results.length > 0
+                          ? msg.response.tool_results
+                          : msg.response?.tool_result
+                            ? [msg.response.tool_result]
+                            : [];
+                      return toolList.map((tr, idx) =>
+                        tr && tr.success ? (
+                          <div
+                            key={`action-${idx}`}
+                            className="mt-3 pt-3 border-t border-white/10"
+                          >
+                            <ActionResultCard toolResult={tr} />
+                          </div>
+                        ) : null,
+                      );
+                    })()}
 
-                    {/* Specialized Sub-Agent Output Card */}
-                    {msg.response?.subagent_result && (
-                      <div className="mt-3 pt-3 border-t border-white/10">
-                        <SubagentResultCard
-                          subagent={msg.response.target_subagent || ""}
-                          data={msg.response.subagent_result}
-                        />
-                      </div>
-                    )}
+                    {/* Specialized Sub-Agent Output Cards */}
+                    {(() => {
+                      const subList =
+                        msg.response?.subagent_results &&
+                        msg.response.subagent_results.length > 0
+                          ? msg.response.subagent_results
+                          : msg.response?.subagent_result
+                            ? [msg.response.subagent_result]
+                            : [];
+                      return subList.map((sr, idx) =>
+                        sr ? (
+                          <div
+                            key={`subagent-${idx}`}
+                            className="mt-3 pt-3 border-t border-white/10"
+                          >
+                            <SubagentResultCard
+                              subagent={msg.response?.target_subagent || ""}
+                              data={sr}
+                            />
+                          </div>
+                        ) : null,
+                      );
+                    })()}
                   </div>
 
                   {/* Metadata and Inspect Trigger */}

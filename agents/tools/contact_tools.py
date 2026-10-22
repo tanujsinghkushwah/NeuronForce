@@ -146,6 +146,15 @@ def update_contact(
             contact = (
                 db.query(Contact)
                 .filter(
+                    (Contact.first_name.ilike(ident_str))
+                    | (Contact.last_name.ilike(ident_str))
+                )
+                .first()
+            )
+        if not contact:
+            contact = (
+                db.query(Contact)
+                .filter(
                     (Contact.first_name.ilike(f"%{ident_str}%"))
                     | (Contact.last_name.ilike(f"%{ident_str}%"))
                 )
@@ -179,6 +188,11 @@ def update_contact(
             )
             if not existing_email_contact:
                 contact.email = clean_email
+            elif (
+                existing_email_contact.first_name.strip().lower()
+                == contact.first_name.strip().lower()
+            ):
+                contact = existing_email_contact
 
         if first_name:
             contact.first_name = first_name.strip()

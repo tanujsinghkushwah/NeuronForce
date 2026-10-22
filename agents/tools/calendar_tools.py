@@ -30,8 +30,8 @@ def parse_meeting_datetime(
     Intelligently parses ISO strings, natural language, date/time ranges, and relative expressions.
     Returns: (start_datetime, end_datetime, duration_minutes)
     """
-    # System CRM anchor reference: Oct 22, 2026
-    ref_date = datetime(2026, 10, 22, 12, 0, 0)
+    now = datetime.now()
+    ref_date = now.replace(minute=0, second=0, microsecond=0)
     dur = default_duration or 45
 
     if not start_str or not str(start_str).strip():
@@ -41,6 +41,40 @@ def parse_meeting_datetime(
         return st, st + timedelta(minutes=dur), dur
 
     s = str(start_str).strip()
+
+    # Pre-process relative date expressions before parsing
+    def replace_relative_dates(text: str) -> str:
+        res = text
+        res = re.sub(
+            r"\btomorrow\b",
+            (now + timedelta(days=1)).strftime("%Y-%m-%d"),
+            res,
+            flags=re.IGNORECASE,
+        )
+        res = re.sub(
+            r"\btoday\b",
+            now.strftime("%Y-%m-%d"),
+            res,
+            flags=re.IGNORECASE,
+        )
+        res = re.sub(
+            r"\byesterday\b",
+            (now - timedelta(days=1)).strftime("%Y-%m-%d"),
+            res,
+            flags=re.IGNORECASE,
+        )
+        days_ahead = (0 - now.weekday() + 7) % 7 or 7
+        res = re.sub(
+            r"\bnext monday\b",
+            (now + timedelta(days=days_ahead)).strftime("%Y-%m-%d"),
+            res,
+            flags=re.IGNORECASE,
+        )
+        return res
+
+    s = replace_relative_dates(s)
+    if end_str:
+        end_str = replace_relative_dates(str(end_str))
 
     # 1. If explicit end_str is provided
     if end_str and str(end_str).strip():
@@ -52,61 +86,56 @@ def parse_meeting_datetime(
         except Exception:
             pass
 
-    # 2. Check for time range in start_str: "9 PM-10 PM 24 October" or "24 October 9 PM-10 PM"
-    m1 = re.search(
-        r"(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\s*(?:-|to)\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm))\s+(.*)",
+    # 2. Check for time range pattern in start_str:
+    # Matches patterns like "2026-10-24 12 PM-1 PM" or "12 PM-1 PM 2026-10-24" or "12:00 PM - 1:00 PM"
+    m_prefix = re.search(
+        r"(.*?)\s+(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\s*(?:-|–|to)\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)(.*)",
         s,
         re.IGNORECASE,
     )
-    m2 = re.search(
-        r"(.*?)\s+(?:at\s+)?(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\s*(?:-|to)\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm))",
+    m_range = re.search(
+        r"(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\s*(?:-|–|to)\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)(.*)",
         s,
         re.IGNORECASE,
     )
 
     start_t, end_t, date_part = None, None, None
-    if m1:
-        start_t, end_t, date_part = m1.groups()
-    elif m2:
-        date_part, start_t, end_t = m2.groups()
+    if m_prefix and m_prefix.group(1).strip():
+        date_part = m_prefix.group(1).strip() + " " + (m_prefix.group(4) or "").strip()
+        start_t = m_prefix.group(2).strip()
+        end_t = m_prefix.group(3).strip()
+    elif m_range:
+        start_t = m_range.group(1).strip()
+        end_t = m_range.group(2).strip()
+        date_part = (m_range.group(3) or "").strip()
 
-    if start_t and end_t and date_part:
-        if ("am" in end_t.lower() or "pm" in end_t.lower()) and not (
-            "am" in start_t.lower() or "pm" in start_t.lower()
+    if start_t and end_t:
+        # Propagate AM/PM if only end_t specifies it (e.g. "12 - 1 PM" -> "12 PM - 1 PM")
+        if any(x in end_t.lower() for x in ["am", "pm"]) and not any(
+            x in start_t.lower() for x in ["am", "pm"]
         ):
             ampm = "PM" if "pm" in end_t.lower() else "AM"
             start_t = f"{start_t} {ampm}"
         try:
-            st = date_parser.parse(f"{date_part} {start_t}", default=ref_date)
-            en = date_parser.parse(f"{date_part} {end_t}", default=st)
+            target_date_str = (date_part or "").strip() or ref_date.strftime("%Y-%m-%d")
+            base_default = ref_date.replace(hour=12, minute=0, second=0)
+            st = date_parser.parse(f"{target_date_str} {start_t}", default=base_default)
+            en = date_parser.parse(f"{target_date_str} {end_t}", default=st)
+            if en <= st:
+                en = en + timedelta(hours=12)  # Handles cases crossing 12 PM
             computed_dur = max(15, int((en - st).total_seconds() / 60))
             return st, en, computed_dur
         except Exception:
             pass
 
-    # 3. Relative date replacements
-    lower = s.lower()
-    if "tomorrow" in lower:
-        target_date = (ref_date + timedelta(days=1)).date()
-        s = re.sub(
-            r"\btomorrow\b", target_date.strftime("%Y-%m-%d"), s, flags=re.IGNORECASE
-        )
-    elif "today" in lower:
-        s = re.sub(r"\btoday\b", ref_date.strftime("%Y-%m-%d"), s, flags=re.IGNORECASE)
-    elif "next monday" in lower:
-        days_ahead = (0 - ref_date.weekday() + 7) % 7 or 7
-        target_date = (ref_date + timedelta(days=days_ahead)).date()
-        s = re.sub(
-            r"\bnext monday\b", target_date.strftime("%Y-%m-%d"), s, flags=re.IGNORECASE
-        )
-
-    # 4. Standard dateutil parsing
+    # 3. Standard dateutil parsing
     try:
-        st = date_parser.parse(s, default=ref_date)
+        base_default = ref_date.replace(hour=12, minute=0, second=0)
+        st = date_parser.parse(s, default=base_default)
         en = st + timedelta(minutes=dur)
         return st, en, dur
     except Exception:
-        st = (ref_date + timedelta(days=1)).replace(
+        st = (now + timedelta(days=1)).replace(
             hour=14, minute=0, second=0, microsecond=0
         )
         return st, st + timedelta(minutes=45), 45
@@ -121,6 +150,8 @@ def schedule_meeting(
     location: str = "Google Meet / Zoom",
     description: str = "",
     event_type: str = "client_meeting",
+    contact_id: Optional[int] = None,
+    deal_id: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Schedule a meeting in the CRM calendar.
@@ -146,6 +177,8 @@ def schedule_meeting(
             color="#6366f1",
             is_all_day=False,
             reminder_minutes=15,
+            contact_id=contact_id,
+            deal_id=deal_id,
         )
         db.add(event)
         db.commit()

@@ -15,7 +15,7 @@ from agents.orchestrator.nodes import (
     node_crm_action_executor,
     node_synthesizer,
 )
-from agents.orchestrator.routing import route_after_intent, route_after_crm_action
+from agents.orchestrator.routing import route_after_intent, route_after_step
 
 
 def build_orchestrator_graph() -> Any:
@@ -46,18 +46,29 @@ def build_orchestrator_graph() -> Any:
         },
     )
 
-    # Conditional Branching after CRM Action (for compound workflows)
+    # Conditional Branching after CRM Action (for multi-step workflows)
     builder.add_conditional_edges(
         "crm_action_executor",
-        route_after_crm_action,
+        route_after_step,
         {
+            "crm_action_executor": "crm_action_executor",
             "subagent_executor": "subagent_executor",
             "synthesizer": "synthesizer",
         },
     )
 
-    # Return to Synthesizer
-    builder.add_edge("subagent_executor", "synthesizer")
+    # Conditional Branching after Subagent (for multi-step workflows)
+    builder.add_conditional_edges(
+        "subagent_executor",
+        route_after_step,
+        {
+            "crm_action_executor": "crm_action_executor",
+            "subagent_executor": "subagent_executor",
+            "synthesizer": "synthesizer",
+        },
+    )
+
+    # Final transition from synthesizer to END
     builder.add_edge("synthesizer", END)
 
     return builder.compile()

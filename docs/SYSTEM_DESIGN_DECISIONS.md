@@ -33,6 +33,7 @@
    - [Decision 22: Non-Technical Autonomous Agent Studio UX (Horizontal Single-Viewport Flow & De-Jargonized Telemetry)](#decision-22-non-technical-autonomous-agent-studio-ux-horizontal-single-viewport-flow--de-jargonized-telemetry)
    - [Decision 23: LLM-Driven Structured Execution Planner & Sequential Sub-Agent Orchestration vs. Brittle Regex Classification](#decision-23-llm-driven-structured-execution-planner--sequential-sub-agent-orchestration-vs-brittle-regex-classification)
    - [Decision 24: Multi-Agent Evaluation Framework (`agents/evals/`) — 15 Scenario Benchmark Suite with Step Consistency & Latency Telemetry](#decision-24-multi-agent-evaluation-framework-agentsevals--15-scenario-benchmark-suite-with-step-consistency--latency-telemetry)
+   - [Decision 25: Cyclic Multi-Step LangGraph Orchestration & Dynamic Semantic Planning for Compound Workflows](#decision-25-cyclic-multi-step-langgraph-orchestration--dynamic-semantic-planning-for-compound-workflows)
 4. [Scale-Out Roadmap (From MVP to 1,000,000 Users)](#4-scale-out-roadmap-from-mvp-to-1000000-users)
 5. [Top 5 System Design Interview Questions & Answers](#5-top-5-system-design-interview-questions--answers)
 
@@ -80,6 +81,7 @@ Traditional enterprise Customer Relationship Management (CRM) platforms—epitom
 | **Agent Studio UX** | **Horizontal Single-Viewport Graph & Persona-First Telemetry** | Vertical Scrolling Graph with Raw Technical LLM Specs | Less raw latency/token metadata directly visible on the primary canvas |
 | **Agent Planning & Routing** | **LLM Structured Execution Planner + Sequential LangGraph Routing** | Rigid Regex Pattern Matching & Keyword Dictionaries | Requires structured JSON LLM inference step (~100ms) with offline fallback |
 | **Agent Evaluation** | **15-Scenario Benchmark Framework (`agents/evals/`) + Pytest Parametrization** | Ad-Hoc Manual Prompt Testing & Unit-Only Tests | Full evaluation takes ~30–60s to execute across all 15 scenarios |
+| **Multi-Step Execution** | **Cyclic LangGraph Orchestration + Dynamic Step Plan** | Linear Acyclic DAG / Hardcoded Sequences | Requires loop termination guards and multi-result array schemas |
 
 ---
 
@@ -831,6 +833,59 @@ Enterprise AI platforms often deploy complex multi-agent graphs without formal r
 
 #### 🎙️ Demo / Interview Pitch
 > *"How do you know your multi-agent sales platform won't regress when you tweak prompt instructions? We built a dedicated 15-scenario evaluation suite directly into `agents/evals/`. It benchmarks our LangGraph orchestrator across general inquiries, CRM mutations, specialist sub-agents, and compound multi-step workflows—verifying intent routing accuracy, graph node execution consistency, and p95 latency on every commit."*
+
+---
+
+### Decision 25: Cyclic Multi-Step LangGraph Orchestration & Dynamic Semantic Planning for Compound Workflows
+
+#### Context & Problem
+Enterprise sales users frequently submit compound, multi-step instructions within a single prompt, such as:
+> *"Create a new contact Tanuj with email tanujsinghkushwah@gmail.com, then schedule a meeting for Tanuj and Sarah for tomorrow 12 PM-1 PM"*
+
+Under traditional single-pass agent architectures or rigid Directed Acyclic Graphs (DAGs), multi-step execution consistently fails due to four structural bottlenecks:
+1. **Router State Bottlenecks**: The router schema restricted outputs to a single `action_type: Optional[str]` and a single `target_subagent: Optional[str]`, forcing compound CRM requests to discard secondary actions or misclassify actions (e.g. squeezing `"schedule_meeting"` into `target_subagent`).
+2. **Subagent Execution Drop**: Specialised analytical subagents (`lead_scoring`, `email_draft`, `deal_risk`, etc.) do not recognize direct transactional CRM actions, causing dropped actions to return empty results.
+3. **Linear Graph Rigidity**: Standard LangGraph implementations route linearly from router ➔ single action ➔ single subagent ➔ synthesizer, preventing sequences of multiple consecutive CRM mutations (e.g. Contact Creation + Meeting Booking, Deal Creation + Task Assignment).
+4. **Temporal Context & Relative Time-Range Failures**: Natural language calendar requests (e.g. `"tomorrow 12 PM-1 PM"`) broke under naive ISO parsers, which mistook `-1 PM` as an offset `-01:00` and failed to anchor to real-time system timestamps.
+
+#### Options Evaluated
+1. **Hardcoded Multi-Path DAGs (Branch Permutations)**: Creating separate graph nodes and edges for every conceivable combination (`contact_then_meeting`, `deal_then_task`, `contact_then_email`).
+   - *Rejected*: Infeasible due to combinatorial explosion. Supporting $N$ actions across $M$ subagents requires dozens of hardcoded permutations.
+2. **Unconstrained ReAct / Tool-Calling Loop (OpenAI Function Calling)**: Giving an LLM open tool definitions and letting it loop autonomously.
+   - *Rejected*: High token latency (multiple round-trips to the LLM for every single tool invocation), non-deterministic hallucination risk on entity parameters, absence of offline fallback capability, and complete loss of visible graph step telemetry in the UI.
+3. **Cyclic StateGraph with Dynamic Plan Decomposition & Step Routing (Chosen Solution)**:
+   - **Plan State in AgentState**: Added `plan: List[Dict[str, Any]]`, `current_step_index: int`, and `tool_results: List[Dict[str, Any]]` to `AgentState`.
+   - **Semantic Plan Decomposition**: `node_intent_router` decomposes compound user requests into an ordered sequence of discrete, typed steps (`crm_action` vs `subagent`) with extracted parameters.
+   - **Cyclic LangGraph Orchestration**: Connected conditional edges (`route_after_step`) from both `crm_action_executor` and `subagent_executor` back to the execution nodes, cycling iteratively until `current_step_index == len(plan)` before proceeding to `synthesizer`.
+   - **Dynamic Attendee & Context Resolution**: During execution of step $N$, `node_crm_action_executor` inspects recent entities and the CRM database to resolve contact emails for named attendees (e.g. Tanuj ➔ `tanujsinghkushwah@gmail.com`, Sarah ➔ `sarah.chen@techcorp.io`), linking `contact_id` foreign keys seamlessly across steps.
+   - **Range-Aware Temporal Normalizer**: Built a regex-based pre-processor in `parse_meeting_datetime` that resolves relative offsets (`today`, `tomorrow`, `next Monday`), separates hyphenated time ranges (`12 PM - 1 PM`), and computes accurate durations (e.g., 60 mins).
+   - **Multi-Card Frontend & Telemetry Sync**: Updated FastAPI response schemas (`AIAgentChatResponse`) and Next.js frontend (`AgentChatStudio.tsx`) to render interactive action result cards for every executed step in the compound workflow.
+
+#### Chosen Solution
+```mermaid
+flowchart TD
+    Ingest[Prompt Ingestion] --> Context[CRM Context Retrieval]
+    Context --> Router[Intent Router & Multi-Step Planner]
+    Router -->|Step 1: CRM Action| CRMAction[CRM Action Executor]
+    Router -->|Step 1: Subagent| Subagent[Subagent Executor]
+    CRMAction -->|More Steps in Plan| StepRouter{route_after_step}
+    Subagent -->|More Steps in Plan| StepRouter
+    StepRouter -->|Next CRM Action| CRMAction
+    StepRouter -->|Next Subagent| Subagent
+    StepRouter -->|All Steps Finished| Synth[Response Synthesis & Telemetry]
+```
+
+#### Pros (Why We Did It)
+- **Arbitrary Workflow Composition**: Supports any combination of actions in any order ($CRM_1 \rightarrow CRM_2$, $CRM_1 \rightarrow Subagent_1$, $Subagent_1 \rightarrow CRM_1$) without graph reconfiguration.
+- **Deterministic Loop Safety**: Finite array bounds (`current_step_index < len(plan)`) strictly prevent infinite execution loops while preserving full state auditability.
+- **Unified Synthesis & Multi-Card UI**: Synthesis generates clean numbered sections for all executed steps, and the frontend displays distinct, interactive cards for every completed action.
+- **Offline Fallback Resilience**: If external LLM inference is disabled, the deterministic offline planner decomposes compound prompts using regex pattern extraction with zero downtime.
+
+#### Cons & Trade-Offs
+- **Slight Routing Overhead**: Planning multiple steps in the intent router adds ~30–50ms of LLM generation time for complex compound instructions. Mitigated by prompt optimization and JSON mode output formatting.
+
+#### 🎙️ Demo / Interview Pitch
+> *"In enterprise sales, users rarely speak in single commands. They say: 'Add Tanuj to our CRM and book a 1-hour demo with him and Sarah for tomorrow at noon.' Most AI CRMs either schedule the meeting without creating the contact, or create the contact and forget the calendar. In NeuronForce, our LangGraph orchestrator decomposes the prompt into an ordered execution plan and cycles through discrete tool nodes with dynamic context resolution—resolving attendee emails from the database, linking foreign keys, and rendering distinct interactive cards for both the contact and the meeting in under two seconds."*
 
 ---
 

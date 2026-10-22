@@ -525,7 +525,9 @@ export interface AIAgentChatResponse {
   target_subagent?: string | null;
   action_type?: string | null;
   subagent_result?: Record<string, any> | null;
+  subagent_results?: Array<Record<string, any>> | null;
   tool_result?: Record<string, any> | null;
+  tool_results?: Array<Record<string, any>> | null;
   graph_steps: GraphNodeStep[];
   telemetry: {
     model?: string;

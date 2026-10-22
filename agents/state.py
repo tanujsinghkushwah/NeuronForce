@@ -36,12 +36,19 @@ class AgentState(TypedDict):
     ]  # 'schedule_meeting' | 'create_deal' | 'update_deal' | 'create_contact' | 'update_contact' | 'create_campaign' | 'update_campaign'
     entities: Dict[str, Any]
 
+    # Multi-step execution plan and sequencing
+    plan: Optional[List[Dict[str, Any]]]
+    current_step_index: int
+    step_results: List[Dict[str, Any]]
+
     # Data Context retrieved from DB / APIs
     context_data: Dict[str, Any]
 
     # Sub-agent and tool results
     subagent_result: Optional[Dict[str, Any]]
+    subagent_results: Optional[List[Dict[str, Any]]]
     tool_result: Optional[Dict[str, Any]]
+    tool_results: Optional[List[Dict[str, Any]]]
 
     # Final synthesized answer
     final_response: str

@@ -222,7 +222,9 @@ class AIAgentChatResponse(BaseModel):
     target_subagent: Optional[str] = None
     action_type: Optional[str] = None
     subagent_result: Optional[Dict[str, Any]] = None
+    subagent_results: Optional[List[Dict[str, Any]]] = None
     tool_result: Optional[Dict[str, Any]] = None
+    tool_results: Optional[List[Dict[str, Any]]] = None
     graph_steps: List[Dict[str, Any]] = []
     telemetry: Dict[str, Any] = {}
     confidence_score: float = 0.92
