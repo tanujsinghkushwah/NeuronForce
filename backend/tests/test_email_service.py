@@ -64,3 +64,25 @@ def test_email_service_smtp_live_dispatch_mocked(monkeypatch):
         assert "Delivered live to tanujsinghkushwah@gmail.com" in res["delivery_status"]
         assert mock_instance.login.called
         assert mock_instance.send_message.called
+
+
+def test_email_service_resend_live_dispatch_mocked(monkeypatch):
+    """Verify Resend API live delivery when RESEND_API_KEY is configured."""
+    monkeypatch.setenv("RESEND_API_KEY", "re_test_mock_key_12345")
+
+    with patch("resend.Emails.send") as mock_resend_send:
+        mock_resend_send.return_value = {"id": "res_mock_test_id"}
+
+        res = send_email_message(
+            to_email="tanujsinghkushwah@gmail.com",
+            subject="Hyper-personalized Outreach: NeuronForce",
+            body="Hi Tanuj, exploring autonomous AI capabilities.",
+            to_name="Tanuj Singh Kushwah"
+        )
+
+        assert res["success"] is True
+        assert res["sent_live"] is True
+        assert res["provider"] == "Resend API"
+        assert "Delivered live to tanujsinghkushwah@gmail.com via Resend" in res["delivery_status"]
+        assert mock_resend_send.called
+

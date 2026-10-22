@@ -68,14 +68,14 @@ class Settings:
         # Optional Firebase Configuration
         self.FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "")
 
-        # SMTP Email Outbound Configuration
+        # Outbound Email Dispatch Configuration (Resend free API key)
+        self.RESEND_API_KEY: str = os.getenv("RESEND_API_KEY", "")
         self.SMTP_HOST: str = os.getenv("SMTP_HOST", "")
         self.SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
         self.SMTP_USER: str = os.getenv("SMTP_USER", "")
         self.SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
-        self.SMTP_FROM_EMAIL: str = os.getenv("SMTP_FROM_EMAIL", self.SMTP_USER or "sales@neuronforce.ai")
-        self.SMTP_FROM_NAME: str = os.getenv("SMTP_FROM_NAME", "NeuronForce Sales Team")
-        self.SMTP_USE_TLS: bool = os.getenv("SMTP_USE_TLS", "true").lower() in ("true", "1", "yes")
+        self.SMTP_FROM_EMAIL: str = os.getenv("SMTP_FROM_EMAIL", "NeuronForce <onboarding@resend.dev>")
+
 
     # CORS Allowed Origins
     @property

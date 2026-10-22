@@ -425,12 +425,19 @@ function SubagentResultCard({ subagent, data }: { subagent: string; data: Record
       setTimeout(() => setCopied(false), 2000);
     };
 
+    const dispatch = data.dispatch_status;
+
     return (
-      <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-500/30 space-y-2">
+      <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-500/30 space-y-2.5">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] uppercase font-bold text-purple-300 flex items-center gap-1">
-            <Mail className="w-3 h-3" />
-            Generated Email Draft
+          <span className="text-[10px] uppercase font-bold text-purple-300 flex items-center gap-1.5">
+            <Mail className="w-3.5 h-3.5 text-purple-400" />
+            <span>Personalized Outreach Email</span>
+            {data.email_address && (
+              <span className="text-purple-300/80 font-mono font-normal">
+                ({data.email_address})
+              </span>
+            )}
           </span>
           <button
             onClick={handleCopy}
@@ -440,6 +447,30 @@ function SubagentResultCard({ subagent, data }: { subagent: string; data: Record
             <span>{copied ? 'Copied' : 'Copy Email'}</span>
           </button>
         </div>
+
+        {/* Dispatch & Delivery Badge */}
+        {dispatch && (
+          <div
+            className={`px-2.5 py-1.5 rounded-lg text-[10px] flex items-center justify-between gap-2 ${
+              dispatch.sent_live
+                ? 'bg-emerald-950/60 border border-emerald-500/30 text-emerald-300'
+                : 'bg-slate-950/70 border border-indigo-500/20 text-slate-400'
+            }`}
+          >
+            <span className="flex items-center gap-1.5 leading-snug">
+              <span>{dispatch.sent_live ? '🚀 Live Dispatch:' : '📥 Activity Logged:'}</span>
+              <span className={dispatch.sent_live ? 'text-emerald-200 font-medium' : 'text-slate-300'}>
+                {dispatch.delivery_status}
+              </span>
+            </span>
+            {dispatch.sent_live && (
+              <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold uppercase text-[9px] shrink-0">
+                SENT
+              </span>
+            )}
+          </div>
+        )}
+
         <div className="text-[11px] font-semibold text-white">
           Subject: <span className="text-purple-200">{data.subject}</span>
         </div>
@@ -449,6 +480,7 @@ function SubagentResultCard({ subagent, data }: { subagent: string; data: Record
       </div>
     );
   }
+
 
   // Lead Scoring Widget
   if (data.score !== undefined && data.factors) {

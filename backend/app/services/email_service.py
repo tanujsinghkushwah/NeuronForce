@@ -1,7 +1,7 @@
 """
 NeuronForce Centralized Email Service
-Handles outbound email dispatch via standard SMTP (Gmail App Password, SendGrid, AWS SES, or custom relay)
-with automatic fallback to CRM Activity logging when live credentials are not yet configured.
+Handles outbound email dispatch via free Resend API (single API key)
+with fallback to Gmail/SMTP or demo CRM Activity logging.
 """
 
 import os
@@ -31,92 +31,105 @@ def send_email_message(
     html_body: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
-    Attempt to send an email via SMTP.
-    If SMTP credentials are configured in .env, delivers to the recipient's real inbox.
+    Send an email via Resend (single RESEND_API_KEY) or Gmail/SMTP.
     Always records the email as an Activity in the CRM database.
     """
-    smtp_host = os.getenv("SMTP_HOST", "")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    smtp_user = os.getenv("SMTP_USER", "")
-    smtp_password = os.getenv("SMTP_PASSWORD", "")
-    from_email = os.getenv("SMTP_FROM_EMAIL", smtp_user or "sales@neuronforce.ai")
-    from_name = os.getenv("SMTP_FROM_NAME", "NeuronForce Sales Team")
-    use_tls = os.getenv("SMTP_USE_TLS", "true").lower() in ("true", "1", "yes")
+    resend_api_key = os.getenv("RESEND_API_KEY", "").strip()
+    gmail_user = os.getenv("GMAIL_USER", "").strip()
+    gmail_app_password = os.getenv("GMAIL_APP_PASSWORD", "").strip()
+    smtp_host = os.getenv("SMTP_HOST", "").strip()
+    smtp_user = os.getenv("SMTP_USER", "").strip() or gmail_user
+    smtp_password = os.getenv("SMTP_PASSWORD", "").strip() or gmail_app_password
 
-    # If host is omitted but user is gmail, default to smtp.gmail.com
-    if not smtp_host and smtp_user and "@gmail.com" in smtp_user:
-        smtp_host = "smtp.gmail.com"
-        smtp_port = 587
-    elif not smtp_host and smtp_user == "apikey":
-        smtp_host = "smtp.sendgrid.net"
-        smtp_port = 587
-
-    smtp_configured = bool(smtp_host and smtp_user and smtp_password)
     sent_successfully = False
     delivery_status_msg = ""
     error_detail = None
+    provider_used = "CRM Activity Log"
 
-    if smtp_configured:
+    # Default styled HTML email template
+    html_content = html_body or f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; background-color: #f8fafc; margin: 0; padding: 24px; }}
+        .container {{ max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }}
+        .header {{ background: linear-gradient(135deg, #4f46e5, #06b6d4); padding: 24px; color: white; }}
+        .header h1 {{ margin: 0; font-size: 20px; font-weight: 700; }}
+        .content {{ padding: 28px; white-space: pre-wrap; font-size: 14px; line-height: 1.7; color: #334155; }}
+        .footer {{ background: #f1f5f9; padding: 16px 28px; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; }}
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>NeuronForce Autonomous Sales</h1>
+        </div>
+        <div class="content">{body}</div>
+        <div class="footer">
+          Sent autonomously by NeuronForce AI Sales Studio for {to_name or to_email}.
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+
+    # 1. Primary Free Method: Resend API (single RESEND_API_KEY)
+    if resend_api_key:
+        try:
+            import resend
+            resend.api_key = resend_api_key
+            from_sender = os.getenv("SMTP_FROM_EMAIL") or "NeuronForce <onboarding@resend.dev>"
+            params = {
+                "from": from_sender,
+                "to": [to_email],
+                "subject": subject,
+                "html": html_content,
+                "text": body,
+            }
+            res = resend.Emails.send(params)
+            sent_successfully = True
+            provider_used = "Resend API"
+            delivery_status_msg = f"Delivered live to {to_email} via Resend (ID: {res.get('id', 'sent')})"
+        except Exception as exc:
+            sent_successfully = False
+            error_detail = str(exc)
+            delivery_status_msg = f"Resend API attempt failed: {str(exc)}. Recorded in CRM activity trail."
+
+    # 2. Secondary Method: Gmail or SMTP relay (if credentials provided)
+    elif smtp_user and smtp_password:
+        host = smtp_host or "smtp.gmail.com"
+        port = int(os.getenv("SMTP_PORT", "587"))
         try:
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
-            msg["From"] = f"{from_name} <{from_email}>"
+            from_name = os.getenv("SMTP_FROM_NAME", "NeuronForce Sales Team")
+            from_addr = os.getenv("SMTP_FROM_EMAIL", smtp_user)
+            msg["From"] = f"{from_name} <{from_addr}>"
             msg["To"] = f"{to_name} <{to_email}>" if to_name else to_email
             msg["Date"] = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
-
-            # Plain text part
             msg.attach(MIMEText(body, "plain", "utf-8"))
-
-            # HTML part
-            html_content = html_body or f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <style>
-                body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; background-color: #f8fafc; margin: 0; padding: 24px; }}
-                .container {{ max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }}
-                .header {{ background: linear-gradient(135deg, #4f46e5, #06b6d4); padding: 24px; color: white; }}
-                .header h1 {{ margin: 0; font-size: 20px; font-weight: 700; }}
-                .content {{ padding: 28px; white-space: pre-wrap; font-size: 14px; line-height: 1.7; color: #334155; }}
-                .footer {{ background: #f1f5f9; padding: 16px 28px; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; }}
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <div class="header">
-                  <h1>NeuronForce Autonomous Sales</h1>
-                </div>
-                <div class="content">{body}</div>
-                <div class="footer">
-                  Sent autonomously by NeuronForce Sales Studio for {to_name or to_email}.
-                </div>
-              </div>
-            </body>
-            </html>
-            """
             msg.attach(MIMEText(html_content, "html", "utf-8"))
 
-            if smtp_port == 465:
-                with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=12) as server:
-                    server.login(smtp_user, smtp_password)
-                    server.send_message(msg)
-            else:
-                with smtplib.SMTP(smtp_host, smtp_port, timeout=12) as server:
-                    if use_tls:
-                        server.starttls()
-                    server.login(smtp_user, smtp_password)
-                    server.send_message(msg)
+            with smtplib.SMTP(host, port, timeout=12) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_password)
+                server.send_message(msg)
 
             sent_successfully = True
-            delivery_status_msg = f"Delivered live to {to_email} via SMTP ({smtp_host}:{smtp_port})"
+            provider_used = f"SMTP ({host})"
+            delivery_status_msg = f"Delivered live to {to_email} via SMTP ({host}:{port})"
         except Exception as exc:
             sent_successfully = False
             error_detail = str(exc)
             delivery_status_msg = f"SMTP relay attempt failed: {str(exc)}. Recorded in CRM activity trail."
+
+    # 3. Demo Fallback: Log email activity in CRM
     else:
         sent_successfully = False
-        delivery_status_msg = f"Email drafted & logged to CRM activities for {to_email}. (To dispatch to recipient's real inbox, configure SMTP_USER & SMTP_PASSWORD in backend/.env)"
+        provider_used = "CRM Activity Log"
+        delivery_status_msg = f"Email drafted & logged to CRM activities for {to_email}. (To dispatch live to your inbox, set RESEND_API_KEY in backend/.env - free at resend.com)"
 
     # Record Activity in CRM Database
     db = SessionLocal()
@@ -125,7 +138,7 @@ def send_email_message(
         activity = Activity(
             type=ActivityType.EMAIL,
             subject=subject[:300],
-            description=f"To: {to_email}\nStatus: {'SENT' if sent_successfully else 'LOGGED'}\n\n{body}",
+            description=f"To: {to_email}\nProvider: {provider_used}\nStatus: {'SENT' if sent_successfully else 'LOGGED'}\n\n{body}",
             contact_id=contact_id,
             outcome=delivery_status_msg[:200],
             completed_at=datetime.now(timezone.utc),
@@ -135,7 +148,7 @@ def send_email_message(
         db.commit()
         db.refresh(activity)
         activity_id = activity.id
-    except Exception as exc:
+    except Exception:
         db.rollback()
     finally:
         db.close()
@@ -147,6 +160,7 @@ def send_email_message(
         "subject": subject,
         "activity_id": activity_id,
         "delivery_status": delivery_status_msg,
+        "provider": provider_used,
         "error": error_detail,
-        "smtp_configured": smtp_configured
+        "configured": bool(resend_api_key or (smtp_user and smtp_password))
     }
