@@ -210,6 +210,24 @@ class AIAgentTaskResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class AIAgentChatRequest(BaseModel):
+    message: str
+    session_id: Optional[str] = "default"
+    context: Optional[Dict[str, Any]] = None
+
+
+class AIAgentChatResponse(BaseModel):
+    reply: str
+    intent: Optional[str] = None
+    target_subagent: Optional[str] = None
+    action_type: Optional[str] = None
+    subagent_result: Optional[Dict[str, Any]] = None
+    tool_result: Optional[Dict[str, Any]] = None
+    graph_steps: List[Dict[str, Any]] = []
+    telemetry: Dict[str, Any] = {}
+    confidence_score: float = 0.92
+
+
 # --- Calendar Schemas ---
 class CalendarEventBase(BaseModel):
     title: str

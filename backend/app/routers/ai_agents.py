@@ -13,7 +13,12 @@ import time
 from app.database import get_db
 from app.models.agent import AIAgentTask
 from app.models.enums import AgentTaskStatus
-from app.schemas import AIAgentTaskCreate, AIAgentTaskResponse
+from app.schemas import (
+    AIAgentTaskCreate,
+    AIAgentTaskResponse,
+    AIAgentChatRequest,
+    AIAgentChatResponse
+)
 from app.services.ai_service import run_ai_task
 
 router = APIRouter(prefix="/api/ai-agents", tags=["AI Agents"])
@@ -68,6 +73,53 @@ def create_ai_task(task: AIAgentTaskCreate, db: Session = Depends(get_db)):
         }
     }
     return db_task
+
+
+@router.post("/chat", response_model=AIAgentChatResponse)
+def execute_agent_chat(request: AIAgentChatRequest, db: Session = Depends(get_db)):
+    """Execute autonomous LangGraph agent orchestrator from chat message."""
+    import sys
+    from pathlib import Path
+    repo_root = Path(__file__).resolve().parent.parent.parent.parent
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+
+    from agents.orchestrator import run_agent_orchestrator
+
+    start_time = time.time()
+    result = run_agent_orchestrator(
+        prompt=request.message,
+        session_id=request.session_id or "default"
+    )
+    elapsed_ms = int((time.time() - start_time) * 1000)
+
+    # Record in AIAgentTask table for telemetry & execution history
+    try:
+        task_type = result.get("target_subagent") or result.get("action_type") or "autonomous_chat"
+        db_task = AIAgentTask(
+            task_type=task_type,
+            status=AgentTaskStatus.COMPLETED,
+            input_data={"message": request.message, "session_id": request.session_id},
+            output_data={
+                "reply": result.get("reply"),
+                "subagent_result": result.get("subagent_result"),
+                "tool_result": result.get("tool_result"),
+                "graph_steps_count": len(result.get("graph_steps", [])),
+                "_meta": result.get("telemetry", {})
+            },
+            confidence_score=result.get("confidence_score", 0.92),
+            cost_estimate=0.0004,
+            actual_cost=result.get("telemetry", {}).get("cost", 0.0004),
+            latency_ms=elapsed_ms,
+            triggered_by="autonomous_chat",
+            completed_at=datetime.now(timezone.utc),
+        )
+        db.add(db_task)
+        db.commit()
+    except Exception:
+        db.rollback()
+
+    return AIAgentChatResponse(**result)
 
 
 @router.get("/stats")

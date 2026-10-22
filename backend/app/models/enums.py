@@ -55,9 +55,17 @@ class AgentTaskType(str, enum.Enum):
     LEAD_SCORING = "lead_scoring"
     EMAIL_DRAFT = "email_draft"
     DEAL_ANALYSIS = "deal_analysis"
+    DEAL_RISK = "deal_risk"
     CHURN_PREDICTION = "churn_prediction"
     MEETING_SUMMARY = "meeting_summary"
     FORECAST = "forecast"
+    AUTONOMOUS_CHAT = "autonomous_chat"
+    SCHEDULE_MEETING = "schedule_meeting"
+    CREATE_DEAL = "create_deal"
+    UPDATE_DEAL = "update_deal"
+    CREATE_CONTACT = "create_contact"
+    UPDATE_CONTACT = "update_contact"
+    CREATE_CAMPAIGN = "create_campaign"
 
 
 class AgentTaskStatus(str, enum.Enum):

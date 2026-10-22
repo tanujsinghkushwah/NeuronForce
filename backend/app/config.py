@@ -32,7 +32,12 @@ class Settings:
         self.DEBUG: bool = os.getenv("DEBUG", "true").lower() in ("true", "1", "yes")
 
         # Database Configuration
-        self.DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./neuronforce.db")
+        raw_db_url = os.getenv("DATABASE_URL", "sqlite:///./neuronforce.db")
+        if raw_db_url.startswith("sqlite:///."):
+            rel = raw_db_url.replace("sqlite:///.", "").lstrip("/")
+            self.DATABASE_URL: str = f"sqlite:///{BASE_DIR / rel}"
+        else:
+            self.DATABASE_URL: str = raw_db_url
 
         # Security & JWT Configuration
         self.JWT_SECRET_KEY: str = os.getenv(
@@ -54,7 +59,7 @@ class Settings:
         # OpenRouter AI Configuration
         self.OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
         self.OPENROUTER_MODEL: str = os.getenv(
-            "OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct"
+            "OPENROUTER_MODEL", "google/gemini-2.5-flash-lite"
         )
         self.OPENROUTER_BASE_URL: str = os.getenv(
             "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"

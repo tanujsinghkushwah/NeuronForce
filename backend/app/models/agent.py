@@ -13,7 +13,7 @@ class AIAgentTask(Base):
     __tablename__ = "ai_agent_tasks"
 
     id = Column(Integer, primary_key=True, index=True)
-    task_type = Column(SQLEnum(AgentTaskType), nullable=False)
+    task_type = Column(String(100), nullable=False)
     status = Column(SQLEnum(AgentTaskStatus), default=AgentTaskStatus.PENDING)
     input_data = Column(JSON, default=dict)
     output_data = Column(JSON, default=dict)

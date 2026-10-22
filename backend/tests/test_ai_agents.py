@@ -149,3 +149,40 @@ def test_openrouter_inference_and_dynamic_model(client, monkeypatch):
     assert recorded_requests[0]["json"]["model"] == custom_model
     assert "Bearer sk-or-test-mock-key" in recorded_requests[0]["headers"]["Authorization"]
 
+
+def test_ai_agents_chat_endpoint(client):
+    """Test AI agents chat studio endpoint for general inquiry routing."""
+    payload = {"message": "What is the total amount of deals currently in pipeline?"}
+    response = client.post("/api/ai-agents/chat", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "reply" in data
+    assert data["intent"] == "general"
+    assert len(data.get("graph_steps", [])) >= 3
+    assert data.get("confidence_score") is not None
+
+
+def test_calendar_meeting_parser():
+    """Test natural language calendar meeting date/time and range parsing."""
+    import sys
+    from pathlib import Path
+    repo_root = Path(__file__).resolve().parent.parent.parent
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+
+    from agents.tools.calendar_tools import parse_meeting_datetime
+
+    # Range test
+    st, en, dur = parse_meeting_datetime("9 PM-10 PM 24 October")
+    assert st.year == 2026
+    assert st.month == 10
+    assert st.day == 24
+    assert st.hour == 21
+    assert en.hour == 22
+    assert dur == 60
+
+    # Relative test
+    st2, en2, dur2 = parse_meeting_datetime("tomorrow at 3pm")
+    assert st2.hour == 15
+    assert dur2 == 45
+
