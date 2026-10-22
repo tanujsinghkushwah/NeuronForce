@@ -91,27 +91,53 @@ def create_contact(
 
 def update_contact(
     identifier: str,  # id or email or name
+    email: Optional[str] = None,
     lead_status: Optional[str] = None,
     job_title: Optional[str] = None,
     company: Optional[str] = None,
-    notes: Optional[str] = None
+    notes: Optional[str] = None,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None
 ) -> Dict[str, Any]:
-    """Update contact information or lead status."""
+    """Update contact information, email, names, or lead status."""
     db = SessionLocal()
     try:
         contact = None
-        if str(identifier).isdigit():
-            contact = db.query(Contact).filter(Contact.id == int(identifier)).first()
-        if not contact and "@" in identifier:
-            contact = db.query(Contact).filter(Contact.email.ilike(identifier.strip())).first()
+        ident_str = str(identifier).strip()
+        if ident_str.isdigit():
+            contact = db.query(Contact).filter(Contact.id == int(ident_str)).first()
+        if not contact and "@" in ident_str:
+            contact = db.query(Contact).filter(Contact.email.ilike(ident_str)).first()
         if not contact:
             contact = db.query(Contact).filter(
-                (Contact.first_name.ilike(f"%{identifier}%")) |
-                (Contact.last_name.ilike(f"%{identifier}%"))
+                (Contact.first_name.ilike(f"%{ident_str}%")) |
+                (Contact.last_name.ilike(f"%{ident_str}%"))
+            ).first()
+        if not contact and " " in ident_str:
+            parts = ident_str.split()
+            contact = db.query(Contact).filter(
+                (Contact.first_name.ilike(f"%{parts[0]}%")) |
+                (Contact.last_name.ilike(f"%{parts[-1]}%"))
             ).first()
 
         if not contact:
             return {"success": False, "message": f"Contact matching '{identifier}' was not found in CRM."}
+
+        # Update email if provided and valid
+        if email and "@" in email:
+            clean_email = email.strip()
+            # Check if another contact has this email
+            existing_email_contact = db.query(Contact).filter(
+                Contact.email == clean_email,
+                Contact.id != contact.id
+            ).first()
+            if not existing_email_contact:
+                contact.email = clean_email
+
+        if first_name:
+            contact.first_name = first_name.strip()
+        if last_name:
+            contact.last_name = last_name.strip()
 
         if lead_status:
             for s in LeadStatus:
@@ -137,12 +163,14 @@ def update_contact(
                 "name": f"{contact.first_name} {contact.last_name}",
                 "email": contact.email,
                 "company": contact.company,
+                "job_title": contact.job_title,
                 "lead_status": contact.lead_status.value,
             },
-            "message": f"Updated contact {contact.first_name} {contact.last_name} (Status: {contact.lead_status.value.title()})."
+            "message": f"Updated contact {contact.first_name} {contact.last_name} (Email: {contact.email}, Status: {contact.lead_status.value.title()})."
         }
     except Exception as exc:
         db.rollback()
         return {"success": False, "action": "update_contact", "error": str(exc), "message": f"Failed to update contact: {str(exc)}"}
     finally:
         db.close()
+
