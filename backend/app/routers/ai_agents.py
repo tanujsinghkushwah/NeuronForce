@@ -1,6 +1,6 @@
 """
 AI Agents Telemetry and Execution API Router
-Routes AI task execution through the centralized AI service (real Gemini or simulation fallback).
+Routes AI task execution through the centralized AI service (real OpenRouter inference or simulation fallback).
 """
 
 from fastapi import APIRouter, Depends
@@ -38,7 +38,7 @@ def list_ai_tasks(
 
 @router.post("/tasks", response_model=AIAgentTaskResponse)
 def create_ai_task(task: AIAgentTaskCreate, db: Session = Depends(get_db)):
-    """Create and execute an AI agent task via Gemini (with simulation fallback)."""
+    """Create and execute an AI agent task via OpenRouter (with simulation fallback)."""
     start_time = time.time()
     result = run_ai_task(task.task_type, task.input_data or {})
     elapsed_ms = int((time.time() - start_time) * 1000)

@@ -245,7 +245,7 @@ Return JSON:
 
 
 def _simulation_fallback(task_type: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
-    """Deterministic-ish simulation fallback when Gemini is unavailable."""
+    """Deterministic-ish simulation fallback when OpenRouter is unavailable."""
     fallbacks = {
         "lead_scoring": {
             "score": random.randint(55, 97),

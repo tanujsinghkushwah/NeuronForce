@@ -60,10 +60,6 @@ class Settings:
             "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"
         )
 
-        # Optional Legacy Gemini AI Configuration (for backward compatibility)
-        self.GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-        self.GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
-
         # Optional Firebase Configuration
         self.FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "")
 
