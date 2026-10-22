@@ -14,16 +14,8 @@ import AgentChatStudio from '../../components/ai-agents/AgentChatStudio';
 import AgentGraphFlow from '../../components/ai-agents/AgentGraphFlow';
 import AgentCardFleet from '../../components/ai-agents/AgentCardFleet';
 import {
-  Sparkles,
-  Zap,
-  DollarSign,
-  Clock,
-  Award,
   RotateCw,
-  Terminal,
-  Activity,
-  GitFork,
-  Bot
+  Terminal
 } from 'lucide-react';
 
 export default function AIAgentsPage() {
@@ -169,56 +161,7 @@ export default function AIAgentsPage() {
         subtitle="LangGraph multi-step workflows, transparent reasoning trails, and natural-language CRM actions"
       />
 
-      <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto w-full">
-        {/* Executive Telemetry Header */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div className="glass-panel p-4 rounded-xl border-indigo-500/20">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Total AI Tasks</span>
-            <div className="text-xl font-extrabold text-white mt-0.5">{stats?.total_tasks || 0}</div>
-            <span className="text-[10px] text-emerald-400">{stats?.success_rate || 98.6}% success</span>
-          </div>
-
-          <div className="glass-panel p-4 rounded-xl border-emerald-500/20">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Cumulative Spend</span>
-            <div className="text-xl font-extrabold text-emerald-400 mt-0.5">
-              ${(stats?.total_cost || 0.1824).toFixed(4)}
-            </div>
-            <span className="text-[10px] text-slate-400">Token-efficient routing</span>
-          </div>
-
-          <div className="glass-panel p-4 rounded-xl border-cyan-500/20">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Avg Latency</span>
-            <div className="text-xl font-extrabold text-cyan-400 mt-0.5">
-              {stats?.avg_latency_ms || 380} ms
-            </div>
-            <span className="text-[10px] text-slate-400">Sub-second response</span>
-          </div>
-
-          <div className="glass-panel p-4 rounded-xl border-purple-500/20">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Avg Confidence</span>
-            <div className="text-xl font-extrabold text-purple-300 mt-0.5">
-              {Math.round((stats?.avg_confidence || 0.93) * 100)}%
-            </div>
-            <span className="text-[10px] text-slate-400">Decision threshold</span>
-          </div>
-
-          <div className="glass-panel p-4 rounded-xl border-amber-500/20">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Estimated ROI</span>
-            <div className="text-xl font-extrabold text-amber-400 mt-0.5">
-              ~150x
-            </div>
-            <span className="text-[10px] text-slate-400">vs manual operations</span>
-          </div>
-
-          <div className="glass-panel p-4 rounded-xl border-blue-500/20">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Time Saved</span>
-            <div className="text-xl font-extrabold text-blue-400 mt-0.5">
-              {stats?.cost_efficiency.time_saved_hours || 37.0} hrs
-            </div>
-            <span className="text-[10px] text-slate-400">Autonomous workflows</span>
-          </div>
-        </div>
-
+      <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto w-full">
         {/* ─── Split-View Studio: Conversational Chat + LangGraph Visualizer ─── */}
         <div ref={studioRef} id="agent-studio" className="space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
@@ -246,8 +189,9 @@ export default function AIAgentsPage() {
             </div>
           </div>
 
-          {/* Split View Container */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-[680px] max-h-[680px]">
+          {/* Split View Container (Expanded for greater visibility) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-[760px] lg:h-[calc(100vh-210px)] min-h-[700px] max-h-[860px]">
+
             {/* Left Pane (7 Cols): Conversational Chat Studio */}
             <div className="lg:col-span-7 h-full min-h-0 flex flex-col overflow-hidden">
               <AgentChatStudio
