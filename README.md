@@ -1,91 +1,100 @@
 # NeuronForce — AI-Native CRM Platform
 
-> **A next-generation, AI-agent-powered CRM platform designed as an intelligent alternative to Salesforce.** Built on modern architecture principles with non-deterministic AI decisions where cost, reliability, and business impact justify automation.
+> **A next-generation, AI-agent-powered CRM platform designed as an intelligent, transparent alternative to Salesforce.** Built on modern architecture principles with sub-100ms response times, cyclic LangGraph multi-agent orchestration, and explicit cost & confidence telemetry on every autonomous decision.
 
 ---
 
-## ⚡ Core Philosophy: Why NeuronForce?
+## ⚡ Why NeuronForce?
 
-Traditional enterprise CRMs like Salesforce are often **bloated, slow, and constrained by rigid, deterministic rules** (e.g., legacy Flow Builder / Process Builder). While Salesforce introduced Agentforce, it remains opaque in its cost, latency, and reasoning.
+Traditional enterprise CRMs like Salesforce are **slow, monolithic, and rigid**. While tools like Agentforce introduce generative AI, they operate as opaque black boxes with high seat licenses and hidden token costs, latencies, and reasoning steps.
 
-**NeuronForce** re-architects CRM from the ground up:
-1. **AI Agents with Cost & Confidence Visibility**: Every autonomous action (lead scoring, deal risk analysis, predictive forecasting, email drafting) exposes its confidence score, estimated/actual token cost, and execution latency.
-2. **Sub-100ms Performance**: Lightweight, modular stack with FastAPI and Next.js, eliminating legacy CRM interface lag.
-3. **Transparent Automation Boundary**: Clear demarcation between deterministic business logic (ACID transactional guarantees for deals and contacts) and non-deterministic probabilistic intelligence (AI agents).
-4. **CP System Architecture**: Built with PostgreSQL/ACID compliance at the foundation to guarantee transactional integrity across pipeline and revenue states.
+**NeuronForce** re-architects the CRM platform from first principles:
+
+1. **Autonomous Multi-Agent Orchestration**: Built on LangGraph StateGraphs with cyclic execution, dynamic CRM tool routing, and multi-turn conversational session memory with semantic pronoun resolution.
+2. **Cost & Confidence Transparency**: Every autonomous action exposes confidence scores, fractional-cent token costs, execution latency, and reasoning traces.
+3. **Sub-100ms Performance**: Decoupled ASGI modular architecture (FastAPI + Next.js 16 App Router) eliminating legacy CRM interface bloat.
+4. **Pragmatic Automation Boundary**: Strict ACID transactional guarantees for financial deals and contact records, paired with probabilistic LLMs for sales outreach, churn prediction, and scheduling.
 
 ---
 
 ## 🏗️ Repository Architecture
 
-The project is structured as a clean monorepo:
-
 ```
 neuronforce/
-├── frontend/               # Next.js 16 + TypeScript + Tailwind CSS 4
-│   ├── src/
-│   │   ├── app/            # App Router: Dashboard (/), Contacts, Deals, AI Agents, Analytics, Calendar, Settings
-│   │   ├── components/     # UI Shell (Sidebar, Header)
-│   │   ├── lib/            # Centralized API client (api.ts)
-│   │   └── types/          # Full TypeScript domain contracts (crm.ts)
-│   ├── package.json        # Dependencies (Recharts, Lucide React, clsx)
-│   └── ...
-├── backend/                # FastAPI + Python 3.14 + SQLAlchemy 2.1
+├── agents/                     # Multi-Agent LangGraph Framework
+│   ├── orchestrator/           # Cyclic StateGraph workflow, routing, and node execution
+│   ├── subagents/              # Specialist agents (Lead Scoring, Deal Risk, Email Drafter, Churn Sentinel)
+│   ├── tools/                  # CRM action executors (Contacts, Deals, Calendar, Campaigns, Outbound Email)
+│   ├── evals/                  # 15-scenario benchmark evaluation suite & runner
+│   ├── session_store.py        # Multi-turn conversational memory & pronoun resolution
+│   └── context_retriever.py    # Cross-entity CRM dynamic context retrieval
+├── backend/                    # FastAPI Modular ASGI Backend
 │   ├── app/
-│   │   ├── database.py     # SQLAlchemy 2.0 DeclarativeBase, session manager, CP rationale
-│   │   ├── models.py       # 7 core data models (Contacts, Deals, Activities, Tasks, AI, Analytics, Calendar)
-│   │   ├── schemas.py      # Pydantic v2 schemas with ConfigDict
-│   │   └── main.py         # 25+ REST endpoints with CORS, lifespan handler
-│   ├── scripts/
-│   │   └── seed_data.py    # Standalone runnable enterprise demo dataset seed script
-│   ├── tests/              # Comprehensive Pytest test suite (22 unit tests)
-│   │   ├── conftest.py     # Isolated in-memory SQLite fixtures & TestClient
-│   │   ├── test_health_and_dashboard.py
-│   │   ├── test_contacts.py
-│   │   ├── test_deals.py
-│   │   ├── test_activities_and_tasks.py
-│   │   ├── test_ai_agents.py
-│   │   └── test_calendar_analytics_settings.py
-│   ├── neuronforce.db      # SQLite database (auto-created on startup)
-│   └── requirements.txt    # Backend dependencies including pytest & httpx
-├── docs/                   # Engineering, Architecture & Deployment Documentation
-│   ├── SYSTEM_DESIGN_DECISIONS.md # System design choices, trade-offs, pros & cons, demo pitch
-│   ├── DEPLOYMENT_ORACLE.md       # Oracle Cloud Infrastructure Always Free setup guide
-│   └── PLAN.md                    # Core architecture specifications & roadmap
-├── docker-compose.yml      # Multi-container production deployment stack
-├── Caddyfile               # Caddy reverse proxy with automatic SSL
-├── .gitignore              # Monorepo-wide ignore rules
-└── README.md               # Project overview & quick start
+│   │   ├── routers/            # 12 modular REST routers (Contacts, Deals, AI Agents, Search, Campaigns, etc.)
+│   │   ├── models/             # SQLAlchemy 2.0 relational models (PostgreSQL / SQLite)
+│   │   ├── services/           # Outbound email (Resend API + SMTP fallback) & auth services
+│   │   ├── auth.py             # Google OAuth 2.0 PKCE & JWT token management
+│   │   └── config.py           # Centralized typed application settings
+│   ├── scripts/seed_data.py    # Autonomous realistic enterprise CRM seed engine
+│   └── tests/                  # Pytest test suite (63 unit & integration tests)
+├── frontend/                   # Next.js 16 (React 19) + Tailwind CSS 4
+│   ├── src/app/                # App Router: Dashboard, AI Agents Studio, Contacts, Deals, Campaigns, Tickets, Calendar, Analytics
+│   ├── src/components/         # Glassmorphic UI Shell, AI Workflow Visualizer, Global Omnisearch, Calendar Grid
+│   └── src/lib/api.ts          # Centralized typed API client
+├── docs/                       # Architectural Reference & System Design
+│   └── SYSTEM_DESIGN_DECISIONS.md # 30 deep-dive architectural decisions & trade-offs
+├── docker-compose.yml          # Multi-container production deployment stack
+├── start_tunnel.sh             # 1-Click live public demo launcher (Cloudflare Tunnel)
+└── README.md
 ```
+
+---
+
+## ✨ Key Platform Capabilities
+
+- **Autonomous Agent Studio (`/ai-agents`)**: Natural language CRM copilot with continuous multi-turn dialogue, real-time LangGraph node execution visualization, and automatic CRM action execution (booking meetings, updating stages, drafting follow-ups).
+- **Global Omnisearch (`Cmd/Ctrl + K`)**: Token-ranked fuzzy multi-entity search across contacts, deals, timeline activities, and support tickets with keyboard navigation.
+- **Deals & Pipeline Management (`/deals`)**: Interactive multi-stage kanban funnel (Prospecting → Qualification → Proposal → Negotiation → Closed Won/Lost) with AI win-probability calibration and deal-risk analysis.
+- **Lead & Contact Intelligence (`/contacts`)**: Complete lifecycle tracking, AI-powered engagement scoring, contact deletion guards, and timeline history.
+- **Multi-Channel Campaigns (`/campaigns`)**: AI-assisted campaign creation, audience segmentation, email/SMS template generation, and dispatch statistics.
+- **Support Tickets (`/tickets`)**: Incident tracking, SLA priority levels, status workflows, and customer history association.
+- **Google Calendar Grid (`/calendar`)**: Native time-grid schedule coordination tied directly to CRM contacts and scheduled meetings.
+- **Dual-Track Authentication (`/login`)**: Production-grade Google OAuth 2.0 with dynamic origin preservation, alongside an instant 1-click Demo Persona Simulator.
+- **Outbound Email Engine**: Dual-tier delivery through Resend API with automatic SMTP fallback and CRM interaction logging.
 
 ---
 
 ## 🚀 Quick Start Guide
 
-### 1. Backend (FastAPI)
+### Option 1: 1-Click Live Public Demo (Recommended)
+
+Launch both backend, frontend, and a public Cloudflare HTTPS tunnel with a single script:
+
+```bash
+./start_tunnel.sh
+```
+
+### Option 2: Local Development Setup
+
+#### 1. Backend (FastAPI)
 
 ```bash
 cd backend
 
 # Activate virtual environment
-source venv/bin/activate
+source ../.venv/bin/activate
 
-# Install dependencies (if not already installed)
-pip install -r requirements.txt  # or: pip install fastapi uvicorn sqlalchemy psycopg2-binary alembic pydantic python-dateutil
+# Install dependencies
+pip install -r requirements.txt
 
-# Run backend development server
+# Run FastAPI backend with auto-reload (seeds SQLite DB automatically on startup)
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-
-# Run standalone database seeder (optional, runs on startup)
-python -m scripts.seed_data
-
-# Run full backend unit test suite (22 tests)
-pytest -v tests
 ```
-- API Swagger Documentation: `http://localhost:8000/docs`
-- Health check: `http://localhost:8000/api/health`
 
-### 2. Frontend (Next.js)
+- **Swagger API Docs**: `http://localhost:8000/docs`
+- **Health Check**: `http://localhost:8000/api/health`
+
+#### 2. Frontend (Next.js)
 
 ```bash
 cd frontend
@@ -96,17 +105,63 @@ npm install
 # Run frontend development server
 npm run dev
 ```
-- Application Web UI: `http://localhost:3000`
+
+- **Web Application UI**: `http://localhost:3000`
 
 ---
 
-## 📊 Modules & API Coverage
+## 🧪 Testing & Benchmark Evaluations
 
-- **Dashboard**: High-level sales KPIs, revenue trends, pipeline funnel, recent activities, AI cost metrics.
-- **Contacts**: Full lead lifecycle tracking, contact records, lead score categorization, source attribution.
-- **Deals Pipeline**: Multi-stage deal funnel (Prospecting → Negotiation → Closed Won/Lost), win probability, AI risk insights.
-- **AI Agent Automation**: Autonomous task runner for Lead Scoring, Email Drafting, Deal Risk Analysis, Churn Prediction, and Revenue Forecasting.
-- **Activities & Tasks**: CRM interactions timeline (calls, meetings, emails) and task management.
-- **Calendar**: Meeting & schedule coordination tied directly to contacts and deals.
-- **Analytics**: Historical snapshots, team leaderboards, conversion rates, and AI ROI calculator.
-- **Settings**: AI thresholds, budget controls, and pipeline stage configuration.
+### Backend Unit & Integration Tests (63 Tests)
+
+Run the isolated test suite using in-memory SQLite fixtures and mocked external APIs:
+
+```bash
+cd backend
+pytest -v tests
+```
+
+### Multi-Agent Autonomous Evaluation Suite (15 Benchmark Scenarios)
+
+NeuronForce includes a formal evaluation benchmark evaluating orchestrator routing accuracy, entity extraction, graph step consistency, and latency across 15 distinct enterprise scenarios:
+
+```bash
+python -m agents.evals.runner
+```
+
+---
+
+## ⚙️ Environment Configuration
+
+Create a `.env` file in the project root or `backend/` directory:
+
+```env
+# AI Gateway (OpenRouter)
+OPENROUTER_API_KEY=your_openrouter_api_key
+OPENROUTER_MODEL=google/gemini-2.5-flash-lite
+
+# Dual-Tier Outbound Email
+RESEND_API_KEY=your_resend_api_key          # Primary transactional email provider
+SMTP_HOST=                                  # Optional SMTP fallback
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASSWORD=
+
+# Dual-Track Auth / Google SSO (Optional)
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+JWT_SECRET_KEY=your_jwt_secret_key
+
+# URLs & Database
+FRONTEND_URL=http://localhost:3000
+BACKEND_URL=http://localhost:8000
+DATABASE_URL=sqlite:///./neuronforce.db      # Or postgresql://user:pass@host:5432/neuronforce
+```
+
+---
+
+## 📖 Deep-Dive System Design Documentation
+
+For a comprehensive breakdown of all 30 system design decisions, trade-offs, scalability roadmaps, and interview pitch scripts, refer to:
+
+👉 **[docs/SYSTEM_DESIGN_DECISIONS.md](docs/SYSTEM_DESIGN_DECISIONS.md)**
