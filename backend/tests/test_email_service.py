@@ -16,8 +16,11 @@ from app.models.activity import Activity
 from app.models.enums import ActivityType
 
 
-def test_email_service_logs_activity_when_unconfigured():
-    """Verify that send_email_message logs an Activity in CRM when SMTP is unconfigured."""
+def test_email_service_logs_activity_when_unconfigured(monkeypatch):
+    """Verify that send_email_message logs an Activity in CRM when SMTP/Resend is unconfigured."""
+    monkeypatch.setenv("RESEND_API_KEY", "")
+    monkeypatch.setenv("SMTP_USER", "")
+    monkeypatch.setenv("SMTP_PASSWORD", "")
     res = send_email_message(
         to_email="prospect@acmecorp.com",
         subject="Accelerating RevOps with Autonomous AI",
@@ -43,10 +46,12 @@ def test_email_service_logs_activity_when_unconfigured():
 
 def test_email_service_smtp_live_dispatch_mocked(monkeypatch):
     """Verify SMTP live delivery when SMTP credentials are configured."""
+    monkeypatch.setenv("RESEND_API_KEY", "")
     monkeypatch.setenv("SMTP_HOST", "smtp.test-provider.com")
     monkeypatch.setenv("SMTP_PORT", "587")
     monkeypatch.setenv("SMTP_USER", "test-user@neuronforce.ai")
     monkeypatch.setenv("SMTP_PASSWORD", "test-password")
+
 
     with patch("smtplib.SMTP") as mock_smtp_class:
         mock_instance = MagicMock()

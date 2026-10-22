@@ -154,9 +154,14 @@ def node_intent_router(state: AgentState) -> Dict[str, Any]:
         if any(k in lower for k in ["lead score", "score lead", "score the lead", "buyer intent", "icp score", "scoring"]):
             intent = "subagent"
             target_subagent = "lead_scoring"
-        elif any(k in lower for k in ["draft email", "write email", "follow-up email", "sales email", "outreach email", "send email"]):
+        elif any(k in lower for k in [
+            "draft email", "write email", "follow-up email", "sales email", "outreach email",
+            "send email", "send an email", "send a personalized email", "personalized email",
+            "draft a personalized email", "draft a follow-up"
+        ]) or bool(re.search(r'\b(?:send|draft|write)\b.*?\bemail\b', lower)):
             intent = "subagent"
             target_subagent = "email_draft"
+
         elif any(k in lower for k in ["deal risk", "win probability", "risk and probability", "deal health", "stalled deal", "risk analysis"]):
             intent = "subagent"
             target_subagent = "deal_risk"
@@ -211,9 +216,10 @@ def node_intent_router(state: AgentState) -> Dict[str, Any]:
             elif parsed.get("route") == "crm_action" and parsed.get("action_type"):
                 intent = "crm_action"
                 action_type = parsed.get("action_type")
-            elif parsed.get("route") == "general":
+            elif parsed.get("route") == "general" and not target_subagent and not action_type:
                 intent = "general"
                 action_type = None
+
         if isinstance(parsed.get("entities"), dict):
             entities = parsed.get("entities", {})
 

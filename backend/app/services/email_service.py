@@ -34,7 +34,15 @@ def send_email_message(
     Send an email via Resend (single RESEND_API_KEY) or Gmail/SMTP.
     Always records the email as an Activity in the CRM database.
     """
+    # Dynamically load from .env if not already present in environment
+    if "RESEND_API_KEY" not in os.environ:
+        dotenv_path = BACKEND_DIR / ".env"
+        if dotenv_path.exists():
+            from dotenv import load_dotenv
+            load_dotenv(dotenv_path)
+
     resend_api_key = os.getenv("RESEND_API_KEY", "").strip()
+
     gmail_user = os.getenv("GMAIL_USER", "").strip()
     gmail_app_password = os.getenv("GMAIL_APP_PASSWORD", "").strip()
     smtp_host = os.getenv("SMTP_HOST", "").strip()
