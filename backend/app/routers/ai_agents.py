@@ -88,9 +88,8 @@ def execute_agent_chat(request: AIAgentChatRequest, db: Session = Depends(get_db
     from agents.orchestrator import run_agent_orchestrator
 
     start_time = time.time()
-    result = run_agent_orchestrator(
-        prompt=request.message, session_id=request.session_id or "default"
-    )
+    session_id = request.session_id or "default_session"
+    result = run_agent_orchestrator(prompt=request.message, session_id=session_id)
     elapsed_ms = int((time.time() - start_time) * 1000)
 
     # Record in AIAgentTask table for telemetry & execution history
@@ -103,7 +102,7 @@ def execute_agent_chat(request: AIAgentChatRequest, db: Session = Depends(get_db
         db_task = AIAgentTask(
             task_type=task_type,
             status=AgentTaskStatus.COMPLETED,
-            input_data={"message": request.message, "session_id": request.session_id},
+            input_data={"message": request.message, "session_id": session_id},
             output_data={
                 "reply": result.get("reply"),
                 "subagent_result": result.get("subagent_result"),
@@ -124,6 +123,18 @@ def execute_agent_chat(request: AIAgentChatRequest, db: Session = Depends(get_db
         db.rollback()
 
     return AIAgentChatResponse(**result)
+
+
+@router.post("/chat/reset")
+def reset_agent_session(session_id: str = "default_session"):
+    """Clear conversational memory and working context for a session."""
+    try:
+        from agents.session_store import clear_session
+
+        clear_session(session_id)
+    except Exception:
+        pass
+    return {"status": "success", "message": f"Session '{session_id}' cleared"}
 
 
 @router.get("/stats")

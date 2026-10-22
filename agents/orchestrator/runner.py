@@ -6,6 +6,7 @@ Invokes the compiled workflow graph and formats the client response payload.
 from typing import Dict, Any, List, Optional
 from agents.state import AgentState
 from agents.orchestrator.graph import ORCHESTRATOR_GRAPH
+from agents.session_store import update_session
 
 
 def run_agent_orchestrator(
@@ -41,6 +42,19 @@ def run_agent_orchestrator(
     }
 
     final_state = ORCHESTRATOR_GRAPH.invoke(initial_state)
+
+    # Persist multi-turn session state, conversational history, and active entities
+    try:
+        update_session(
+            session_id=session_id,
+            user_prompt=prompt,
+            assistant_reply=final_state.get("final_response", ""),
+            tool_results=final_state.get("tool_results", []),
+            subagent_results=final_state.get("subagent_results", []),
+            extracted_entities=final_state.get("entities", {}),
+        )
+    except Exception:
+        pass
 
     return {
         "reply": final_state.get("final_response"),

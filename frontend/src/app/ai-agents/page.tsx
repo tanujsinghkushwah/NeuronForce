@@ -29,6 +29,7 @@ export default function AIAgentsPage() {
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [prefilledInput, setPrefilledInput] = useState<string>("");
   const [viewingTask, setViewingTask] = useState<AIAgentTask | null>(null);
+  const [sessionId, setSessionId] = useState<string>("session_default");
 
   const studioRef = useRef<HTMLDivElement>(null);
 
@@ -78,6 +79,9 @@ export default function AIAgentsPage() {
 
   useEffect(() => {
     loadData();
+    setSessionId(
+      `session_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    );
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     }
@@ -116,7 +120,10 @@ export default function AIAgentsPage() {
     }, 2200);
 
     try {
-      const response: AIAgentChatResponse = await api.sendAgentChat(text);
+      const response: AIAgentChatResponse = await api.sendAgentChat(
+        text,
+        sessionId,
+      );
 
       clearTimeout(timer1);
       clearTimeout(timer2);
@@ -204,6 +211,9 @@ export default function AIAgentsPage() {
   };
 
   const handleClearChat = () => {
+    api.resetAgentChat(sessionId).catch(() => {});
+    const newSid = "session_" + Math.random().toString(36).substring(2, 9);
+    setSessionId(newSid);
     setMessages([]);
     setActiveGraphSteps([]);
     setTargetSubagent(null);

@@ -532,29 +532,77 @@ function ActionResultCard({ toolResult }: { toolResult: Record<string, any> }) {
 
   if (action === "create_campaign" && toolResult.campaign) {
     const cmp = toolResult.campaign;
+    const channels: string[] = cmp.channels || ["Email"];
+    const socialCopy: Record<string, string> = cmp.social_copy || {};
+
     return (
-      <div className="agent-action-card agent-action-campaign p-3 rounded-xl bg-pink-950/40 border border-pink-500/30 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center shrink-0">
-            <Megaphone className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="font-semibold text-white text-[11px]">
-              {cmp.name}
+      <div className="agent-action-card agent-action-campaign p-3 rounded-xl bg-pink-950/40 border border-pink-500/30 space-y-2.5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center shrink-0">
+              <Megaphone className="w-4 h-4" />
             </div>
-            <div className="text-[10px] text-slate-400">
-              Subject: {cmp.subject} · Status:{" "}
-              <span className="text-pink-400 font-mono">{cmp.status}</span>
+            <div>
+              <div className="font-semibold text-white text-[11px]">
+                {cmp.name}
+              </div>
+              <div className="text-[10px] text-slate-400">
+                Subject: {cmp.subject} · Status:{" "}
+                <span className="text-pink-400 font-mono">{cmp.status}</span>
+              </div>
             </div>
           </div>
+          <Link
+            href="/campaigns"
+            className="px-2.5 py-1 rounded-lg bg-pink-600/30 hover:bg-pink-600 text-pink-300 hover:text-white text-[10px] font-semibold flex items-center gap-1 transition-colors shrink-0"
+          >
+            <span>View Campaigns</span>
+            <ExternalLink className="w-2.5 h-2.5" />
+          </Link>
         </div>
-        <Link
-          href="/campaigns"
-          className="px-2.5 py-1 rounded-lg bg-pink-600/30 hover:bg-pink-600 text-pink-300 hover:text-white text-[10px] font-semibold flex items-center gap-1 transition-colors shrink-0"
-        >
-          <span>View Campaigns</span>
-          <ExternalLink className="w-2.5 h-2.5" />
-        </Link>
+
+        {/* Multi-channel badges */}
+        {channels.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+            <span className="text-[9px] uppercase tracking-wider font-semibold text-pink-300/70">
+              Channels:
+            </span>
+            {channels.map((ch, idx) => (
+              <span
+                key={idx}
+                className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-pink-500/20 text-pink-200 border border-pink-500/30"
+              >
+                {ch}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Social Copy Preview */}
+        {(socialCopy.x_post || socialCopy.instagram_caption) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1 text-[10px]">
+            {socialCopy.x_post && (
+              <div className="p-2 rounded-lg bg-slate-950/60 border border-white/5 space-y-1">
+                <span className="font-semibold text-slate-300 flex items-center gap-1">
+                  <span>🐦</span> X / Twitter
+                </span>
+                <p className="text-slate-300 text-[10px] line-clamp-3 italic">
+                  &ldquo;{socialCopy.x_post}&rdquo;
+                </p>
+              </div>
+            )}
+            {socialCopy.instagram_caption && (
+              <div className="p-2 rounded-lg bg-slate-950/60 border border-white/5 space-y-1">
+                <span className="font-semibold text-pink-300 flex items-center gap-1">
+                  <span>📸</span> Instagram
+                </span>
+                <p className="text-slate-300 text-[10px] line-clamp-3 italic">
+                  &ldquo;{socialCopy.instagram_caption}&rdquo;
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -700,6 +748,72 @@ function SubagentResultCard({
               ))}
           </ul>
         )}
+      </div>
+    );
+  }
+
+  // Deal Risk Widget
+  if (data.win_probability !== undefined || data.key_risk_factors) {
+    const probPct = Math.round(Number(data.win_probability || 0.7) * 100);
+    const riskTier = String(data.risk_tier || "medium").toUpperCase();
+    const riskColor =
+      riskTier === "HIGH" || riskTier === "CRITICAL"
+        ? "text-rose-400 bg-rose-500/20 border-rose-500/30"
+        : riskTier === "LOW"
+        ? "text-emerald-400 bg-emerald-500/20 border-emerald-500/30"
+        : "text-amber-400 bg-amber-500/20 border-amber-500/30";
+
+    return (
+      <div className="agent-subagent-card agent-subagent-deal-risk p-3 rounded-xl bg-amber-950/40 border border-amber-500/30 space-y-2">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <span className="text-[10px] uppercase font-bold text-amber-300 flex items-center gap-1 mb-0.5">
+              <ShieldAlert className="w-3 h-3 text-amber-400" />
+              Deal Risk &amp; Win Probability
+            </span>
+            <div className="text-xs text-white font-semibold">
+              {data.deal_title || "Enterprise Deal"}{" "}
+              {data.company ? `(${data.company})` : ""}
+            </div>
+            {data.decision_timeline && (
+              <div className="text-[10px] text-slate-400">
+                Timeline: {data.decision_timeline}
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <span
+              className={`px-2 py-0.5 rounded text-[9px] font-bold border uppercase ${riskColor}`}
+            >
+              {riskTier} Risk
+            </span>
+            <div className="flex flex-col items-center justify-center px-2.5 py-1 rounded-xl bg-amber-600/20 border border-amber-500/40">
+              <div className="text-base font-black text-amber-300">
+                {probPct}%
+              </div>
+              <span className="text-[8px] uppercase font-bold text-amber-300">
+                Win Prob
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {Array.isArray(data.key_risk_factors) &&
+          data.key_risk_factors.length > 0 && (
+            <div className="pt-1 border-t border-amber-500/20">
+              <div className="text-[9px] uppercase font-bold text-amber-300/80 mb-1">
+                Key Risk Indicators:
+              </div>
+              <ul className="text-[10px] text-slate-300 space-y-0.5 list-disc pl-4">
+                {data.key_risk_factors
+                  .slice(0, 3)
+                  .map((r: string, i: number) => (
+                    <li key={i}>{r}</li>
+                  ))}
+              </ul>
+            </div>
+          )}
       </div>
     );
   }

@@ -211,6 +211,14 @@ export const api = {
       body: JSON.stringify({ message, session_id, context }),
     });
   },
+  resetAgentChat: (session_id = "default_session") => {
+    return fetcher<{ status: string; message: string }>(
+      `/ai-agents/chat/reset?session_id=${encodeURIComponent(session_id)}`,
+      {
+        method: "POST",
+      },
+    );
+  },
 
   // Calendar
   getCalendarEvents: (params?: { start?: string; end?: string }) => {

@@ -889,6 +889,89 @@ flowchart TD
 
 ---
 
+### Decision 19: Continuous Multi-Turn Conversational Session Store & Semantic Pronoun Resolution vs. Brittle Regex Heuristics
+
+#### Context & Problem
+In actual enterprise sales operations, account executives interact with autonomous AI agents across continuous conversational turns. For instance:
+- **Turn 1**: *"Create contact Tanuj with email tanuj@neuronforce.ai at Google and schedule a meeting with Tanuj and Robert tomorrow at 2 PM"*
+- **Turn 2**: *"Create a deal between Tanuj and Robert for $1,000,000 in prospecting stage"*
+- **Turn 3**: *"Create a new Campaign to promote this deal on X, Instagram"*
+- **Turn 4**: *"Perform deal risk analysis on it"*
+
+Prior to this architectural evolution, agent interactions were largely single-turn and stateless. When multi-turn commands were attempted:
+1. Turn 3 failed to understand *"this deal"*, generating generic boilerplate email copy with zero AI enhancement, no social channel posts, and no reference to Tanuj, Robert, or the $1,000,000 deal.
+2. Turn 4 failed because *"on it"* was an unresolved pronoun without context, causing the router to default to `intent = "general"` and synthesize a high-level macro summary of all 22 deals in the CRM instead of executing the `deal_risk` subagent on the active $1M deal.
+3. Brittle keyword lists (e.g. `question_triggers = [...]`) and complex regex parsers in `nodes.py` were accumulating unsustainable code debt and failing whenever natural language phrasing diverged from the hardcoded tokens.
+
+#### Options Evaluated
+1. **Stateless Single-Turn Architecture**: Requires users to copy-paste full entity names, deal values, and stages into every single prompt. Unusable for modern sales workflows.
+2. **Deterministic Regex & Keyword Heuristics**: Writing manual regexes to resolve pronouns (*"it"*, *"this deal"*, *"him"*) and branching on hardcoded trigger lists. Highly brittle, prone to edge-case bugs, and inflates codebase technical debt.
+3. **Continuous In-Memory Session Store with Semantic LLM Pronoun Resolution**: A thread-safe sliding-window session store maintaining conversational turns and active working entities (`active_deal`, `active_contact`, `active_meeting`, `active_campaign`). Eliminating deterministic regex lists in favor of LLM semantic understanding by injecting the session's active working context directly into the prompt.
+
+#### Chosen Solution
+Engineered a unified multi-turn conversational session architecture:
+
+```mermaid
+graph TD
+    Client[Next.js Client] -->|prompt + sessionId| ChatRouter[FastAPI /ai-agents/chat]
+    ChatRouter --> Runner[run_agent_orchestrator]
+
+    subgraph SessionStore ["Thread-Safe Session Store (agents/session_store.py)"]
+        ActiveDeal["active_deal: $1,000,000 Prospecting"]
+        ActiveContact["active_contact: Tanuj (Google)"]
+        ActiveMeeting["active_meeting: Tanuj & Robert"]
+        SlidingWindow["Sliding Window: Last 5 Turns (10 msgs)"]
+    end
+
+    SessionStore -->|Inject Active Working Context| LangGraph[LangGraph Execution Graph]
+    LangGraph --> Node1[Node 1: Prompt Ingestion]
+    Node1 --> Node2[Node 2: CRM Context Retrieval + Active Entity Prioritization]
+    Node2 --> Node3[Node 3: Semantic Intent Router with Pronoun Resolution]
+
+    Node3 -->|Turn 3: 'promote this deal on X, IG'| ActionCampaign[Action: create_campaign + Multi-Channel Copy Generator]
+    Node3 -->|Turn 4: 'deal risk analysis on it'| SubagentRisk[Subagent: deal_risk on Target Deal]
+
+    ActionCampaign --> Synth[Node 5: Synthesis & Telemetry]
+    SubagentRisk --> Synth
+
+    Synth --> Runner
+    Runner -->|update_session| SessionStore
+    Runner --> Client
+```
+
+1. **`agents/session_store.py`**:
+   - Thread-safe registry providing `get_or_create_session`, `update_session`, `clear_session`, and `format_session_context_for_prompt`.
+   - Automatically maintains a token-efficient sliding window of the last 10 messages (5 turns).
+   - Atomically updates `active_deal`, `active_contact`, `active_meeting`, and `active_campaign` from successful tool and subagent results.
+2. **Removed Brittle Heuristic Debt**:
+   - Stripped out 270+ lines of brittle regex and hardcoded keyword filters (`question_triggers = [...]`) from `agents/orchestrator/nodes.py`.
+   - Replaced with semantic prompt injection: the LLM receives the `ACTIVE WORKING CONTEXT` and conversational history directly in its system prompt, allowing pure LLM semantic understanding to resolve pronouns accurately.
+3. **AI-Enhanced Multi-Channel Campaign Generation**:
+   - Implemented `generate_ai_campaign_content()` in `agents/tools/campaign_tools.py` using structured output.
+   - Generates platform-native copy: punchy X/Twitter post with hashtags, engaging Instagram caption with storytelling, and email copy referencing the exact deal and stakeholders.
+4. **Targeted Deal Risk Intelligence**:
+   - Enhanced `run_deal_risk_analysis()` in `agents/subagents/deal_risk.py` to accept `target_deal`.
+   - When the user asks to analyze risk *"on it"*, the agent evaluates the specific $1,000,000 deal's stage, stakeholder engagement, and procurement hurdles rather than falling back to generic simulations.
+5. **Frontend Lifecycle Integration**:
+   - Next.js client (`frontend/src/app/ai-agents/page.tsx`) maintains a continuous `sessionId` across chat prompts.
+   - Clicking **Clear Chat** generates a fresh session ID and calls `POST /api/agents/chat/reset` to purge in-memory context cleanly.
+   - Enhanced `AgentChatStudio.tsx` to render multi-channel badges (Email, X, Instagram) and social copy previews in the campaign action card, and added a dedicated deal risk assessment widget.
+
+#### Pros (Why We Did It)
+- **Natural, Human-Like Conversational Flow**: Users can seamlessly follow up on previous turns with natural phrasing (*"this deal"*, *"promote it"*, *"evaluate risk on it"*).
+- **Zero Hardcoded Fragility**: Removing regex matching arrays eliminates maintenance headaches; the LLM handles complex linguistic nuances naturally.
+- **Enterprise-Grade Copy & Insights**: Instead of static campaign drafts, the system automatically produces tailored social copy for X and Instagram and targeted risk mitigation plans.
+- **Strict Token Budget Control**: Sliding window (10 messages) ensures conversational context never overflows model token limits or drives up inference latency.
+
+#### Cons & Trade-Offs
+- **In-Memory Store Scope**: The session store is currently in-process memory.
+- *Mitigation for 1M Users*: Documented in Decision 4 and Scale-Out Roadmap: production horizontal scaling replaces the in-memory dict with a shared Redis cluster (`redis-py`) using TTL expiration.
+
+#### 🎙️ Demo / Interview Pitch
+> *"Most CRM AI assistants suffer from amnesia between turns—you create a deal, and on the next turn when you say 'create a campaign for this deal on X and Instagram' or 'evaluate risk on it', the agent loses context or falls back to generic answers. In NeuronForce, we engineered a continuous session memory system. We eliminated hundreds of lines of brittle regexes, feeding active deal and contact entities directly into our LangGraph intent router. The agent natively resolves pronouns, generates platform-tailored social copy for X and Instagram referencing the exact $1M deal, and executes deep risk analysis tailored to the active opportunity."*
+
+---
+
 ## 4. Scale-Out Roadmap (From MVP to 1,000,000 Users)
 
 When NeuronForce transitions from 1,000 to 1,000,000 daily active users, the architecture is designed to scale horizontally across the following milestones:
