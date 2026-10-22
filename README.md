@@ -48,9 +48,14 @@ neuronforce/
 │   │   └── test_calendar_analytics_settings.py
 │   ├── neuronforce.db      # SQLite database (auto-created on startup)
 │   └── requirements.txt    # Backend dependencies including pytest & httpx
+├── docs/                   # Engineering, Architecture & Deployment Documentation
+│   ├── SYSTEM_DESIGN_DECISIONS.md # System design choices, trade-offs, pros & cons, demo pitch
+│   ├── DEPLOYMENT_ORACLE.md       # Oracle Cloud Infrastructure Always Free setup guide
+│   └── PLAN.md                    # Core architecture specifications & roadmap
+├── docker-compose.yml      # Multi-container production deployment stack
+├── Caddyfile               # Caddy reverse proxy with automatic SSL
 ├── .gitignore              # Monorepo-wide ignore rules
-├── PLAN.md                 # Architecture roadmap & specifications
-└── README.md               # Project documentation
+└── README.md               # Project overview & quick start
 ```
 
 ---
