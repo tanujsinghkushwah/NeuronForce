@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import GoogleAuthModal, { GoogleIcon } from "./GoogleAuthModal";
+import GlobalSearch from "./GlobalSearch";
 
 interface HeaderProps {
   title?: string;
@@ -32,7 +33,6 @@ export default function Header({
     signInWithGoogleSSO,
     isFirebaseAvailable,
   } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -86,17 +86,8 @@ export default function Header({
 
         {/* Right Controls */}
         <div className="flex items-center gap-3">
-          {/* Search */}
-          <div className="relative hidden lg:block w-64">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search deals, contacts, agents..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-9 pl-9 pr-4 rounded-xl bg-slate-900/80 border border-white/10 text-xs text-slate-200 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-colors"
-            />
-          </div>
+          {/* Global Omnisearch */}
+          <GlobalSearch className="hidden sm:block w-64 md:w-72 lg:w-80" />
 
           {/* Action Button */}
           {onActionClick && (

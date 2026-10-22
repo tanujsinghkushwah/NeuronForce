@@ -16,6 +16,7 @@ from app.routers.settings import router as settings_router
 from app.routers.auth import router as auth_router
 from app.routers.tickets import router as tickets_router
 from app.routers.campaigns import router as campaigns_router
+from app.routers.search import router as search_router
 
 all_routers = [
     dashboard_router,
@@ -29,6 +30,7 @@ all_routers = [
     auth_router,
     tickets_router,
     campaigns_router,
+    search_router,
 ]
 
 

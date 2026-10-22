@@ -37,7 +37,12 @@ export default function CampaignsPage() {
   const [templates, setTemplates] = useState<CampaignTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(() => {
+    if (typeof window !== "undefined") {
+      return new URLSearchParams(window.location.search).get("search") || "";
+    }
+    return "";
+  });
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
     null,
   );

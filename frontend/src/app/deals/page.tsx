@@ -71,7 +71,12 @@ export default function DealsPage() {
   const [pipeline, setPipeline] = useState<PipelineView | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => {
+    if (typeof window !== "undefined") {
+      return new URLSearchParams(window.location.search).get("search") || "";
+    }
+    return "";
+  });
   const [newDeal, setNewDeal] = useState({
     title: "",
     value: 100000,

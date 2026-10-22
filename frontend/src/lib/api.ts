@@ -31,6 +31,7 @@ import {
   ConversionFunnel,
   RevenueForecast,
   AIAgentChatResponse,
+  GlobalSearchResponse,
 } from "../types/crm";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
@@ -423,5 +424,14 @@ export const api = {
     if (params?.source) q.append("source", params.source);
     const query = q.toString() ? `?${q.toString()}` : "";
     return `${API_BASE}/analytics/export/contacts${query}`;
+  },
+
+  // Global Multi-Entity Search
+  globalSearch: (q: string, limit = 20) => {
+    const query = new URLSearchParams();
+    if (q) query.append("q", q);
+    if (limit) query.append("limit", String(limit));
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    return fetcher<GlobalSearchResponse>(`/search${qs}`);
   },
 };

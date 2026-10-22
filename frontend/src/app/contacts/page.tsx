@@ -27,7 +27,12 @@ import {
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => {
+    if (typeof window !== "undefined") {
+      return new URLSearchParams(window.location.search).get("search") || "";
+    }
+    return "";
+  });
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);

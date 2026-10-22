@@ -546,3 +546,30 @@ export interface AgentChatMessage {
   response?: AIAgentChatResponse;
   isStreaming?: boolean;
 }
+
+// ─── Global Search Types ───────────────────────────────────────────────────
+
+export interface GlobalSearchResultItem {
+  id: string;
+  type: "contact" | "deal" | "agent" | "ticket" | "campaign" | "navigation";
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  badge_color?: string;
+  href: string;
+  meta?: Record<string, any>;
+}
+
+export interface GlobalSearchResponse {
+  query: string;
+  total: number;
+  items: GlobalSearchResultItem[];
+  categories: {
+    contacts?: GlobalSearchResultItem[];
+    deals?: GlobalSearchResultItem[];
+    agents?: GlobalSearchResultItem[];
+    tickets?: GlobalSearchResultItem[];
+    campaigns?: GlobalSearchResultItem[];
+    navigation?: GlobalSearchResultItem[];
+  };
+}
