@@ -50,7 +50,41 @@ neuronforce/
 
 ---
 
-## ✨ Key Platform Capabilities
+## 📸 Product Tour & Screenshots
+
+### 1. Revenue & Intelligence Dashboard
+> Sub-100ms pipeline velocity, real-time closed revenue trajectories, and deterministic vs. AI agent workload distribution.
+
+![NeuronForce Sales & AI Telemetry Dashboard](docs/images/dashboard.png)
+
+### 2. Autonomous Sales Agent Studio & LangGraph Workflow
+> Multi-turn conversational copilot with visual LangGraph execution tracking (Request Understanding → CRM Data Gathering → Intelligent Decision Routing → Specialized Sub-Agents / Direct CRM Actions).
+
+![Autonomous Sales Agent Studio & LangGraph Workflow](docs/images/ai_agents_studio.png)
+
+### 3. Interactive Deals Pipeline & Kanban Funnel
+> Multi-stage opportunity funnel with AI-calibrated win probabilities, weighted revenue forecasting, and drag-and-drop stage updates.
+
+![Deals Pipeline Kanban](docs/images/deals_pipeline.png)
+
+### 4. Multi-Entity Global Omnisearch (`Cmd/Ctrl + K`)
+> Instant token-ranked fuzzy search across contacts, deals, activities, and support tickets with keyboard navigation.
+
+![Global Omnisearch](docs/images/global_search.png)
+
+### 5. Contact Intelligence & AI Lead Scoring
+> Complete customer lifecycle tracking with AI-powered engagement scoring (0–100), full interaction timelines, and contact guards.
+
+![Contact Intelligence & AI Lead Scoring](docs/images/contacts_intelligence.png)
+
+### 6. Dual-Track Authentication & Enterprise Persona Simulator
+> Production Google OAuth 2.0 PKCE flow paired with a 1-click zero-friction demo persona simulator for instant testing.
+
+![Dual-Track Authentication Guard](docs/images/auth_guard.png)
+
+---
+
+## ✨ Core Platform Modules
 
 - **Autonomous Agent Studio (`/ai-agents`)**: Natural language CRM copilot with continuous multi-turn dialogue, real-time LangGraph node execution visualization, and automatic CRM action execution (booking meetings, updating stages, drafting follow-ups).
 - **Global Omnisearch (`Cmd/Ctrl + K`)**: Token-ranked fuzzy multi-entity search across contacts, deals, timeline activities, and support tickets with keyboard navigation.
