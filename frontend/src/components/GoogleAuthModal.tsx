@@ -132,7 +132,9 @@ export default function GoogleAuthModal({
 
   const handleLiveGoogleSSORedirect = () => {
     const backendUrl =
-      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      process.env.NEXT_PUBLIC_BACKEND_URL !== undefined
+        ? process.env.NEXT_PUBLIC_BACKEND_URL
+        : "";
     window.location.href = `${backendUrl}/api/auth/google/login`;
   };
 
