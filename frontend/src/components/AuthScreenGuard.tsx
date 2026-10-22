@@ -64,6 +64,21 @@ export default function AuthScreenGuard({ children }: AuthScreenGuardProps) {
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
   const [unlockedUser, setUnlockedUser] = useState<string>('');
+  const [isAnimatingUnlock, setIsAnimatingUnlock] = useState(false);
+
+  const prevAuthRef = React.useRef(isAuthenticated);
+
+  useEffect(() => {
+    // If transitioning from unauthenticated -> authenticated, animate de-blur for 750ms
+    if (!prevAuthRef.current && isAuthenticated) {
+      setIsAnimatingUnlock(true);
+      const timer = setTimeout(() => {
+        setIsAnimatingUnlock(false);
+      }, 750);
+      return () => clearTimeout(timer);
+    }
+    prevAuthRef.current = isAuthenticated;
+  }, [isAuthenticated]);
 
   // Handle successful sign-in toast
   useEffect(() => {
@@ -126,18 +141,22 @@ export default function AuthScreenGuard({ children }: AuthScreenGuardProps) {
   const isLocked = !isAuthenticated;
 
   return (
-    <div className="relative min-h-screen flex-1 flex flex-col overflow-hidden">
+    <div className="relative min-h-screen flex-1 flex flex-col">
       {/* 
         Main Screen Page Content 
         Applies smooth blur transition:
-        - When unauthenticated: blur-md / blur-[14px], slightly scaled down, pointer-events-none
-        - When authenticated: blur-0, full brightness, interactive
+        - When unauthenticated: blur-md / blur-[14px], slightly dimmed, pointer-events-none
+        - When transitioning to authenticated: blur-0 smoothly over 700ms
+        - When authenticated: completely clean (no filter, no transform, no scale, no will-change)
+          so fixed-position modals (like Create Deal) anchor to the true browser viewport!
       */}
       <div
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-700 ease-out will-change-[filter,transform,opacity] ${
+        className={`flex-1 flex flex-col min-w-0 ${
           isLocked
-            ? 'filter blur-[12px] md:blur-[14px] brightness-90 md:brightness-75 pointer-events-none select-none scale-[0.99] origin-top'
-            : 'filter blur-0 brightness-100 pointer-events-auto select-auto scale-100'
+            ? 'filter blur-[12px] md:blur-[14px] brightness-90 md:brightness-75 pointer-events-none select-none transition-all duration-700 ease-out'
+            : isAnimatingUnlock
+            ? 'filter blur-0 brightness-100 pointer-events-auto select-auto transition-all duration-700 ease-out'
+            : ''
         }`}
         aria-hidden={isLocked}
       >

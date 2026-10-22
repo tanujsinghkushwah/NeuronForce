@@ -578,8 +578,13 @@ export default function DashboardPage() {
 
       {/* New Deal Modal */}
       {showNewDealModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-dropdown w-full max-w-md p-6 rounded-2xl border border-white/20 animate-in fade-in zoom-in-95 duration-200">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowNewDealModal(false);
+          }}
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+        >
+          <div className="glass-dropdown w-full max-w-md p-6 rounded-2xl border border-white/20 animate-in fade-in zoom-in-95 duration-200 my-auto">
             <h3 className="text-lg font-bold text-white mb-1">Create New Opportunity</h3>
             <p className="text-xs text-slate-400 mb-4">Add a new deal to the pipeline with automatic AI win probability tracking.</p>
 
