@@ -185,10 +185,6 @@ export default function CalendarPage() {
   };
 
   // Navigation handlers
-  const handleToday = () => {
-    setCurrentDate(new Date());
-  };
-
   const handlePrev = () => {
     setCurrentDate((prev) => {
       const d = new Date(prev);
@@ -260,13 +256,6 @@ export default function CalendarPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-panel p-4 rounded-2xl border border-white/10">
           {/* Left: Date navigation controls */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={handleToday}
-              className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-all cursor-pointer shadow-sm"
-            >
-              Today
-            </button>
-
             <div className="flex items-center bg-white/5 rounded-xl border border-white/10 p-0.5">
               <button
                 onClick={handlePrev}
