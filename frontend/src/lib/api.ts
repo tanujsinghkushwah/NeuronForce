@@ -13,7 +13,8 @@ import {
   User, AuthResponse, GoogleAuthPayload, UserSession,
   Ticket, TicketMessage, TicketStats,
   Campaign, CampaignStats, CampaignTemplate,
-  ConversionFunnel, RevenueForecast
+  ConversionFunnel, RevenueForecast,
+  AIAgentChatResponse
 } from '../types/crm';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
@@ -145,6 +146,12 @@ export const api = {
     });
   },
   getAIStats: () => fetcher<AIAgentStats>('/ai-agents/stats'),
+  sendAgentChat: (message: string, session_id = 'default_session', context?: Record<string, any>) => {
+    return fetcher<AIAgentChatResponse>('/ai-agents/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message, session_id, context }),
+    });
+  },
 
   // Calendar
   getCalendarEvents: (params?: { start?: string; end?: string }) => {

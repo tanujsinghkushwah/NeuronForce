@@ -495,3 +495,40 @@ export interface RevenueForecast {
   }>;
 }
 
+// ─── Autonomous Multi-Agent LangGraph Studio Types ─────────────────────────
+
+export interface GraphNodeStep {
+  node: string;
+  status: 'idle' | 'running' | 'completed' | 'skipped' | 'failed';
+  label: string;
+  latency_ms: number;
+  summary: string;
+  data?: Record<string, any> | null;
+}
+
+export interface AIAgentChatResponse {
+  reply: string;
+  intent?: string | null;
+  target_subagent?: string | null;
+  action_type?: string | null;
+  subagent_result?: Record<string, any> | null;
+  tool_result?: Record<string, any> | null;
+  graph_steps: GraphNodeStep[];
+  telemetry: {
+    model?: string;
+    total_latency_ms?: number;
+    confidence?: number;
+    cost?: number;
+  };
+  confidence_score: number;
+}
+
+export interface AgentChatMessage {
+  id: string;
+  sender: 'user' | 'agent';
+  text: string;
+  timestamp: string;
+  response?: AIAgentChatResponse;
+  isStreaming?: boolean;
+}
+
