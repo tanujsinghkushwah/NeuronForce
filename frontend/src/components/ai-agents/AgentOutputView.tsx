@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { AIAgentTask } from "../../types/crm";
+import MarkdownRenderer from "./MarkdownRenderer";
 import {
   CheckCircle2,
   Code2,
@@ -194,16 +195,19 @@ export default function AgentOutputView({ task }: AgentOutputViewProps) {
             output.message) && (
             <div className="p-3 rounded-lg bg-indigo-500/[0.08] border border-indigo-500/30 flex items-start gap-2.5">
               <Sparkles className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-              <div>
+              <div className="flex-1 min-w-0">
                 <span className="text-[11px] font-bold text-indigo-300 block mb-0.5">
                   AI Recommendation &amp; Strategic Insight
                 </span>
-                <p className="text-xs text-slate-200 leading-relaxed font-sans">
-                  {output.recommendation ||
+                <MarkdownRenderer
+                  content={
+                    output.recommendation ||
                     output.recommended_next_action ||
                     output.summary ||
-                    output.message}
-                </p>
+                    output.message ||
+                    ""
+                  }
+                />
               </div>
             </div>
           )}

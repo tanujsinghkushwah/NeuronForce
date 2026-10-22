@@ -25,6 +25,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { AgentChatMessage, AIAgentChatResponse } from "../../types/crm";
+import MarkdownRenderer from "./MarkdownRenderer";
 
 interface AgentChatStudioProps {
   messages: AgentChatMessage[];
@@ -302,7 +303,13 @@ export default function AgentChatStudio({
                         : "bg-slate-900/90 border border-indigo-500/20 text-slate-200 rounded-tl-none shadow-md"
                     }`}
                   >
-                    <div className="whitespace-pre-wrap">{msg.text}</div>
+                    {msg.sender === "user" ? (
+                      <div className="whitespace-pre-wrap font-sans text-xs text-white leading-relaxed">
+                        {msg.text}
+                      </div>
+                    ) : (
+                      <MarkdownRenderer content={msg.text} />
+                    )}
 
                     {/* Rich Interactive Action Result Cards */}
                     {(() => {
@@ -351,34 +358,42 @@ export default function AgentChatStudio({
                   </div>
 
                   {/* Metadata and Inspect Trigger */}
-                  {msg.response && (
-                    <div className="flex items-center gap-3 px-1 text-[10px] text-slate-400 font-mono">
-                      <span>{msg.timestamp}</span>
-                      <span>·</span>
-                      <span className="text-cyan-400">
-                        {msg.response.telemetry.total_latency_ms || 350}ms
-                      </span>
-                      <span>·</span>
-                      <span className="text-emerald-400">
-                        {Math.round(
-                          (msg.response.confidence_score || 0.9) * 100,
+                  <div className="flex items-center gap-2.5 px-1 text-[10px] text-slate-400 font-mono flex-wrap">
+                    <span>{msg.timestamp}</span>
+                    {msg.response && (
+                      <>
+                        <span>·</span>
+                        <span className="text-cyan-400">
+                          {msg.response.telemetry.total_latency_ms || 350}ms
+                        </span>
+                        <span>·</span>
+                        <span className="text-emerald-400">
+                          {Math.round(
+                            (msg.response.confidence_score || 0.9) * 100,
+                          )}
+                          % confidence
+                        </span>
+                        {onSelectGraphRun && (
+                          <>
+                            <span>·</span>
+                            <button
+                              onClick={() => onSelectGraphRun(msg.response!)}
+                              className="text-indigo-400 hover:text-indigo-300 underline cursor-pointer"
+                            >
+                              Inspect Flow ({msg.response.graph_steps.length}{" "}
+                              nodes)
+                            </button>
+                          </>
                         )}
-                        % confidence
-                      </span>
-                      {onSelectGraphRun && (
-                        <>
-                          <span>·</span>
-                          <button
-                            onClick={() => onSelectGraphRun(msg.response!)}
-                            className="text-indigo-400 hover:text-indigo-300 underline cursor-pointer"
-                          >
-                            Inspect Flow ({msg.response.graph_steps.length}{" "}
-                            nodes)
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  )}
+                      </>
+                    )}
+                    {msg.sender !== "user" && (
+                      <>
+                        <span>·</span>
+                        <MessageCopyButton text={msg.text} />
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -427,6 +442,37 @@ export default function AgentChatStudio({
         </button>
       </form>
     </div>
+  );
+}
+
+// ─── Message Copy Helper Button ───────────────────────────────────────────
+
+function MessageCopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
+      className="inline-flex items-center gap-1 text-[10px] text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+      title="Copy response"
+    >
+      {copied ? (
+        <>
+          <Check className="w-3 h-3 text-emerald-400" />
+          <span className="text-emerald-400 font-sans">Copied</span>
+        </>
+      ) : (
+        <>
+          <Copy className="w-3 h-3" />
+          <span className="font-sans">Copy</span>
+        </>
+      )}
+    </button>
   );
 }
 
