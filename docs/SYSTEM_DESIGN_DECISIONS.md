@@ -25,6 +25,12 @@
    - [Decision 14: Adaptive Multi-Line Sizing & Untruncated Entity Chips vs. Aggressive Single-Line Truncation](#decision-14-adaptive-multi-line-sizing--untruncated-entity-chips-vs-aggressive-single-line-truncation)
    - [Decision 15: OpenRouter AI Gateway Consolidation & Removal of Legacy Vendor Couplings](#decision-15-openrouter-ai-gateway-consolidation--removal-of-legacy-vendor-couplings)
    - [Decision 16: Autonomous Seed Data Engine with Mathematically Calibrated Funnels](#decision-16-autonomous-seed-data-engine-with-mathematically-calibrated-funnels)
+   - [Decision 17: Modular Multi-Agent Orchestration Package (`agents/orchestrator/`)](#decision-17-modular-multi-agent-orchestration-package-agentsorchestrator)
+   - [Decision 18: Dual-Tier Outbound Email Delivery Architecture (Resend API + SMTP Fallback + CRM Activity Logging)](#decision-18-dual-tier-outbound-email-delivery-architecture-resend-api--smtp-fallback--crm-activity-logging)
+   - [Decision 19: Global Test Isolation & Zero-Quota Pytest Email Mocking via Autouse Fixtures](#decision-19-global-test-isolation--zero-quota-pytest-email-mocking-via-autouse-fixtures)
+   - [Decision 20: Pre-Commit Quality Guardrails (Black Formatting + Pyright Static Typing + Next.js Typecheck & Linting)](#decision-20-pre-commit-quality-guardrails-black-formatting--pyright-static-typing--nextjs-typecheck--linting)
+   - [Decision 21: Full-Lifecycle Contact Deletion & Confirmation Guard in Contact Intelligence](#decision-21-full-lifecycle-contact-deletion--confirmation-guard-in-contact-intelligence)
+   - [Decision 22: Non-Technical Autonomous Agent Studio UX (Horizontal Single-Viewport Flow & De-Jargonized Telemetry)](#decision-22-non-technical-autonomous-agent-studio-ux-horizontal-single-viewport-flow--de-jargonized-telemetry)
 4. [Scale-Out Roadmap (From MVP to 1,000,000 Users)](#4-scale-out-roadmap-from-mvp-to-1000000-users)
 5. [Top 5 System Design Interview Questions & Answers](#5-top-5-system-design-interview-questions--answers)
 
@@ -63,7 +69,13 @@ Traditional enterprise Customer Relationship Management (CRM) platforms—epitom
 | **Data Seeding** | **Automated Realistic Seeder Engine** | Manual DB Migrations / Remote Dumps | Seed definitions must be updated as schemas expand |
 | **Infrastructure** | **Oracle Cloud Always Free (ARM64)** | Paid AWS ECS / EKS / Vercel Pro | Manual OCI firewall (`iptables` + VCN) setup required |
 | **Backend Stack** | **FastAPI + Pydantic v2 + SQLAlchemy** | Node.js Express / NestJS / Go | Python GIL constraints for heavy CPU operations |
-| **Testing Suite** | **Isolated In-Memory Pytest (48 Tests)** | Mocked-only / E2E-only | SQLite does not test Postgres-specific JSONB indexing |
+| **Testing Suite** | **Isolated In-Memory Pytest (55 Tests)** | Mocked-only / E2E-only | SQLite does not test Postgres-specific JSONB indexing |
+| **Agent Architecture** | **Modular Orchestrator Package (`agents/orchestrator/`)** | Monolithic Single-File Agent Graph | Requires managing cross-module imports and clean state routing |
+| **Email Delivery** | **Dual-Tier Resend API + SMTP Fallback + CRM Logging** | Complex Multi-Param SMTP-Only / Heavy Third-Party SaaS SDK | Resend free tier has 100 emails/day quota limit without custom domain |
+| **Test Resilience** | **Global Zero-Quota Pytest Email Mocking (Autouse Fixtures)** | Live Outbound API Invocations in Tests | End-to-end network delivery to external mailboxes is not tested in local suite |
+| **Code Quality** | **Pre-Commit Guardrails (Black + Pyright + Next.js)** | Manual Linting / Permissive PR Reviews | Developer commits blocked until formatting & types pass locally |
+| **Contact Lifecycle** | **Full-Lifecycle Contact Deletion with Confirmation UX** | Soft-Delete Only / Read-Only Contact Records | Hard deletion cascades to tasks/activities if not isolated; requires UX confirmation guard |
+| **Agent Studio UX** | **Horizontal Single-Viewport Graph & Persona-First Telemetry** | Vertical Scrolling Graph with Raw Technical LLM Specs | Less raw latency/token metadata directly visible on the primary canvas |
 
 ---
 
@@ -567,6 +579,182 @@ Evaluating enterprise CRMs with empty databases is uninspiring; users cannot app
 
 #### 🎙️ Demo / Interview Pitch
 > *"You cannot evaluate an enterprise AI CRM on an empty database. We built an autonomous seeding engine that populates realistic pipeline funnels, SLA service cases, and calibrated AI agent telemetry on startup. Evaluators can experience the full power of our ARR analytics and agent mesh within 3 seconds of cloning the repository."*
+
+---
+
+### Decision 17: Modular Multi-Agent Orchestration Package (`agents/orchestrator/`)
+
+#### Context & Problem
+The multi-agent orchestrator originally resided in a single 450+ line monolithic file (`agents/orchestrator.py`). As agents expanded to include specialized sub-agents (deal analysis, lead research, outreach generation, calendar booking, classification, and final response synthesis), mixing state definition, node handlers, conditional routing, graph compilation, and stream execution in one file produced severe maintenance bottlenecks, high cognitive load, and made isolated unit testing of sub-agent nodes impossible without instantiating the entire LangGraph workflow.
+
+#### Options Evaluated
+1. **Maintain Monolithic `orchestrator.py`**: Low upfront friction, but rapidly leads to spaghetti code, circular dependencies, merge conflicts, and untestable node logic.
+2. **Decomposed Package Structure (`agents/orchestrator/`)**: Break the orchestrator into dedicated, single-responsibility modules:
+   - `nodes.py`: Pure, isolated agent execution node functions (`classifier_node`, `retrieval_node`, `deal_node`, `research_node`, `outreach_node`, `calendar_node`, `synthesis_node`).
+   - `routing.py`: Pure routing logic (`route_next_action`) determining conditional edge traversal.
+   - `graph.py`: Clean LangGraph `StateGraph` definition, node registration, and conditional edge wiring.
+   - `runner.py`: Stream processing and state execution helpers.
+   - `__init__.py`: Clean public API export (`SalesAgentState`, `create_sales_orchestrator`, `run_agent_flow`), guaranteeing 100% backward compatibility for callers.
+
+#### Chosen Solution
+**Decomposed Package Architecture**: A clean Python package in `agents/orchestrator/` exposing a clean public interface while keeping nodes, routing, and compilation decoupled.
+
+#### Pros (Why We Did It)
+- **Single Responsibility Principle (SRP)**: Modifying deal analysis logic in `deal_node` no longer touches graph wiring or stream runners.
+- **Isolated Node Testability**: Sub-agent nodes can be unit-tested directly by passing a mock `SalesAgentState` dictionary without compiling or invoking the LangGraph runtime.
+- **Seamless Extensibility**: Adding a new specialist agent (e.g., `contract_node` or `churn_node`) requires adding one node in `nodes.py` and one edge in `graph.py` without touching hundreds of lines of unrelated logic.
+- **100% Backward Compatibility**: Zero changes required in external callers (`backend/app/routers/agents.py`, test suites) thanks to package-level re-exports.
+
+#### Cons & Trade-Offs
+- Requires maintaining disciplined imports within the package to avoid circular dependencies between `nodes.py` and `routing.py`.
+
+#### 🎙️ Demo / Interview Pitch
+> *"As our autonomous agent mesh grew, keeping node logic, routing conditions, and graph compilation in a single 500-line script created an anti-pattern. We decomposed the orchestrator into a modular package with decoupled nodes, routing, and graph assembly. This allows engineering teams to independently test and iterate on specialist agents—like deal underwriting or outreach drafting—in isolation, while keeping graph compilation deterministic and clean."*
+
+---
+
+### Decision 18: Dual-Tier Outbound Email Delivery Architecture (Resend API + SMTP Fallback + CRM Activity Logging)
+
+#### Context & Problem
+Autonomous sales agents frequently trigger automated email outreach (meeting invites, deal updates, lead nurture). In early versions, email sending relied on complex multi-parameter SMTP configuration (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_USE_TLS`), causing setup friction, provider blocks, and failure during quick demo evaluations. Furthermore, sent emails were disconnected from the core CRM timeline, creating an audit gap.
+
+#### Options Evaluated
+1. **Complex Multi-Variable SMTP Only**: Requires users to configure 5+ environment variables, generate app-specific passwords on Gmail/Outlook, and frequently trips enterprise spam/security firewalls.
+2. **Heavy Multi-Vendor SDKs (SendGrid, Postmark, AWS SES)**: Adds heavy client SDK dependencies and complex domain verification hurdles for local or staging environments.
+3. **Centralized Dual-Tier Service (Resend HTTP API + SMTP Fallback + Automatic CRM Activity Logging)**:
+   - Tier 1: Modern HTTP REST API via **Resend** requiring only a single variable (`RESEND_API_KEY`), utilizing Resend's default onboarding sender (`onboarding@resend.dev`) for immediate zero-friction delivery without DNS setup.
+   - Tier 2: Resilient SMTP fallback if legacy credentials are explicitly configured.
+   - Audit Trail: Automatic creation of an immutable `Activity` record (`activity_type="email"`, `contact_id`, `subject`, `description`) in PostgreSQL/SQLite whenever an email is dispatched.
+
+#### Chosen Solution
+**Dual-Tier Delivery Engine**: Priority HTTP delivery via Resend with graceful SMTP fallback, coupled with automatic transactional CRM activity logging.
+
+#### Pros (Why We Did It)
+- **Frictionless Developer & Demo Onboarding**: A single environment variable (`RESEND_API_KEY`) unlocks instant real-world email delivery without configuring mail servers.
+- **Resilient Fallback**: If Resend is unavailable or SMTP is specifically required in an enterprise VPC, the system automatically falls back to standard SMTP without code changes.
+- **Unified CRM Audit Trail**: Every email dispatched by human reps or autonomous agents is automatically persisted as a first-class CRM activity linked to the target contact, preserving complete compliance and interaction history.
+
+#### Cons & Trade-Offs
+- Resend free tier has a daily rate limit (100 emails/day) and requires domain verification (`SPF`/`DKIM`) for sending to external arbitrary recipient domains in production.
+
+#### 🎙️ Demo / Interview Pitch
+> *"Enterprise sales reps need outreach to actually land in inboxes, and compliance officers need an immutable audit trail. We engineered a dual-tier email delivery architecture: developers get instant, zero-setup HTTP delivery via Resend with just one API key, backed by enterprise SMTP fallback. Crucially, every email sent by our autonomous agents automatically writes back to the contact's activity timeline, guaranteeing 100% CRM record integrity."*
+
+---
+
+### Decision 19: Global Test Isolation & Zero-Quota Pytest Email Mocking via Autouse Fixtures
+
+#### Context & Problem
+With live email delivery enabled via Resend API and SMTP, running automated test suites (`pytest backend/tests`) inadvertently triggered real network calls to external email APIs. This caused test suite execution to consume limited daily API quotas (100 emails/day on Resend free tier), sent unwanted test emails to developer inboxes, introduced network latency/flakiness into CI/CD pipelines, and risked test failure during offline development.
+
+#### Options Evaluated
+1. **Manual Test-by-Test Mocking (`@patch` in each test)**: Highly prone to developer oversight; forgetting to mock in a single newly created test sends real emails again.
+2. **Environment Flag (`SEND_REAL_EMAILS=False`)**: Requires remembering to set environment variables before running test commands; breaks if developer runs `pytest` directly.
+3. **Global Autouse Pytest Fixture (`backend/tests/conftest.py`)**: Automatically intercepts all outbound email requests across the entire test suite:
+   - Mocking `requests.post` targeting `api.resend.com` to return simulated `200 OK` responses with mock email IDs (`re_mock_test_id`).
+   - Mocking `smtplib.SMTP` and `smtplib.SMTP_SSL` to prevent socket connections.
+
+#### Chosen Solution
+**Global Autouse Fixture**: An automatic fixture in `conftest.py` that intercepts HTTP and SMTP email dispatch transparently across all tests without requiring individual test annotations.
+
+#### Pros (Why We Did It)
+- **Zero Quota Wastage**: Completely protects external API quotas and prevents developer inbox spam during routine testing.
+- **Zero Developer Friction**: Fully automatic—developers and CI runners execute `pytest` with zero extra flags or environment overrides.
+- **Deterministic & Offline-First**: Test suite runs in under 3 seconds even with no internet connection or invalid API credentials.
+- **Full Functional Coverage**: Endpoints still execute their full business logic—contact lookups, prompt compilation, CRM activity creation, and response formatting—verifying system integrity without external side effects.
+
+#### Cons & Trade-Offs
+- Does not test live DNS/TLS handshake to Resend in standard unit test runs; dedicated end-to-end smoke tests are required for provider verification.
+
+#### 🎙️ Demo / Interview Pitch
+> *"When automating agent workflows that send emails, you must guarantee CI/CD runs never leak test messages or exhaust production API quotas. We implemented a global autouse test fixture in pytest that intercepts Resend HTTP requests and SMTP sockets at the lowest boundary. This ensures our 55+ test suite runs in under 3 seconds offline with zero quota consumption, while still verifying 100% of the internal CRM activity logging logic."*
+
+---
+
+### Decision 20: Pre-Commit Quality Guardrails (Black Formatting + Pyright Static Typing + Next.js Typecheck & Linting)
+
+#### Context & Problem
+In a hybrid Python (FastAPI/LangGraph) and TypeScript (Next.js 16) codebase, developer environments can quickly diverge. Subtle type mismatches (such as missing union types or invalid dictionary accesses in agent states) and formatting discrepancies create noisy Git diffs, PR churn, and runtime bugs. Relying on manual developer vigilance or delayed CI checks wastes review cycles.
+
+#### Options Evaluated
+1. **Rely Solely on Remote CI Checks**: Catches issues only after pushing commits and creating PRs; slow feedback loop (2–5 minutes per push).
+2. **Ad-Hoc Developer Scripts**: Developers forget to run local scripts before committing.
+3. **Standardized Pre-Commit Git Hooks (`.pre-commit-config.yaml`)**:
+   - Python: Automated code formatting via **Black** and rigorous static type checking via **Pyright** across `backend/` and `agents/`.
+   - Frontend: Automated `next lint` and TypeScript type checking (`tsc --noEmit`).
+   - Hygiene: Automatic removal of trailing whitespace, end-of-file formatting, and YAML/JSON syntax validation.
+
+#### Chosen Solution
+**Comprehensive Pre-Commit Pipeline**: Enforced local pre-commit hooks executing formatting, strict typing, and build linting before any commit is accepted into Git history.
+
+#### Pros (Why We Did It)
+- **Shift-Left Quality Assurance**: Formatting and type errors are intercepted in milliseconds on the developer's machine *before* code is ever staged or committed.
+- **Eliminated IDE "Red Line" Warnings**: Standardizing on Pyright ensures that Python type annotations (e.g. `tuple[str, ...]`, `Dict[str, Any]`, `StateGraph` signatures) match strict static analyzer expectations.
+- **Clean, No-Noise Git Diffs**: Consistent code style across all contributors ensures Git history reflects meaningful architectural changes rather than formatting debates.
+
+#### Cons & Trade-Offs
+- Adds ~1–2 seconds to the local `git commit` process while Pyright and linters execute.
+
+#### 🎙️ Demo / Interview Pitch
+> *"We enforce enterprise code health by shifting quality checks directly into the developer workflow. Our pre-commit pipeline executes Black formatting, Pyright strict type validation, and Next.js static checks before any commit is written. This eliminates type drift between our Python agent mesh and TypeScript frontend, keeps PR diffs pristine, and guarantees zero broken builds in CI."*
+
+---
+
+### Decision 21: Full-Lifecycle Contact Deletion & Confirmation Guard in Contact Intelligence
+
+#### Context & Problem
+CRM data hygiene requires ongoing contact lifecycle management (e.g., purging test leads, removing obsolete contacts, GDPR/CCPA compliance). While the FastAPI backend provided a `DELETE /api/contacts/{id}` endpoint, the frontend UI lacked deletion controls. Furthermore, unconstrained deletion risks accidental loss of linked historical records (deals, tasks, activities) or user panic during demonstrations.
+
+#### Options Evaluated
+1. **Soft-Delete Flag Only (`is_deleted=True`)**: Good for audit retention, but without UI exposure, users cannot clean up obsolete demo records.
+2. **Unchecked Instant Row Deletion**: High risk of accidental misclicks deleting valuable enterprise client records with zero recovery opportunity.
+3. **Dual-Action Deletion with Interactive Confirmation Guard**:
+   - Provide clear deletion triggers in both the primary Contact Table row actions and the slide-out Contact Detail drawer.
+   - Enforce an interactive confirmation modal with explicit warnings ("This action cannot be undone").
+   - Perform immediate optimistic state removal on the frontend paired with atomic backend cascade deletion of associated orphaned records.
+
+#### Chosen Solution
+**Safe Deletion with Guard Modal**: Deletion buttons exposed in both table rows and slide-out drawers, gated behind an explicit confirmation dialog with optimistic UI updates.
+
+#### Pros (Why We Did It)
+- **Complete CRUD Lifecycle**: Completes the Contact Management story, empowering sales reps and administrators to maintain pristine CRM data hygiene.
+- **Accidental Deletion Protection**: The confirmation barrier prevents catastrophic accidental data loss during high-tempo sales workflows.
+- **Responsive Perception**: Instant optimistic table updates provide immediate visual feedback while the async HTTP delete transaction completes.
+
+#### Cons & Trade-Offs
+- Hard deletion removes associated contact activity logs; production scaling requires transitioning to an explicit two-stage soft-delete with a 30-day trash recovery bin.
+
+#### 🎙️ Demo / Interview Pitch
+> *"Data hygiene is critical for sales velocity. We closed the contact management lifecycle by implementing full contact deletion across table rows and detail drawers, backed by an interactive confirmation safety guard. This gives sales ops complete control over lead hygiene while preventing accidental record loss during daily workflows."*
+
+---
+
+### Decision 22: Non-Technical Autonomous Agent Studio UX (Horizontal Single-Viewport Flow & De-Jargonized Telemetry)
+
+#### Context & Problem
+Sales leadership and RevOps teams—the primary enterprise CRM buyers—are often overwhelmed by technical AI abstractions (e.g., raw token counts, millisecond inference latencies, LangGraph state node parameters, and vertical scrolling DAGs). In early iterations, the AI Agent Studio featured an excessive top metric bar and a vertical flow graph that required constant scrolling to view downstream synthesis nodes, obscuring the multi-agent reasoning chain.
+
+#### Options Evaluated
+1. **Dense Technical Cockpit**: Display deep AI infrastructure telemetry (model IDs, raw prompt tokens, temperature, microsecond execution times, raw JSON state). Appeal is limited to ML engineers; intimidates sales users.
+2. **Fully Opaque Black Box**: Hide all agent reasoning and show only the final text output (similar to simple chatbots). Destroys user trust because sales reps cannot verify which data sources or CRM entities the agent consulted.
+3. **Persona-First Horizontal Visual Flow & Humanized Telemetry**:
+   - **Horizontal Single-Screen Viewport**: The multi-agent workflow graph fits completely on a single screen parallel to the interactive chat canvas, allowing users to watch nodes illuminate in real time without scrolling.
+   - **De-Jargonized Visual States**: Replace technical state machine jargon with human-friendly status cues ("Analyzing", "Synthesizing", "Complete") paired with glowing pulse animations.
+   - **Expanded Studio Canvas**: Remove redundant top AI metric counters to maximize vertical real estate for the conversational studio and interactive agent output.
+
+#### Chosen Solution
+**Persona-First Single-Viewport Canvas**: A horizontal, single-screen multi-agent flow with human-friendly status cues and expanded workspace real estate tailored for sales professionals.
+
+#### Pros (Why We Did It)
+- **High Executive & Buyer Trust**: Non-technical stakeholders can visually follow the agent's reasoning path—from intent classification through CRM retrieval to synthesis—fostering explainability without cognitive overload.
+- **Zero-Scroll Awareness**: Sales reps see the entire multi-agent mesh at a single glance parallel to the conversation, never losing context as downstream nodes complete in rapid succession.
+- **Optimized Screen Real Estate**: Elevates the Agent Studio into the primary showcase of the application, turning AI from a hidden utility into an engaging, visual product centerpiece.
+
+#### Cons & Trade-Offs
+- Deep ML engineering telemetry (e.g. raw token split, provider breakdown) is relegated to the Analytics and Settings tabs rather than occupying prime real estate in the Agent Studio.
+
+#### 🎙️ Demo / Interview Pitch
+> *"Enterprise buyers don't want a confusing terminal of raw token counters—they want to trust that their AI agent researched the right contact, verified deal terms, and scheduled the meeting accurately. We redesigned our Autonomous Sales Agent Studio for the business user: a single-viewport horizontal workflow shows the live agent mesh thinking in real time without scrolling, turning complex LangGraph orchestration into an intuitive, trust-building visual experience."*
 
 ---
 
