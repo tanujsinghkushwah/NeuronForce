@@ -240,7 +240,7 @@ export default function TimelineView({
                     const clampedEnd = Math.max(clampedStart + 0.4, Math.min(END_HOUR, endDecimal));
 
                     const top = (clampedStart - START_HOUR) * HOUR_HEIGHT;
-                    const height = Math.max(30, (clampedEnd - clampedStart) * HOUR_HEIGHT - 2);
+                    const height = Math.max(38, (clampedEnd - clampedStart) * HOUR_HEIGHT - 2);
 
                     const color = evt.color || '#6366f1';
                     const startTimeStr = start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -253,7 +253,7 @@ export default function TimelineView({
                           e.stopPropagation();
                           onSelectEvent(evt);
                         }}
-                        className="absolute inset-x-1 rounded-xl p-2.5 transition-all cursor-pointer z-10 hover:z-20 hover:scale-[1.02] hover:shadow-xl group flex flex-col justify-between overflow-hidden"
+                        className="absolute inset-x-1 rounded-xl p-2 sm:p-2.5 transition-all cursor-pointer z-10 hover:z-20 hover:scale-[1.02] hover:shadow-xl group flex flex-col justify-between overflow-hidden"
                         style={{
                           top: `${top}px`,
                           height: `${height}px`,
@@ -266,19 +266,21 @@ export default function TimelineView({
                         }}
                       >
                         <div>
-                          <div className="flex items-center justify-between gap-1 mb-1">
-                            <span className="text-[11px] font-bold text-white group-hover:text-indigo-200 transition-colors truncate">
+                          <div className="flex items-start justify-between gap-1 mb-1">
+                            <span className="text-[11px] font-bold text-white group-hover:text-indigo-200 transition-colors leading-tight line-clamp-2">
                               {evt.title}
                             </span>
-                            <span
-                              className="text-[9px] uppercase px-1.5 py-0.2 rounded font-extrabold shrink-0"
-                              style={{
-                                color: color,
-                                backgroundColor: `${color}30`,
-                              }}
-                            >
-                              {evt.event_type}
-                            </span>
+                            {height >= 48 && (
+                              <span
+                                className="text-[8px] uppercase px-1.5 py-0.5 rounded font-extrabold shrink-0"
+                                style={{
+                                  color: color,
+                                  backgroundColor: `${color}35`,
+                                }}
+                              >
+                                {evt.event_type.replace('_', ' ')}
+                              </span>
+                            )}
                           </div>
 
                           <div className="flex items-center gap-1 text-[10px] text-slate-300 font-medium">
@@ -289,8 +291,8 @@ export default function TimelineView({
                           </div>
                         </div>
 
-                        {height > 55 && evt.location && (
-                          <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-1 truncate">
+                        {height > 65 && evt.location && (
+                          <div className="flex items-center gap-1 text-[10px] text-slate-300 mt-1 truncate">
                             <Video className="w-2.5 h-2.5 shrink-0 text-cyan-400" />
                             <span className="truncate">{evt.location}</span>
                           </div>
