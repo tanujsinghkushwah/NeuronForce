@@ -90,7 +90,7 @@ export default function AgentChatStudio({
   initialInput = "",
 }: AgentChatStudioProps) {
   const [inputText, setInputText] = useState(initialInput);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatScrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (initialInput) {
@@ -99,7 +99,18 @@ export default function AgentChatStudio({
   }, [initialInput]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Only auto-scroll the internal chat container if there are messages or an active execution
+    if (!chatScrollContainerRef.current) return;
+    if (messages.length === 0 && !isExecuting) return;
+
+    requestAnimationFrame(() => {
+      if (chatScrollContainerRef.current) {
+        chatScrollContainerRef.current.scrollTo({
+          top: chatScrollContainerRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+    });
   }, [messages, isExecuting]);
 
   const handleSubmit = (e?: React.FormEvent) => {
@@ -180,7 +191,10 @@ export default function AgentChatStudio({
       </div>
 
       {/* Messages Timeline */}
-      <div className="flex-1 min-h-0 p-5 overflow-y-auto space-y-4">
+      <div
+        ref={chatScrollContainerRef}
+        className="flex-1 min-h-0 p-5 overflow-y-auto space-y-4"
+      >
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
             <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
@@ -357,8 +371,6 @@ export default function AgentChatStudio({
             </div>
           </div>
         )}
-
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Chat Input Bar */}

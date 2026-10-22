@@ -78,6 +78,9 @@ export default function AIAgentsPage() {
 
   useEffect(() => {
     loadData();
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
   }, []);
 
   const handleSendMessage = async (text: string) => {
