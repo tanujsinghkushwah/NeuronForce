@@ -45,11 +45,17 @@ export default function AgentGraphFlow({
     return steps.find((s) => s.node === nodeId || s.node.includes(nodeId));
   };
 
+  const PIPELINE_ORDER = [
+    "prompt_ingestion",
+    "context_retrieval",
+    "intent_router",
+    "synthesizer",
+  ];
+
   const getNodeState = (
     nodeId: string,
   ): "idle" | "running" | "completed" | "skipped" => {
-    const step = getStep(nodeId);
-    if (step) return "completed";
+    // 1. If currently executing, prioritize live execution state
     if (isExecuting) {
       if (activeNodeId === nodeId) return "running";
       if (
@@ -66,7 +72,19 @@ export default function AgentGraphFlow({
       ) {
         return "running";
       }
+      // If the execution has progressed past this stage in the linear pipeline
+      const currentIdx = PIPELINE_ORDER.indexOf(activeNodeId || "");
+      const thisIdx = PIPELINE_ORDER.indexOf(nodeId);
+      if (currentIdx > -1 && thisIdx > -1 && thisIdx < currentIdx) {
+        return "completed";
+      }
+      return "idle";
     }
+
+    // 2. Real completed step returned from backend or past session inspection
+    const step = getStep(nodeId);
+    if (step) return "completed";
+
     return "idle";
   };
 
@@ -161,7 +179,9 @@ export default function AgentGraphFlow({
         />
         <ConnectorLine
           active={
-            getNodeState("prompt_ingestion") === "completed" || isExecuting
+            getNodeState("prompt_ingestion") === "completed" ||
+            activeNodeId === "prompt_ingestion" ||
+            activeNodeId === "context_retrieval"
           }
         />
 
@@ -186,7 +206,9 @@ export default function AgentGraphFlow({
         />
         <ConnectorLine
           active={
-            getNodeState("context_retrieval") === "completed" || isExecuting
+            getNodeState("context_retrieval") === "completed" ||
+            activeNodeId === "context_retrieval" ||
+            activeNodeId === "intent_router"
           }
         />
 
@@ -210,7 +232,10 @@ export default function AgentGraphFlow({
         />
         <ConnectorLine
           active={
-            getNodeState("intent_router") === "completed" || isExecuting
+            getNodeState("intent_router") === "completed" ||
+            activeNodeId === "intent_router" ||
+            isAnySubagentActive ||
+            isAnyActionActive
           }
         />
 
@@ -391,7 +416,10 @@ export default function AgentGraphFlow({
 
         {/* Step 5: Outcome & CRM Sync */}
         <ConnectorLine
-          active={getNodeState("synthesizer") === "completed" || isExecuting}
+          active={
+            getNodeState("synthesizer") === "completed" ||
+            activeNodeId === "synthesizer"
+          }
         />
         <NodeCard
           stepNumber="4"

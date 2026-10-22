@@ -96,10 +96,31 @@ export default function AIAgentsPage() {
 
     setMessages((prev) => [...prev, userMsg]);
     setIsExecuting(true);
+    // Reset previous run state so the workflow starts fresh with live highlights on every prompt
+    setActiveGraphSteps([]);
+    setTargetSubagent(null);
+    setActionType(null);
     setActiveNodeId("prompt_ingestion");
+
+    // Progressive visual milestones while awaiting backend LangGraph orchestrator
+    const timer1 = setTimeout(() => {
+      setActiveNodeId("context_retrieval");
+    }, 450);
+
+    const timer2 = setTimeout(() => {
+      setActiveNodeId("intent_router");
+    }, 1100);
+
+    const timer3 = setTimeout(() => {
+      setActiveNodeId("synthesizer");
+    }, 2200);
 
     try {
       const response: AIAgentChatResponse = await api.sendAgentChat(text);
+
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
 
       setActiveGraphSteps(response.graph_steps || []);
       setTargetSubagent(response.target_subagent || null);
@@ -120,6 +141,9 @@ export default function AIAgentsPage() {
       setMessages((prev) => [...prev, agentMsg]);
       loadData().catch((err) => console.warn("Background stats refresh:", err));
     } catch (err) {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
       console.error("Chat execution error:", err);
       // Fallback simulated execution if backend is loading
       await new Promise((r) => setTimeout(r, 600));
