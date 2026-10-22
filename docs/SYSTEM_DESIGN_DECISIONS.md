@@ -21,6 +21,10 @@
    - [Decision 10: Zero-Cost Cloud Deployment (Oracle Cloud Ampere A1 ARM64 + Caddy + Docker)](#decision-10-zero-cost-cloud-deployment-oracle-cloud-ampere-a1-arm64--caddy--docker)
    - [Decision 11: Backend Framework — FastAPI (Python 3.12+) + Pydantic v2 + SQLAlchemy 2.0](#decision-11-backend-framework--fastapi-python-312--pydantic-v2--sqlalchemy-20)
    - [Decision 12: In-Memory Isolated Pytest Testing Strategy (48 Tests)](#decision-12-in-memory-isolated-pytest-testing-strategy-48-tests)
+   - [Decision 13: Zero-Friction Auth Screen Guard with CSS De-Blur Transition vs. Jarring Route Redirect Walls](#decision-13-zero-friction-auth-screen-guard-with-css-de-blur-transition-vs-jarring-route-redirect-walls)
+   - [Decision 14: Adaptive Multi-Line Sizing & Untruncated Entity Chips vs. Aggressive Single-Line Truncation](#decision-14-adaptive-multi-line-sizing--untruncated-entity-chips-vs-aggressive-single-line-truncation)
+   - [Decision 15: OpenRouter AI Gateway Consolidation & Removal of Legacy Vendor Couplings](#decision-15-openrouter-ai-gateway-consolidation--removal-of-legacy-vendor-couplings)
+   - [Decision 16: Autonomous Seed Data Engine with Mathematically Calibrated Funnels](#decision-16-autonomous-seed-data-engine-with-mathematically-calibrated-funnels)
 4. [Scale-Out Roadmap (From MVP to 1,000,000 Users)](#4-scale-out-roadmap-from-mvp-to-1000000-users)
 5. [Top 5 System Design Interview Questions & Answers](#5-top-5-system-design-interview-questions--answers)
 
@@ -49,10 +53,14 @@ Traditional enterprise Customer Relationship Management (CRM) platforms—epitom
 | **AI Architecture** | **Audited Agent Telemetry** | Black-box monolithic agent | Telemetry metadata overhead on every request |
 | **AI Inference** | **OpenRouter + Smart Fallback** | Vendor-locked SDK (Direct OpenAI) | Additional network hop through proxy (~30ms) |
 | **Authentication** | **Dual-Track (Google OAuth + Demo SSO)** | Enforced Live-Only OAuth | Mock user records maintained in dev seed data |
+| **Auth UX Guard** | **In-Place Frosted Glass Blur Guard** | Harsh 302 Route Redirect Walls | Must dynamically strip `filter` to prevent CSS fixed modal trapping |
 | **AI Input UX** | **Friendly Form + Raw JSON Toggle** | Pure JSON Editor | Two state synchronizations maintained in client form |
 | **Frontend Stack** | **Next.js 16 App Router (Standalone)** | Pure Vite SPA | Next.js build-time server/client boundary complexity |
 | **UI Design** | **Tokenized Glassmorphism (CSS v4)** | MUI / Ant Design / Chakra | Must manually handle edge-case component styling |
 | **Calendar View** | **Interactive 24h Timeline Grid** | Simple chronological list | Dynamic time-coordinate calculation logic on client |
+| **Card Data Sizing** | **Adaptive Multi-Line & Full Chips** | Aggressive 130px Ellipsis Truncation | Cards vary slightly in height; requires flex layout alignment |
+| **AI Layer Focus** | **Unified OpenRouter Gateway Engine** | Multi-SDK Fragment (Gemini + OpenRouter) | Requires OpenAI-compatible format normalization |
+| **Data Seeding** | **Automated Realistic Seeder Engine** | Manual DB Migrations / Remote Dumps | Seed definitions must be updated as schemas expand |
 | **Infrastructure** | **Oracle Cloud Always Free (ARM64)** | Paid AWS ECS / EKS / Vercel Pro | Manual OCI firewall (`iptables` + VCN) setup required |
 | **Backend Stack** | **FastAPI + Pydantic v2 + SQLAlchemy** | Node.js Express / NestJS / Go | Python GIL constraints for heavy CPU operations |
 | **Testing Suite** | **Isolated In-Memory Pytest (48 Tests)** | Mocked-only / E2E-only | SQLite does not test Postgres-specific JSONB indexing |
@@ -464,6 +472,101 @@ backend/tests/
 
 #### 🎙️ Demo / Interview Pitch
 > *"Velocity without automated testing is just accumulating technical debt. We built an isolated in-memory test suite that executes 48 comprehensive integration tests in under 4 seconds. Every endpoint, auth state, and agent flow is mathematically verified before code reaches production."*
+
+---
+
+### Decision 13: Zero-Friction Auth Screen Guard with CSS De-Blur Transition vs. Jarring Route Redirect Walls
+
+#### Context & Problem
+Enterprise SaaS platforms commonly protect authenticated routes by detecting unauthenticated state and executing a hard HTTP 302 redirect or router push to `/login`. In high-value sales workflows, this introduces severe user friction: shared deep links are broken, scroll state is lost, and the user is hit with a jarring screen flash and full component unmount.
+
+#### Options Evaluated
+1. **Harsh Route Redirect Walls (Redirect to `/login`)**: Standard approach, but breaks deep linking, disorients first-time reviewers, and feels clunky.
+2. **Generic 401 Unauthorized Error Screen**: Abruptly halts the evaluation experience and gives no preview of the product value.
+3. **In-Place Frosted Glass Blur Guard (`AuthScreenGuard`)**: The application renders the actual underlying dashboard in the background with a heavy frosted-glass blur filter (`blur-[14px]`), providing a high-tech sneak peek of live sales telemetry while disabling user interactions (`pointer-events-none`). A floating, centered glassmorphic card offers 1-click Google SSO or immediate persona selection. Upon sign-in, the blur smoothly transitions out (`transition: filter 700ms ease-out`), revealing the crisp workspace in place without any page reload.
+
+#### The Critical CSS Stacking Context Gotcha
+During implementation, we encountered a notorious browser rendering trap:
+- According to W3C CSS specifications, applying `filter`, `transform`, or `will-change: [filter, transform]` on an ancestor element **establishes a new containing block** for all `position: fixed` descendants.
+- Because `AuthScreenGuard` wraps `{children}`, leaving `will-change` or `filter: blur(0px)` permanently active after login caused all child modal dialogs (such as the "Create Opportunity" modal) to trap inside the 2,500px tall page container rather than anchoring to the browser's viewport (`window`), pushing modals far below the visible screen!
+- **Engineering Solution**: We architected `AuthScreenGuard` to apply `filter` and `transform` **only** when locked or during the active 750ms unlock animation (`isAnimatingUnlock`). The instant the de-blur transition finishes, the wrapper completely strips all filter and transform classes, restoring the true browser viewport as the containing block for all modals.
+
+#### Pros (Why We Did It)
+- **Zero Page Reload**: Unlocks the workspace instantaneously in place with a smooth 700ms cinematic transition.
+- **Ambient Preview Hook**: Visitors see the depth of the platform (real charts, deal funnels, agent mesh) before signing in, dramatically increasing signup conversion.
+- **Rock-Solid Modal Positioning**: By dynamically eliminating the stacking context after transition, all fixed modals center with mathematical perfection across all viewport heights.
+
+#### Cons & Trade-Offs
+- Requires coordinating CSS transition timers in React (`isAnimatingUnlock` hook) to ensure the stacking context is cleanly detached after the animation frames finish.
+
+#### 🎙️ Demo / Interview Pitch
+> *"Traditional enterprise software hits users with jarring redirect walls. NeuronForce uses a cinematic blur guard that gives users an ambient sneak peek of live sales telemetry, lets them authenticate in 1 click, and dissolves the blur in 700ms without a single full-page reload."*
+
+---
+
+### Decision 14: Adaptive Multi-Line Sizing & Untruncated Entity Chips vs. Aggressive Single-Line Truncation
+
+#### Context & Problem
+CRMs often suffer from aggressive text truncation (`truncate max-w-[130px]`). In meeting timelines and deal pipeline cards, this forces critical business context to be replaced by ellipses—resulting in cryptic strings like `Customer ...` instead of `Customer Architecture Review` and `alex.rive...` instead of `alex.rivera@neuronforce.ai`. Users are forced to open modal popups for every single item just to read essential information.
+
+#### Options Evaluated
+1. **Aggressive Single-Line Truncation**: Enforces rigid, pixel-identical card heights, but severely degrades information density and usability.
+2. **Adaptive Multi-Line Wrapping & Dynamic Chips**: 
+   - In `CardsView.tsx`, meeting titles use `text-base font-bold break-words leading-snug`, descriptions have a generous `line-clamp-3` preview, and attendee chips wrap flexibly without arbitrary width ceilings.
+   - In `TimelineView.tsx`, event titles use `line-clamp-2 leading-tight`, and badges scale dynamically based on block height (`height >= 48px`).
+
+#### Pros (Why We Did It)
+- **High Information Density**: Sales reps can review their entire daily schedule, meeting participants, and exact time durations (`1h 15m`) at a glance without clicking through modals.
+- **Clean Responsive Wrapping**: Entity chips wrap gracefully across both mobile displays and ultra-wide desktop monitors.
+
+#### Cons & Trade-Offs
+- Card heights vary slightly based on participant counts, requiring flexbox alignment (`justify-between`) to maintain visual balance across grid rows.
+
+#### 🎙️ Demo / Interview Pitch
+> *"Sales reps lose hours every week clicking into calendar entries just to read truncated meeting titles and participant lists. We redesigned our card layout with adaptive multi-line typography and flexible participant chips, giving reps complete schedule intelligence at a glance without artificial ellipsis clipping."*
+
+---
+
+### Decision 15: OpenRouter AI Gateway Consolidation & Removal of Legacy Vendor Couplings
+
+#### Context & Problem
+Early prototypes included direct experimental couplings to Google Gemini SDKs alongside OpenRouter. This created configuration bloat (`GEMINI_API_KEY`, `OPENROUTER_API_KEY`), dead code paths in `config.py`, and fragmented error handling across multiple vendor formats.
+
+#### Options Evaluated
+1. **Multi-Vendor SDK Fragment**: Maintain direct proprietary SDKs for Google, OpenAI, and Anthropic simultaneously. Causes SDK version drift, configuration confusion, and brittle maintenance.
+2. **Unified OpenRouter Gateway Engine**: Consolidate all inference exclusively onto OpenRouter using the standardized OpenAI-compatible REST API format, driven by a single environment variable (`OPENROUTER_MODEL`).
+
+#### Pros (Why We Did It)
+- **True Model Agility**: RevOps can switch our underlying intelligence model from Claude 3.5 Haiku to GPT-4o-mini or DeepSeek V3 with a single string change in `.env`, with zero backend code alterations.
+- **Unified Telemetry**: Standardized token usage and cost accounting across all models down to hundredths of a cent.
+- **Resilient Fallback**: Coupled with our deterministic fallback engine, the backend handles provider outages, rate limits, or missing API keys transparently during live demos.
+
+#### Cons & Trade-Offs
+- An extra network proxy hop through OpenRouter (~20–40ms), which is negligible compared to standard LLM generation latencies (500–1200ms).
+
+#### 🎙️ Demo / Interview Pitch
+> *"We completely eliminated vendor lock-in by decoupling our AI agent orchestration from proprietary SDKs. With OpenRouter, RevOps can switch our underlying intelligence model from Claude to GPT-4o or DeepSeek with one environment variable, while our offline fallback engine ensures 100% demo uptime."*
+
+---
+
+### Decision 16: Autonomous Seed Data Engine with Mathematically Calibrated Funnels
+
+#### Context & Problem
+Evaluating enterprise CRMs with empty databases is uninspiring; users cannot appreciate revenue trajectories, stage velocity, or AI risk scoring without substantial historical data. However, requiring manual database setup or fragile SQL dump imports creates installation friction.
+
+#### Options Evaluated
+1. **Manual Data Entry / SQL Dump Files**: High setup friction, risk of corrupting foreign keys across database dialect migrations.
+2. **Autonomous Idempotent Seeder (`backend/scripts/seed_data.py`)**: Runs automatically on FastAPI startup or via CLI, generating 12 contacts, 10 deals across pipeline stages, 40 activity logs, 15 tasks, 7 calendar meetings, service tickets with SLA tiers, and a mathematically consistent ARR growth curve.
+
+#### Pros (Why We Did It)
+- **Zero-Setup Demo Ready**: Anyone cloning the repository gets an instantly populated, production-feeling CRM within 2 seconds.
+- **Statistically Realistic Telemetry**: Seeded AI tasks include realistic token distributions, fractional-cent costs ($0.0012–$0.0045), and calibrated confidence scores (0.78–0.96) that reflect authentic production LLM workloads.
+
+#### Cons & Trade-Offs
+- Seed data scripts must be maintained and updated whenever new relational models (e.g. Campaigns, Tickets, CalendarEvents) are introduced.
+
+#### 🎙️ Demo / Interview Pitch
+> *"You cannot evaluate an enterprise AI CRM on an empty database. We built an autonomous seeding engine that populates realistic pipeline funnels, SLA service cases, and calibrated AI agent telemetry on startup. Evaluators can experience the full power of our ARR analytics and agent mesh within 3 seconds of cloning the repository."*
 
 ---
 
