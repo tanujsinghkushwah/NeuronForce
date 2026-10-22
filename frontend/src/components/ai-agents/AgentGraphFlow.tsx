@@ -145,83 +145,77 @@ export default function AgentGraphFlow({
       </div>
 
       {/* Main Graph Flow Canvas - Zero scroll layout: fits completely in single view */}
-      <div className="agent-graph-canvas flex-1 min-h-0 p-3.5 flex flex-col justify-between overflow-hidden relative">
+      <div className="agent-graph-canvas flex-1 min-h-0 p-3 flex flex-col items-center overflow-hidden relative">
         {/* Step 1: Request Understanding */}
-        <div className="flex flex-col items-center">
-          <NodeCard
-            stepNumber="1"
-            title="Request Understanding"
-            subtitle="Interpreting prompt goals, intent &amp; target details"
-            icon={Sparkles}
-            color="from-blue-600 to-indigo-600"
-            state={getNodeState("prompt_ingestion")}
-            step={getStep("prompt_ingestion")}
-            onClick={() =>
-              handleNodeClick("prompt_ingestion", "Request Understanding")
-            }
-          />
-          <ConnectorLine
-            active={
-              getNodeState("prompt_ingestion") === "completed" || isExecuting
-            }
-          />
-        </div>
+        <NodeCard
+          stepNumber="1"
+          title="Request Understanding"
+          subtitle="Interpreting prompt goals, intent & target details"
+          icon={Sparkles}
+          color="from-blue-600 to-indigo-600"
+          state={getNodeState("prompt_ingestion")}
+          step={getStep("prompt_ingestion")}
+          onClick={() =>
+            handleNodeClick("prompt_ingestion", "Request Understanding")
+          }
+        />
+        <ConnectorLine
+          active={
+            getNodeState("prompt_ingestion") === "completed" || isExecuting
+          }
+        />
 
         {/* Step 2: CRM Data Retrieval */}
-        <div className="flex flex-col items-center">
-          <NodeCard
-            stepNumber="2"
-            title="CRM Data Gathering"
-            subtitle="Checking customer, deal &amp; calendar records"
-            icon={Database}
-            color="from-cyan-600 to-blue-600"
-            state={getNodeState("context_retrieval")}
-            step={getStep("context_retrieval")}
-            badgeText={
-              getStep("context_retrieval")?.data?.matching_contacts_count !==
-              undefined
-                ? `${getStep("context_retrieval")?.data?.matching_contacts_count} Contacts · ${getStep("context_retrieval")?.data?.matching_deals_count} Deals`
-                : "Live CRM Sync"
-            }
-            onClick={() =>
-              handleNodeClick("context_retrieval", "CRM Data Gathering")
-            }
-          />
-          <ConnectorLine
-            active={
-              getNodeState("context_retrieval") === "completed" || isExecuting
-            }
-          />
-        </div>
+        <NodeCard
+          stepNumber="2"
+          title="CRM Data Gathering"
+          subtitle="Checking customer, deal & calendar records"
+          icon={Database}
+          color="from-cyan-600 to-blue-600"
+          state={getNodeState("context_retrieval")}
+          step={getStep("context_retrieval")}
+          badgeText={
+            getStep("context_retrieval")?.data?.matching_contacts_count !==
+            undefined
+              ? `${getStep("context_retrieval")?.data?.matching_contacts_count} Contacts · ${getStep("context_retrieval")?.data?.matching_deals_count} Deals`
+              : "Live CRM Sync"
+          }
+          onClick={() =>
+            handleNodeClick("context_retrieval", "CRM Data Gathering")
+          }
+        />
+        <ConnectorLine
+          active={
+            getNodeState("context_retrieval") === "completed" || isExecuting
+          }
+        />
 
         {/* Step 3: Decision Router */}
-        <div className="flex flex-col items-center">
-          <NodeCard
-            stepNumber="3"
-            title="Intelligent Decision Router"
-            subtitle="Directing to the best specialized agent or CRM tool"
-            icon={GitFork}
-            color="from-purple-600 to-indigo-600"
-            state={getNodeState("intent_router")}
-            step={getStep("intent_router")}
-            badgeText={
-              targetSubagent
-                ? `Agent: ${targetSubagent.replace("_", " ").toUpperCase()}`
-                : actionType
-                  ? `Action: ${actionType.replace("_", " ").toUpperCase()}`
-                  : "Routing"
-            }
-            onClick={() => handleNodeClick("intent_router", "Decision Router")}
-          />
-          <ConnectorLine
-            active={
-              getNodeState("intent_router") === "completed" || isExecuting
-            }
-          />
-        </div>
+        <NodeCard
+          stepNumber="3"
+          title="Intelligent Decision Router"
+          subtitle="Directing to the best specialized agent or CRM tool"
+          icon={GitFork}
+          color="from-purple-600 to-indigo-600"
+          state={getNodeState("intent_router")}
+          step={getStep("intent_router")}
+          badgeText={
+            targetSubagent
+              ? `Agent: ${targetSubagent.replace("_", " ").toUpperCase()}`
+              : actionType
+                ? `Action: ${actionType.replace("_", " ").toUpperCase()}`
+                : "Routing"
+          }
+          onClick={() => handleNodeClick("intent_router", "Decision Router")}
+        />
+        <ConnectorLine
+          active={
+            getNodeState("intent_router") === "completed" || isExecuting
+          }
+        />
 
         {/* Step 4: Compact Dual-Branch Container (Specialized Agents vs CRM Actions) */}
-        <div className="grid grid-cols-2 gap-3 max-w-xl mx-auto w-full">
+        <div className="grid grid-cols-2 gap-3 max-w-xl mx-auto w-full shrink-0">
           {/* Branch A: Specialized Agents */}
           <div
             className={`agent-branch-box agent-branch-specialized p-2.5 rounded-xl transition-all border ${
@@ -396,23 +390,21 @@ export default function AgentGraphFlow({
         </div>
 
         {/* Step 5: Outcome & CRM Sync */}
-        <div className="flex flex-col items-center">
-          <ConnectorLine
-            active={getNodeState("synthesizer") === "completed" || isExecuting}
-          />
-          <NodeCard
-            stepNumber="4"
-            title="Outcome &amp; Database Sync"
-            subtitle="Finalizing response &amp; synchronizing CRM state"
-            icon={CheckCircle2}
-            color="from-emerald-600 to-teal-500"
-            state={getNodeState("synthesizer")}
-            step={getStep("synthesizer")}
-            onClick={() =>
-              handleNodeClick("synthesizer", "Outcome & Database Sync")
-            }
-          />
-        </div>
+        <ConnectorLine
+          active={getNodeState("synthesizer") === "completed" || isExecuting}
+        />
+        <NodeCard
+          stepNumber="4"
+          title="Outcome &amp; Database Sync"
+          subtitle="Finalizing response &amp; synchronizing CRM state"
+          icon={CheckCircle2}
+          color="from-emerald-600 to-teal-500"
+          state={getNodeState("synthesizer")}
+          step={getStep("synthesizer")}
+          onClick={() =>
+            handleNodeClick("synthesizer", "Outcome & Database Sync")
+          }
+        />
       </div>
 
       {/* Node Inspector Modal */}
@@ -455,7 +447,7 @@ function NodeCard({
   return (
     <div
       onClick={onClick}
-      className={`agent-node-card w-full max-w-md p-2.5 px-3 rounded-xl border transition-all cursor-pointer relative group ${
+      className={`agent-node-card w-full max-w-md p-2.5 px-3 rounded-xl border transition-all cursor-pointer relative group shrink-0 ${
         isRunning
           ? "bg-indigo-950/70 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400"
           : isCompleted
@@ -568,43 +560,41 @@ function MicroAgentNode({
 
 function ConnectorLine({ active }: { active: boolean }) {
   return (
-    <div className="agent-connector-line flex flex-col items-center justify-center my-0.5 shrink-0 select-none">
-      <svg
-        className={`w-5 h-6 transition-all duration-300 ${
+    <div className="agent-connector-line flex-1 w-full min-h-[16px] flex flex-col items-center relative select-none">
+      {/* Continuous connecting stem spanning from the bottom of top container to the top of bottom container */}
+      <div
+        className={`agent-connector-stem w-[2px] h-full relative transition-all duration-300 ${
           active
-            ? "text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.7)]"
-            : "text-slate-400"
+            ? "bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.7)]"
+            : "bg-slate-700/80"
         }`}
-        viewBox="0 0 20 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
       >
-        {/* Animated flow pulse when active */}
         {active && (
-          <circle
-            cx="10"
-            cy="5"
-            r="2"
-            fill="#38bdf8"
-            className="animate-ping"
-          />
+          <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
         )}
-        {/* Vertical Flow Stem */}
-        <path
-          d="M10 1 V16"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-        {/* Directed Chevron Arrow Head */}
-        <path
-          d="M5.5 11.5 L10 16.5 L14.5 11.5"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+      </div>
+
+      {/* Directed chevron arrow head touching the destination container */}
+      <div className="agent-connector-arrow absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none z-10">
+        <svg
+          className={`w-3.5 h-2.5 transition-colors duration-300 ${
+            active
+              ? "text-cyan-400 drop-shadow-[0_0_6px_rgba(6,182,212,0.8)]"
+              : "text-slate-500"
+          }`}
+          viewBox="0 0 14 10"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M2 2 L7 7.5 L12 2"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
     </div>
   );
 }
