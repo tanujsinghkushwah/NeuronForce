@@ -1,0 +1,171 @@
+<mxfile host="Electron" modified="2026-10-23T05:35:00.000Z" agent="NeuronForce" version="21.0.0" type="device">
+  <diagram id="backend_hld" name="NeuronForce Backend Architecture HLD">
+    <mxGraphModel dx="2000" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2800" pageHeight="1800" background="#090D16" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title Banner -->
+        <mxCell id="title_be" value="&lt;b style='font-size:26px; color:#F8FAFC;'&gt;NeuronForce — Backend System Architecture &amp;amp; Critical Design Decisions (HLD)&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:14px; color:#94A3B8;'&gt;Modular Monolith (FastAPI) • CP-Consistent Relational Storage (ACID) • Dual-Track Auth • Dual-Tier Email • 1M Scale Roadmap&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#10B981;strokeWidth=2;arcSize=8;align=left;spacingLeft=30;" vertex="1" parent="1">
+          <mxGeometry x="50" y="40" width="2700" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- CONTAINER 1: Edge Ingress -->
+        <mxCell id="c_edge" value="01 / EDGE INGRESS &amp;amp; ARCHITECTURAL FOUNDATION" style="swimlane;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#6366F1;strokeWidth=2;fontColor=#818CF8;fontStyle=1;fontSize=14;startSize=35;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="50" y="160" width="540" height="1560" as="geometry" />
+        </mxCell>
+        <mxCell id="cf_tunnel" value="&lt;b style='color:#F59E0B;font-size:15px;'&gt;Cloudflare Edge Tunnel (cloudflared)&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#FEF3C7;font-size:12px;'&gt;• 1-Click live public demo tunnel (./start_tunnel.sh)&lt;br/&gt;• Ephemeral HTTPS edge termination (*.trycloudflare.com)&lt;br/&gt;• Zero port-forwarding or public IP exposure required&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#78350F;strokeColor=#F59E0B;strokeWidth=1.5;arcSize=10;align=left;spacingLeft=20;" vertex="1" parent="c_edge">
+          <mxGeometry x="30" y="60" width="480" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="caddy_proxy" value="&lt;b style='color:#38BDF8;font-size:15px;'&gt;Caddy Reverse Proxy&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#E2E8F0;font-size:12px;'&gt;• HTTP/2 termination &amp;amp; Brotli/Gzip compression&lt;br/&gt;• Unified Origin Routing: /api/* ➔ :8000, /* ➔ :3000&lt;br/&gt;• Oracle Cloud ARM64 production deployment ready&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#0284C7;strokeWidth=1.5;arcSize=10;align=left;spacingLeft=20;" vertex="1" parent="c_edge">
+          <mxGeometry x="30" y="200" width="480" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="dec_monolith" value="&lt;b style='color:#FACC15;font-size:16px;'&gt;CRITICAL DESIGN DECISION 1&lt;br/&gt;Modular Monolith vs. Microservices&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style='color:#FFFFFF;font-size:12px;'&gt;• &lt;b style='color:#34D399;'&gt;Atomic ACID Commits&lt;/b&gt;: Closing a deal atomically updates pipeline forecasts, contact status &amp;amp; activity history in a single db.commit()&lt;br/&gt;• &lt;b style='color:#34D399;'&gt;Sub-Millisecond In-Process Latency&lt;/b&gt;: Internal services invoke each other directly without network serialization&lt;br/&gt;• &lt;b style='color:#EF4444;'&gt;Why Microservices Were Rejected&lt;/b&gt;: Distributed 2PC and Saga compensations introduce partial failure risks on financial data.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#FACC15;strokeWidth=2;arcSize=10;align=left;spacingLeft=20;" vertex="1" parent="c_edge">
+          <mxGeometry x="30" y="340" width="480" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="uvicorn" value="&lt;b style='color:#34D399;font-size:15px;'&gt;Uvicorn ASGI Engine (uvloop)&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#A7F3D0;font-size:12px;'&gt;High-performance asynchronous event loop handling 15,000+ RPS with non-blocking I/O for external AI gateways.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#064E3B;strokeColor=#34D399;strokeWidth=1.5;arcSize=10;align=left;spacingLeft=20;" vertex="1" parent="c_edge">
+          <mxGeometry x="30" y="600" width="480" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- CONTAINER 2: FastAPI Modular Monolith -->
+        <mxCell id="c_app" value="02 / FASTAPI ASGI MODULAR APPLICATION (backend/app/)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0A0F1D;strokeColor=#10B981;strokeWidth=2.5;fontColor=#34D399;fontStyle=1;fontSize=15;startSize=40;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="630" y="160" width="1380" height="1560" as="geometry" />
+        </mxCell>
+        <mxCell id="mw_pipe" value="&lt;b style='color:#38BDF8;font-size:14px;'&gt;ASGI MIDDLEWARE PIPELINE&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#CBD5E1;font-size:12px;'&gt;CORSMiddleware (Allowed Origins Allowlist) ➔ Request Latency Profiler ➔ Depends(get_current_user) JWT Validator&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#38BDF8;strokeWidth=1.5;arcSize=8;" vertex="1" parent="c_app">
+          <mxGeometry x="50" y="65" width="1280" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- 12 Routers Grid -->
+        <mxCell id="r_contacts" value="&lt;b style='color:#38BDF8;font-size:13px;'&gt;/api/contacts&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;Lifecycle &amp;amp; Lead Intel&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#38BDF8;strokeWidth=1.5;" vertex="1" parent="c_app">
+          <mxGeometry x="50" y="150" width="290" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="r_deals" value="&lt;b style='color:#10B981;font-size:13px;'&gt;/api/deals&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;Multi-Stage Kanban Funnel&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#10B981;strokeWidth=1.5;" vertex="1" parent="c_app">
+          <mxGeometry x="380" y="150" width="290" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="r_act" value="&lt;b style='color:#F59E0B;font-size:13px;'&gt;/api/activities&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;Chronological Timeline&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#F59E0B;strokeWidth=1.5;" vertex="1" parent="c_app">
+          <mxGeometry x="710" y="150" width="290" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="r_cal" value="&lt;b style='color:#8B5CF6;font-size:13px;'&gt;/api/calendar&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;24h Native Schedule Grid&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#8B5CF6;strokeWidth=1.5;" vertex="1" parent="c_app">
+          <mxGeometry x="1040" y="150" width="290" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="r_agents" value="&lt;b style='color:#EC4899;font-size:13px;'&gt;/api/ai-agents&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;LangGraph Studio &amp;amp; Telemetry&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#EC4899;strokeWidth=1.5;" vertex="1" parent="c_app">
+          <mxGeometry x="50" y="235" width="290" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="r_camp" value="&lt;b style='color:#14B8A6;font-size:13px;'&gt;/api/campaigns&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;Multi-Channel Outreach Copy&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#14B8A6;strokeWidth=1.5;" vertex="1" parent="c_app">
+          <mxGeometry x="380" y="235" width="290" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="r_tick" value="&lt;b style='color:#EF4444;font-size:13px;'&gt;/api/tickets&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;SLA Customer Incident Cases&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#EF4444;strokeWidth=1.5;" vertex="1" parent="c_app">
+          <mxGeometry x="710" y="235" width="290" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="r_anal" value="&lt;b style='color:#6366F1;font-size:13px;'&gt;/api/analytics&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;ARR Waterfall &amp;amp; Velocity BI&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#6366F1;strokeWidth=1.5;" vertex="1" parent="c_app">
+          <mxGeometry x="1040" y="235" width="290" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="r_srch" value="&lt;b style='color:#FACC15;font-size:13px;'&gt;/api/search&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;Sub-15ms Token Omnisearch&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#FACC15;strokeWidth=1.5;" vertex="1" parent="c_app">
+          <mxGeometry x="50" y="320" width="290" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="r_dash" value="&lt;b style='color:#38BDF8;font-size:13px;'&gt;/api/dashboard&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;Executive Revenue Metrics&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#38BDF8;strokeWidth=1.5;" vertex="1" parent="c_app">
+          <mxGeometry x="380" y="320" width="290" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="r_auth" value="&lt;b style='color:#EC4899;font-size:13px;'&gt;/api/auth&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;OAuth 2.0 PKCE &amp;amp; Personas&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#EC4899;strokeWidth=1.5;" vertex="1" parent="c_app">
+          <mxGeometry x="710" y="320" width="290" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="r_sett" value="&lt;b style='color:#64748B;font-size:13px;'&gt;/api/settings&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;AI Budget Guards &amp;amp; Tenants&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#64748B;strokeWidth=1.5;" vertex="1" parent="c_app">
+          <mxGeometry x="1040" y="320" width="290" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- Services Layer -->
+        <mxCell id="svc_auth" value="&lt;b style='color:#F472B6;font-size:15px;'&gt;Dual-Track Authentication Guard&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#CBD5E1;font-size:12px;'&gt;• Track 1: Google OAuth 2.0 PKCE with dynamic origin state preservation&lt;br/&gt;• Track 2: 1-Click Demo Persona Simulator for instant evaluation&lt;br/&gt;• Signed HS256 JWT tokens with sliding session expiry&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E1528;strokeColor=#EC4899;strokeWidth=1.5;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_app">
+          <mxGeometry x="50" y="420" width="400" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="svc_email" value="&lt;b style='color:#34D399;font-size:15px;'&gt;Dual-Tier Outbound Email Engine&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#CBD5E1;font-size:12px;'&gt;• Tier 1: Resend HTTP REST API (Single RESEND_API_KEY, zero DNS hurdles)&lt;br/&gt;• Tier 2: Resilient SMTP / Gmail Fallback&lt;br/&gt;• &lt;b style='color:#6EE7B7;'&gt;Automatic Activity Logging&lt;/b&gt;: Every email creates an Activity record&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0A231C;strokeColor=#10B981;strokeWidth=1.5;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_app">
+          <mxGeometry x="490" y="420" width="400" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="svc_search" value="&lt;b style='color:#FACC15;font-size:15px;'&gt;Token-Ranked Omnisearch Engine&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#CBD5E1;font-size:12px;'&gt;• Sub-15ms multi-entity search across Contacts, Deals, Activities &amp;amp; Tickets&lt;br/&gt;• Scoring algorithm: Exact (+100), Prefix (+50), Partial (+25)&lt;br/&gt;• Single aggregated JSON response with category keyboard chips&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#231E0A;strokeColor=#FACC15;strokeWidth=1.5;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_app">
+          <mxGeometry x="930" y="420" width="400" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- ORM Engine & Models -->
+        <mxCell id="orm_banner" value="&lt;b style='color:#38BDF8;font-size:15px;'&gt;SQLAlchemy 2.0 ORM Engine &amp;amp; Connection Pooler&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:12px;'&gt;Declarative Base • Foreign Key Cascade Integrity • Strict Type Checking via Pydantic v2 Schemas • SessionLocal&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#0284C7;strokeWidth=2;arcSize=8;" vertex="1" parent="c_app">
+          <mxGeometry x="50" y="605" width="1280" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Models -->
+        <mxCell id="m_contact" value="&lt;b style='color:#38BDF8;'&gt;Contact&lt;/b&gt;&lt;br/&gt;Email, Phone, ICP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#38BDF8;" vertex="1" parent="c_app">
+          <mxGeometry x="50" y="700" width="190" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="m_deal" value="&lt;b style='color:#10B981;'&gt;Deal&lt;/b&gt;&lt;br/&gt;Value, Stage, Close" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#10B981;" vertex="1" parent="c_app">
+          <mxGeometry x="268" y="700" width="190" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="m_act" value="&lt;b style='color:#F59E0B;'&gt;Activity&lt;/b&gt;&lt;br/&gt;Type, Subject, Log" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#F59E0B;" vertex="1" parent="c_app">
+          <mxGeometry x="486" y="700" width="190" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="m_cal" value="&lt;b style='color:#8B5CF6;'&gt;CalendarEvent&lt;/b&gt;&lt;br/&gt;Time Grid, People" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#8B5CF6;" vertex="1" parent="c_app">
+          <mxGeometry x="704" y="700" width="190" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="m_camp" value="&lt;b style='color:#14B8A6;'&gt;Campaign&lt;/b&gt;&lt;br/&gt;Audience, Copy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#14B8A6;" vertex="1" parent="c_app">
+          <mxGeometry x="922" y="700" width="190" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="m_task" value="&lt;b style='color:#EC4899;'&gt;AIAgentTask&lt;/b&gt;&lt;br/&gt;Cost, Confidence" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#EC4899;" vertex="1" parent="c_app">
+          <mxGeometry x="1140" y="700" width="190" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Seeder Engine -->
+        <mxCell id="seeder_engine" value="&lt;b style='color:#6EE7B7;font-size:15px;'&gt;Autonomous Enterprise Seeding Engine (scripts/seed_data.py)&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#A7F3D0;font-size:12px;'&gt;Runs automatically on startup. Mathematically calibrates 12 contacts, 10 stage deals, 40 activities, SLA tickets, and ARR trajectories with authentic fractional-cent AI telemetry in under 2 seconds.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#063528;strokeColor=#34D399;strokeWidth=1.5;arcSize=8;align=left;spacingLeft=25;" vertex="1" parent="c_app">
+          <mxGeometry x="50" y="780" width="1280" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- CONTAINER 3: Relational CP Storage & Scale -->
+        <mxCell id="c_scale" value="03 / RELATIONAL CP STORAGE &amp;amp; SCALE ROADMAP" style="swimlane;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#FACC15;strokeWidth=2;fontColor=#FACC15;fontStyle=1;fontSize=14;startSize=35;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="2050" y="160" width="700" height="1560" as="geometry" />
+        </mxCell>
+
+        <!-- CRITICAL DESIGN DECISION 2 -->
+        <mxCell id="db_cp_hero" value="&lt;b style='color:#FACC15;font-size:17px;'&gt;CRITICAL DESIGN DECISION 2&lt;br/&gt;Relational CP Consistency (CAP Theorem)&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style='color:#FFFFFF;font-size:13px;'&gt;• &lt;b style='color:#34D399;'&gt;PostgreSQL (Production) / SQLite (Development)&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;• In financial CRM systems, &lt;b style='color:#FACC15;'&gt;Consistency strictly trumps Availability&lt;/b&gt;.&lt;br/&gt;• If an upstream network partition occurs, it is significantly better to reject an update or return a retry than permit conflicting writes where two sales reps or automated AI agents overwrite contract values or pipeline stages.&lt;br/&gt;• Strict ACID transactions guarantee revenue numbers, pipeline stages &amp;amp; customer records remain consistent.&lt;br/&gt;&lt;br/&gt;• &lt;b style='color:#EF4444;'&gt;Why NoSQL Was Rejected:&lt;/b&gt; Eventual consistency (MongoDB / DynamoDB) introduces 'dirty reads', leading to pipeline forecast drift and financial audit violations.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#063023;strokeColor=#34D399;strokeWidth=2.5;arcSize=10;align=left;spacingLeft=25;" vertex="1" parent="c_scale">
+          <mxGeometry x="35" y="60" width="630" height="280" as="geometry" />
+        </mxCell>
+
+        <!-- Scale Items -->
+        <mxCell id="sc_pg" value="&lt;b style='color:#38BDF8;font-size:15px;'&gt;1. PgBouncer Connection Pooler&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#CBD5E1;font-size:12px;'&gt;Transaction pooling supporting 10,000+ concurrent database connections with minimal memory overhead.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#38BDF8;strokeWidth=1.5;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_scale">
+          <mxGeometry x="35" y="370" width="630" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="sc_repl" value="&lt;b style='color:#10B981;font-size:15px;'&gt;2. Read-Replica Query Splitting&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#CBD5E1;font-size:12px;'&gt;Routes heavy analytical queries (/api/analytics/* &amp;amp; search) to replicas while preserving primary node for deal writes.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#10B981;strokeWidth=1.5;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_scale">
+          <mxGeometry x="35" y="475" width="630" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="sc_redis" value="&lt;b style='color:#EC4899;font-size:15px;'&gt;3. Redis Cluster (Cache &amp;amp; Rate Limits)&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#CBD5E1;font-size:12px;'&gt;Sliding-window agent session store cache &amp;amp; dashboard KPI caching (60s TTL) with per-tenant token bucket limits.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#EC4899;strokeWidth=1.5;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_scale">
+          <mxGeometry x="35" y="580" width="630" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="sc_celery" value="&lt;b style='color:#F59E0B;font-size:15px;'&gt;4. Asynchronous Celery / Temporal Workers&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#CBD5E1;font-size:12px;'&gt;Offloads long-running AI batch runs (e.g. scoring 50,000 contacts) to background workers with SSE updates.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#F59E0B;strokeWidth=1.5;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_scale">
+          <mxGeometry x="35" y="685" width="630" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="sc_rls" value="&lt;b style='color:#A855F7;font-size:15px;'&gt;5. Multi-Tenant Row-Level Security (RLS)&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#CBD5E1;font-size:12px;'&gt;PostgreSQL tenant_id policies ensuring 100% cryptographic tenant isolation.&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#A855F7;strokeWidth=1.5;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_scale">
+          <mxGeometry x="35" y="790" width="630" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- EDGES -->
+        <mxCell id="be_e1" value="Public Ingress" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#F59E0B;strokeWidth=2;fontColor=#F59E0B;" edge="1" parent="1" source="cf_tunnel" target="caddy_proxy">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be_e2" value="Reverse Proxy :8000" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#38BDF8;strokeWidth=2.5;fontColor=#38BDF8;" edge="1" parent="1" source="caddy_proxy" target="mw_pipe">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be_e3" value="Dispatch to Domain Routers" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#10B981;strokeWidth=2;fontColor=#10B981;" edge="1" parent="1" source="mw_pipe" target="r_deals">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be_e4" value="Invoke Business Logic" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0284C7;strokeWidth=2;fontColor=#0284C7;" edge="1" parent="1" source="r_deals" target="svc_auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be_e5" value="SQLAlchemy Transactions" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#38BDF8;strokeWidth=2;fontColor=#38BDF8;" edge="1" parent="1" source="svc_auth" target="orm_banner">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="be_e6" value="Atomic Commit (CP)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#FACC15;strokeWidth=2.5;fontColor=#FACC15;" edge="1" parent="1" source="orm_banner" target="db_cp_hero">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

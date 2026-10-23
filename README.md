@@ -194,8 +194,10 @@ DATABASE_URL=sqlite:///./neuronforce.db      # Or postgresql://user:pass@host:54
 
 ---
 
-## 📖 Deep-Dive System Design Documentation
+## 📖 System Architecture & High-Level Design (HLD)
 
-For a comprehensive breakdown of all 30 system design decisions, trade-offs, scalability roadmaps, and interview pitch scripts, refer to:
+For architectural diagrams, data flows, and technical decisions, refer to:
 
-👉 **[docs/SYSTEM_DESIGN_DECISIONS.md](docs/SYSTEM_DESIGN_DECISIONS.md)**
+- 🤖 **[Agentic System High-Level Design (HLD)](docs/HLD_AGENTIC_SYSTEM.md)**: Cyclic LangGraph StateGraph, multi-turn session memory, pronoun resolution, subagents, and evaluation harness.
+- ⚡ **[Backend System High-Level Design (HLD)](docs/HLD_BACKEND_SYSTEM.md)**: Modular Monolith ASGI architecture, request lifecycle, relational ER diagram, dual-track auth, and outbound email engine.
+- ⚖️ **[System Design Decisions & Trade-Offs (30 Decisions)](docs/SYSTEM_DESIGN_DECISIONS.md)**: Detailed trade-off matrix, CAP theorem analysis, and interview pitch scripts.

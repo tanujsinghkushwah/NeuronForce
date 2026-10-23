@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NeuronForce Backend System Architecture HLD</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #060A12;
+    color: #F8FAFC;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    padding: 36px;
+    width: 2800px;
+    min-height: 1750px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #0B132B 0%, #063826 100%);
+    border: 2px solid #34D399;
+    border-radius: 20px;
+    padding: 28px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 12px 35px -5px rgba(52, 211, 153, 0.25);
+  }
+  .header h1 {
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .header h1 span { color: #34D399; }
+  .header p {
+    font-size: 16px;
+    color: #94A3B8;
+    margin-top: 6px;
+  }
+  .badges {
+    display: flex;
+    gap: 14px;
+  }
+  .badge {
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .badge-emerald { background: rgba(52, 211, 153, 0.15); border: 1.5px solid #34D399; color: #34D399; }
+  .badge-yellow { background: rgba(250, 204, 21, 0.15); border: 1.5px solid #FACC15; color: #FACC15; }
+  .badge-cyan { background: rgba(56, 189, 248, 0.15); border: 1.5px solid #38BDF8; color: #38BDF8; }
+
+  /* 3-Column Layout */
+  .layout {
+    display: grid;
+    grid-template-columns: 700px 1fr 720px;
+    gap: 32px;
+    flex: 1;
+  }
+
+  .col-panel {
+    background: #0B1120;
+    border: 1.5px solid #1E293B;
+    border-radius: 20px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  }
+  .col-panel.primary {
+    border-color: #34D399;
+    background: #090F1E;
+    box-shadow: 0 0 40px rgba(52, 211, 153, 0.12);
+  }
+
+  .panel-header {
+    font-size: 15px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #1E293B;
+  }
+  .panel-header.cyan { color: #38BDF8; }
+  .panel-header.emerald { color: #34D399; }
+  .panel-header.yellow { color: #FACC15; }
+
+  /* Cards */
+  .card {
+    background: #111827;
+    border: 1.5px solid #1F2937;
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #94A3B8;
+  }
+  .card ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+    color: #CBD5E1;
+  }
+  .card ul li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card ul li::before {
+    content: "•";
+    color: #34D399;
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .highlight-badge {
+    position: absolute;
+    top: -12px;
+    right: 20px;
+    background: #FACC15;
+    color: #0B1120;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Critical Decision Hero Cards */
+  .hero-decision {
+    background: #1A2234;
+    border: 2px solid #FACC15;
+    box-shadow: 0 8px 30px rgba(250, 204, 21, 0.18);
+    border-radius: 18px;
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+  }
+  .hero-decision h3 {
+    color: #FACC15;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+  }
+  .hero-decision p {
+    font-size: 13px;
+    color: #F1F5F9;
+    line-height: 1.65;
+  }
+
+  /* Routers Grid by Functional Clusters */
+  .cluster-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .cluster-title {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #94A3B8;
+    margin-top: 4px;
+  }
+
+  .cluster-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  .router-chip {
+    background: #0E1626;
+    border: 1.5px solid #1E293B;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: all 0.2s;
+  }
+  .router-chip:hover { border-color: #38BDF8; }
+  .router-chip h4 { font-size: 14px; font-weight: 700; }
+  .router-chip span { font-size: 12px; color: #94A3B8; }
+
+  /* Services Grid */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .service-card {
+    background: #0F192C;
+    border: 1.5px solid #0284C7;
+    border-radius: 16px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .service-card h4 { font-size: 16px; color: #38BDF8; font-weight: 700; }
+  .service-card p { font-size: 13px; color: #94A3B8; line-height: 1.6; }
+
+  /* Scale items */
+  .scale-item {
+    background: #111827;
+    border-left: 4px solid #34D399;
+    border-radius: 0 12px 12px 0;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .scale-item h4 { font-size: 15px; color: #F8FAFC; font-weight: 700; }
+  .scale-item p { font-size: 13px; color: #94A3B8; line-height: 1.4; }
+
+  .models-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+  }
+  .model-chip {
+    background: #1E293B;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .model-chip b { font-size: 13px; color: #F8FAFC; display:block; margin-bottom:2px; }
+  .model-chip span { font-size: 11px; color: #94A3B8; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <h1>NeuronForce <span>Backend System Architecture &amp; Design Decisions</span> (HLD)</h1>
+    <p>FastAPI ASGI Modular Monolith • Relational CP Storage (ACID) • Dual-Track Auth • Dual-Tier Email • 1,000,000 DAU Topology</p>
+  </div>
+  <div class="badges">
+    <div class="badge badge-yellow">Relational CP (CAP Theorem)</div>
+    <div class="badge badge-emerald">Modular Monolith</div>
+    <div class="badge badge-cyan">Sub-100ms In-Process Latency</div>
+  </div>
+</div>
+
+<!-- 3-Column Layout -->
+<div class="layout">
+
+  <!-- 1. LEFT COLUMN: Ingress & Modular Monolith Decision -->
+  <div class="col-panel">
+    <div class="panel-header cyan">01 / EDGE INGRESS &amp; ARCHITECTURAL FOUNDATION</div>
+
+    <!-- Cloudflare Tunnel -->
+    <div class="card">
+      <span class="highlight-badge" style="background:#F59E0B; color:#000;">1-Click Demo</span>
+      <h3 style="color:#FBBF24;">🌐 Cloudflare Edge Tunnel</h3>
+      <p><code style="color:#F59E0B; font-weight:700;">./start_tunnel.sh</code></p>
+      <ul>
+        <li>Public HTTPS SSL termination (*.trycloudflare.com)</li>
+        <li>Dynamic origin routing via Next.js reverse-proxy</li>
+        <li>Zero router port-forwarding or public IP exposure</li>
+      </ul>
+    </div>
+
+    <!-- Caddy Reverse Proxy -->
+    <div class="card">
+      <h3 style="color:#38BDF8;">🚀 Caddy Reverse Proxy</h3>
+      <p>HTTP/2 termination, Gzip/Brotli compression, and upstream balancing:</p>
+      <ul>
+        <li><code style="color:#38BDF8;">/api/*</code> ➔ FastAPI ASGI Server (:8000)</li>
+        <li><code style="color:#34D399;">/*</code> ➔ Next.js 16 App Router (:3000)</li>
+      </ul>
+    </div>
+
+    <!-- CRITICAL DESIGN DECISION 1 -->
+    <div class="hero-decision">
+      <span class="highlight-badge">Decision 1</span>
+      <h3>⚖️ Modular Monolith vs. Microservices</h3>
+      <p>
+        <b>Why We Rejected Microservices:</b><br/>
+        In enterprise CRMs, moving an opportunity to <i>Closed Won</i> must atomically update deal revenue, recalculate customer contact status, append an activity timeline entry, and refresh ARR forecasting.
+        <br/><br/>
+        In microservices, this requires complex distributed transactions (2PC or Sagas) prone to partial failure.
+        <br/><br/>
+        <b style="color:#34D399;">Our Solution:</b> A unified ASGI application with strict domain package isolation, sub-millisecond in-process function calls, and atomic <code style="color:#34D399;">db.commit()</code> transactions.
+      </p>
+    </div>
+
+    <!-- Uvicorn Engine -->
+    <div class="card" style="background:#062319; border-color:#34D399;">
+      <h3 style="color:#34D399;">⚡ Uvicorn ASGI Server (uvloop)</h3>
+      <p style="font-size:13px; color:#A7F3D0;">
+        Async event loop capable of 15,000+ RPS with non-blocking I/O for external AI gateways.
+      </p>
+    </div>
+  </div>
+
+  <!-- 2. CENTER COLUMN: FastAPI Modular Monolith & Services -->
+  <div class="col-panel primary">
+    <div class="panel-header emerald">02 / FASTAPI MODULAR ASGI MONOLITH (backend/app/)</div>
+
+    <!-- Middleware Banner -->
+    <div style="background:#131D33; border:1.5px solid #38BDF8; border-radius:14px; padding:16px 24px; display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:14px; font-weight:800; color:#38BDF8; letter-spacing:0.5px;">ASGI MIDDLEWARE PIPELINE</span>
+      <span style="font-size:13px; color:#CBD5E1;">CORSMiddleware (Origins Allowlist) ➔ Request Latency Profiler ➔ Depends(get_current_user) JWT Validator</span>
+    </div>
+
+    <!-- 12 Routers by Cluster -->
+    <div class="cluster-container">
+      <div class="cluster-title">12 Domain REST Routers (Classified by Functional Architecture)</div>
+
+      <div class="cluster-grid">
+        <div class="router-chip" style="border-left:4px solid #38BDF8;">
+          <h4 style="color:#38BDF8;">/api/contacts</h4>
+          <span>Lifecycle &amp; Lead Scoring</span>
+        </div>
+        <div class="router-chip" style="border-left:4px solid #10B981;">
+          <h4 style="color:#10B981;">/api/deals</h4>
+          <span>Multi-Stage Kanban Funnel</span>
+        </div>
+        <div class="router-chip" style="border-left:4px solid #F59E0B;">
+          <h4 style="color:#F59E0B;">/api/activities</h4>
+          <span>Chronological Timeline</span>
+        </div>
+        <div class="router-chip" style="border-left:4px solid #8B5CF6;">
+          <h4 style="color:#8B5CF6;">/api/calendar</h4>
+          <span>24h Native Schedule Grid</span>
+        </div>
+
+        <div class="router-chip" style="border-left:4px solid #EC4899;">
+          <h4 style="color:#EC4899;">/api/ai-agents</h4>
+          <span>LangGraph Studio &amp; Telemetry</span>
+        </div>
+        <div class="router-chip" style="border-left:4px solid #14B8A6;">
+          <h4 style="color:#14B8A6;">/api/campaigns</h4>
+          <span>Multi-Channel Outreach Copy</span>
+        </div>
+        <div class="router-chip" style="border-left:4px solid #EF4444;">
+          <h4 style="color:#EF4444;">/api/tickets</h4>
+          <span>SLA Customer Incident Cases</span>
+        </div>
+        <div class="router-chip" style="border-left:4px solid #6366F1;">
+          <h4 style="color:#6366F1;">/api/analytics</h4>
+          <span>ARR Waterfall &amp; Velocity BI</span>
+        </div>
+
+        <div class="router-chip" style="border-left:4px solid #FACC15;">
+          <h4 style="color:#FACC15;">/api/search</h4>
+          <span>Sub-15ms Token Omnisearch</span>
+        </div>
+        <div class="router-chip" style="border-left:4px solid #38BDF8;">
+          <h4 style="color:#38BDF8;">/api/dashboard</h4>
+          <span>Executive Revenue Metrics</span>
+        </div>
+        <div class="router-chip" style="border-left:4px solid #EC4899;">
+          <h4 style="color:#EC4899;">/api/auth</h4>
+          <span>OAuth 2.0 PKCE &amp; Personas</span>
+        </div>
+        <div class="router-chip" style="border-left:4px solid #64748B;">
+          <h4 style="color:#64748B;">/api/settings</h4>
+          <span>AI Budget Guards &amp; Tenants</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Business Services (3 Spacious Cards) -->
+    <div>
+      <div class="cluster-title" style="margin-bottom:12px;">Core Business Services &amp; Decoupled Subsystems</div>
+      <div class="services-grid">
+        <!-- Dual Track Auth -->
+        <div class="service-card" style="border-color:#EC4899;">
+          <span class="highlight-badge" style="background:#EC4899; color:#FFF;">Decision 5 &amp; 29</span>
+          <h4 style="color:#F472B6;">Dual-Track Authentication</h4>
+          <p>
+            <b>Track 1:</b> Google OAuth 2.0 PKCE with <code style="color:#F472B6;">state</code> parameter preserving active edge origins without breaking Google redirect URIs.<br/>
+            <b>Track 2:</b> 1-Click Demo Persona Simulator for instant evaluator access with zero setup friction.
+          </p>
+        </div>
+
+        <!-- Dual Tier Email -->
+        <div class="service-card" style="border-color:#10B981;">
+          <span class="highlight-badge" style="background:#10B981; color:#000;">Decision 18</span>
+          <h4 style="color:#34D399;">Dual-Tier Outbound Email</h4>
+          <p>
+            <b>Priority:</b> Resend HTTP API (Single key, zero mail server configuration hurdles).<br/>
+            <b>Fallback:</b> Resilient SMTP / Gmail.<br/>
+            <b>Unified Audit:</b> Every email automatically inserts an immutable <code style="color:#34D399;">Activity</code> record in the CRM timeline.
+          </p>
+        </div>
+
+        <!-- Omnisearch Engine -->
+        <div class="service-card" style="border-color:#FACC15;">
+          <span class="highlight-badge" style="background:#FACC15; color:#000;">Cmd/Ctrl + K</span>
+          <h4 style="color:#FACC15;">Token-Ranked Omnisearch</h4>
+          <p>
+            Sub-15ms multi-entity fuzzy search spanning Contacts, Deals, Activities &amp; Tickets. Weighted scoring algorithm: Exact (+100), Prefix (+50), Partial (+25) with category keyboard chips.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SQLAlchemy ORM & Models -->
+    <div>
+      <div style="background:#0F172A; border:1.5px solid #0284C7; border-radius:12px; padding:14px 22px; display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <span style="font-size:14px; font-weight:700; color:#38BDF8;">SQLAlchemy 2.0 ORM Engine &amp; Connection Pooler</span>
+        <span style="font-size:12px; color:#94A3B8;">Foreign Key Cascade Integrity • Pydantic v2 Serialization • SessionLocal</span>
+      </div>
+
+      <div class="models-row">
+        <div class="model-chip"><b>Contact</b><span>Email, Phone, ICP</span></div>
+        <div class="model-chip"><b>Deal</b><span>Value, Stage, Close</span></div>
+        <div class="model-chip"><b>Activity</b><span>Type, Note, Audit</span></div>
+        <div class="model-chip"><b>CalendarEvent</b><span>Time Grid, People</span></div>
+        <div class="model-chip"><b>Campaign</b><span>Audience, Copy</span></div>
+        <div class="model-chip"><b>AIAgentTask</b><span>Cost, Confidence</span></div>
+      </div>
+    </div>
+
+    <!-- Seeder Engine -->
+    <div class="card" style="background:#063528; border-color:#34D399;">
+      <h3 style="color:#6EE7B7;">🌱 Autonomous Enterprise Seeder Engine (scripts/seed_data.py)</h3>
+      <p style="color:#D1FAE5; font-size:13px;">
+        Runs automatically on startup. Mathematically calibrates 12 contacts, 10 stage deals, 40 activities, SLA tickets, and ARR trajectories with authentic fractional-cent AI telemetry in under 2 seconds.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- 3. RIGHT COLUMN: Relational CP Consistency & Scale-Out Roadmap -->
+  <div class="col-panel">
+    <div class="panel-header yellow">03 / RELATIONAL CP STORAGE &amp; SCALE ROADMAP</div>
+
+    <!-- CRITICAL DESIGN DECISION 2: Relational CP Consistency -->
+    <div class="hero-decision" style="border-color:#34D399; background:#063023;">
+      <span class="highlight-badge" style="background:#34D399; color:#000;">Decision 2 (CAP Theorem)</span>
+      <h3 style="color:#6EE7B7;">🗄️ Relational CP Consistency</h3>
+      <p style="color:#D1FAE5;">
+        <b>PostgreSQL (Production) / SQLite (Development)</b>
+        <br/><br/>
+        In financial CRM systems, <b>Consistency strictly trumps Availability</b>.
+        <br/><br/>
+        If an upstream network partition occurs, it is significantly better to reject an update or return a retry than permit conflicting writes where two sales reps or automated AI agents overwrite contract values or pipeline stages.
+        <br/><br/>
+        <b style="color:#FACC15;">Why NoSQL Was Rejected:</b><br/>
+        Eventual consistency (MongoDB / DynamoDB) introduces "dirty reads", leading to pipeline forecast drift, race conditions, and compliance audit violations.
+      </p>
+    </div>
+
+    <div class="cluster-title">Enterprise Scale-Out Roadmap (MVP ➔ 1,000,000 DAU)</div>
+
+    <div class="scale-item">
+      <h4>1. PgBouncer Connection Pooler</h4>
+      <p>Transaction pooling supporting 10,000+ concurrent database connections with minimal memory overhead.</p>
+    </div>
+
+    <div class="scale-item">
+      <h4>2. Read-Replica Query Splitting</h4>
+      <p>Routes heavy analytical queries (/api/analytics/* &amp; search) to replicas while preserving primary node for deal writes.</p>
+    </div>
+
+    <div class="scale-item">
+      <h4>3. Redis Cluster (Cache &amp; Rate Limits)</h4>
+      <p>Sliding-window agent session store cache &amp; dashboard KPI caching (60s TTL) with per-tenant token bucket limits.</p>
+    </div>
+
+    <div class="scale-item">
+      <h4>4. Asynchronous Celery / Temporal Workers</h4>
+      <p>Offloads long-running AI batch runs (e.g. scoring 50,000 contacts) to background workers with SSE updates.</p>
+    </div>
+
+    <div class="scale-item">
+      <h4>5. Multi-Tenant Row-Level Security (RLS)</h4>
+      <p>PostgreSQL tenant_id policies ensuring 100% cryptographic tenant isolation.</p>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

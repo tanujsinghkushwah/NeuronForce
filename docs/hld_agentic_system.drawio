@@ -1,0 +1,216 @@
+<mxfile host="Electron" modified="2026-10-23T05:35:00.000Z" agent="NeuronForce" version="21.0.0" type="device">
+  <diagram id="agentic_hld" name="NeuronForce Agentic System HLD">
+    <mxGraphModel dx="2000" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2800" pageHeight="1800" background="#090D16" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title Banner -->
+        <mxCell id="title" value="&lt;b style='font-size:26px; color:#F8FAFC;'&gt;NeuronForce — Autonomous Multi-Agent LangGraph System (HLD)&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:14px; color:#94A3B8;'&gt;Cyclic StateGraph Multi-Step Orchestration • Sliding-Window Session Memory • Semantic Pronoun Resolution • Audited Telemetry&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#38BDF8;strokeWidth=2;arcSize=8;align=left;spacingLeft=30;" vertex="1" parent="1">
+          <mxGeometry x="50" y="40" width="2700" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- CONTAINER 1: Ingress & Memory -->
+        <mxCell id="c_client" value="01 / INGRESS &amp;amp; MULTI-TURN MEMORY" style="swimlane;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#EC4899;strokeWidth=2;fontColor=#F472B6;fontStyle=1;fontSize=14;startSize=35;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="50" y="160" width="540" height="1560" as="geometry" />
+        </mxCell>
+        <mxCell id="user_rep" value="&lt;b style='color:#F8FAFC;font-size:15px;'&gt;Enterprise Sales Rep / Account Executive&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:12px;'&gt;Inputs natural language compound instructions into Studio:&lt;br/&gt;&lt;i style='color:#38BDF8;'&gt;'Add Tanuj at Google and book a 1-hour demo with him and Sarah for tomorrow at 2 PM'&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#475569;strokeWidth=1.5;arcSize=10;align=left;spacingLeft=20;" vertex="1" parent="c_client">
+          <mxGeometry x="30" y="60" width="480" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="nextjs_ui" value="&lt;b style='color:#38BDF8;font-size:15px;'&gt;Next.js 16 Autonomous Agent Studio&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#E2E8F0;font-size:12px;'&gt;• Real-time LangGraph node execution cockpit&lt;br/&gt;• Multi-card rendered action outputs (Contacts, Deals, Meetings)&lt;br/&gt;• Sub-100ms perceived performance &amp;amp; CSS de-blur transition&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#0284C7;strokeWidth=1.5;arcSize=10;align=left;spacingLeft=20;" vertex="1" parent="c_client">
+          <mxGeometry x="30" y="200" width="480" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="api_gw" value="&lt;b style='color:#34D399;font-size:15px;'&gt;FastAPI AI Gateway Router&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#E2E8F0;font-size:12px;'&gt;POST /api/ai-agents/chat &amp;amp; /tasks&lt;br/&gt;Validates session_id, origins allowlist &amp;amp; executes in async threadpool&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#064E3B;strokeColor=#059669;strokeWidth=1.5;arcSize=10;align=left;spacingLeft=20;" vertex="1" parent="c_client">
+          <mxGeometry x="30" y="350" width="480" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="session_store" value="&lt;b style='color:#F43F5E;font-size:16px;'&gt;Thread-Safe In-Memory Session Store&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#CBD5E1;font-size:12px;'&gt;(agents/session_store.py)&lt;br/&gt;&lt;br/&gt;• &lt;b style='color:#38BDF8;'&gt;Sliding Window&lt;/b&gt;: Last 5 turns (10 messages preserved)&lt;br/&gt;• &lt;b style='color:#F472B6;'&gt;active_deal&lt;/b&gt;: Target $1,000,000 Deal (Google)&lt;br/&gt;• &lt;b style='color:#F472B6;'&gt;active_contact&lt;/b&gt;: Tanuj Singh (Google)&lt;br/&gt;• &lt;b style='color:#F472B6;'&gt;active_meeting&lt;/b&gt;: Tanuj &amp;amp; Sarah (Tomorrow 2 PM)&lt;br/&gt;• &lt;b style='color:#F472B6;'&gt;active_campaign&lt;/b&gt;: X, Instagram Multi-Channel&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E1B4B;strokeColor=#8B5CF6;strokeWidth=2;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_client">
+          <mxGeometry x="30" y="490" width="480" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="pronoun_res" value="&lt;b style='color:#FB7185;font-size:15px;'&gt;Semantic Pronoun &amp;amp; Reference Resolver&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#E2E8F0;font-size:12px;'&gt;• &lt;i&gt;'promote this deal'&lt;/i&gt; ➔ Resolves to active_deal ($1M Google)&lt;br/&gt;• &lt;i&gt;'risk analysis on it'&lt;/i&gt; ➔ Routes to deal_risk subagent on active_deal&lt;br/&gt;• &lt;i&gt;'send him an email'&lt;/i&gt; ➔ Injects active_contact email address&lt;br/&gt;&lt;b style='color:#34D399;'&gt;Eliminates brittle keyword lists &amp;amp; hardcoded regex heuristics!&lt;/b&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3B0764;strokeColor=#D946EF;strokeWidth=1.5;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_client">
+          <mxGeometry x="30" y="720" width="480" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- CONTAINER 2: LangGraph Orchestrator -->
+        <mxCell id="c_graph" value="02 / LANGGRAPH CYCLIC STATEGRAPH ORCHESTRATOR (agents/orchestrator/)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0A0F1D;strokeColor=#38BDF8;strokeWidth=2.5;fontColor=#38BDF8;fontStyle=1;fontSize=15;startSize=40;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="630" y="160" width="1380" height="1560" as="geometry" />
+        </mxCell>
+
+        <!-- Step 1 & 2 -->
+        <mxCell id="node1" value="&lt;b style='color:#38BDF8;font-size:15px;'&gt;Node 1: Prompt Ingestion&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:12px;'&gt;Sanitization, session token verification &amp;amp; initial token budget estimation&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#38BDF8;strokeWidth=2;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_graph">
+          <mxGeometry x="60" y="70" width="580" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node2" value="&lt;b style='color:#38BDF8;font-size:15px;'&gt;Node 2: CRM Context Retrieval&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#CBD5E1;font-size:12px;'&gt;Context Retriever Engine (context_retriever.py)&lt;br/&gt;Pulls matching contacts, deals, events &amp;amp; injects prioritized active session entities&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#38BDF8;strokeWidth=2;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_graph">
+          <mxGeometry x="720" y="70" width="600" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Node 3: Intent Router & Planner -->
+        <mxCell id="node3" value="&lt;b style='color:#F59E0B;font-size:16px;'&gt;Node 3: Structured Execution Planner &amp;amp; Intent Router&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#FEF3C7;font-size:12px;'&gt;Invokes OpenRouter Gateway with strict JSON schema to generate an ordered execution plan array:&lt;br/&gt;&lt;b style='color:#FDE68A;'&gt;plan: [ { step_id: 1, type: 'crm_action', action_type: 'create_contact' }, { step_id: 2, type: 'crm_action', action_type: 'schedule_meeting' } ]&lt;/b&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#78350F;strokeColor=#F59E0B;strokeWidth=2;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_graph">
+          <mxGeometry x="60" y="210" width="1260" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Decision: route_after_intent -->
+        <mxCell id="dec_intent" value="&lt;b style='color:#FFFFFF;font-size:13px;'&gt;route_after_intent&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:11px;color:#FCA5A5;'&gt;Inspects Plan[0].type&lt;/span&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#991B1B;strokeColor=#EF4444;strokeWidth=2;" vertex="1" parent="c_graph">
+          <mxGeometry x="580" y="360" width="220" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Node 4b: CRM Action Executor -->
+        <mxCell id="node_crm" value="&lt;b style='color:#34D399;font-size:16px;'&gt;Node 4b: CRM Action Executor&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#D1FAE5;font-size:12px;'&gt;Executes Direct Relational Database Mutations (ACID CP):&lt;br/&gt;&lt;br/&gt;• &lt;b style='color:#FFFFFF;'&gt;schedule_meeting&lt;/b&gt;: Range-Aware Normalizer &amp;amp; Dynamic Attendee Resolution&lt;br/&gt;• &lt;b style='color:#FFFFFF;'&gt;create_contact / update_contact&lt;/b&gt;: Full lifecycle tracking&lt;br/&gt;• &lt;b style='color:#FFFFFF;'&gt;create_deal / update_deal&lt;/b&gt;: Stage updates &amp;amp; automatic ARR recalculations&lt;br/&gt;• &lt;b style='color:#FFFFFF;'&gt;create_campaign&lt;/b&gt;: Multi-channel marketing outreach generation&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#064E3B;strokeColor=#10B981;strokeWidth=2;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_graph">
+          <mxGeometry x="60" y="500" width="560" height="230" as="geometry" />
+        </mxCell>
+
+        <!-- Node 4a: Subagent Executor -->
+        <mxCell id="node_sub" value="&lt;b style='color:#A78BFA;font-size:16px;'&gt;Node 4a: Specialist Subagent Executor&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#EDE9FE;font-size:12px;'&gt;Executes Targeted Analytical Deep-Reasoning Workflows:&lt;br/&gt;&lt;br/&gt;• &lt;b style='color:#FFFFFF;'&gt;lead_scoring&lt;/b&gt;: Buyer Intent Score (0-100) &amp;amp; ICP fit match %&lt;br/&gt;• &lt;b style='color:#FFFFFF;'&gt;deal_risk&lt;/b&gt;: Win probability %, stall risk &amp;amp; mitigation playbooks&lt;br/&gt;• &lt;b style='color:#FFFFFF;'&gt;email_draft&lt;/b&gt;: Hyper-personalized outreach + auto Resend/SMTP dispatch&lt;br/&gt;• &lt;b style='color:#FFFFFF;'&gt;churn_sentinel&lt;/b&gt;: ARR at risk exposure &amp;amp; retention action playbooks&lt;br/&gt;• &lt;b style='color:#FFFFFF;'&gt;meeting_summary&lt;/b&gt;: Key decisions, owners, due dates &amp;amp; CRM sync&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#312E81;strokeColor=#8B5CF6;strokeWidth=2;arcSize=8;align=left;spacingLeft=20;" vertex="1" parent="c_graph">
+          <mxGeometry x="760" y="500" width="560" height="230" as="geometry" />
+        </mxCell>
+
+        <!-- Step Cycle: route_after_step -->
+        <mxCell id="dec_step" value="&lt;b style='color:#FFFFFF;font-size:14px;'&gt;route_after_step&lt;br/&gt;Cyclic Step Router&lt;/b&gt;&lt;br/&gt;&lt;span style='font-size:11px;color:#FEF3C7;'&gt;idx &amp;lt; len(plan)?&lt;/span&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#B45309;strokeColor=#F59E0B;strokeWidth=2.5;" vertex="1" parent="c_graph">
+          <mxGeometry x="575" y="760" width="230" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- Node 5: Synthesizer -->
+        <mxCell id="node_synth" value="&lt;b style='color:#38BDF8;font-size:16px;'&gt;Node 5: Response Synthesizer &amp;amp; Telemetry Aggregator&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#E2E8F0;font-size:12px;'&gt;• Assembles clean, numbered markdown sections for all executed compound steps&lt;br/&gt;• Attaches interactive UI action cards (Contacts, Deals, Meetings, Dispatched Emails)&lt;br/&gt;• Computes exact token count, fractional-cent USD cost &amp;amp; round-trip latency in ms&lt;br/&gt;• Calibrates overall confidence score (0.00 to 1.00) &amp;amp; logs to AIAgentTask audit table&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#0284C7;strokeWidth=2;arcSize=8;align=left;spacingLeft=25;" vertex="1" parent="c_graph">
+          <mxGeometry x="60" y="930" width="1260" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- Subagent Specialist Grid -->
+        <mxCell id="sa_lead" value="&lt;b style='color:#38BDF8;font-size:13px;'&gt;Lead Scoring&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;Score: 92/100 (HOT)&lt;br/&gt;ICP Match: 95%&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#38BDF8;strokeWidth=1.5;" vertex="1" parent="c_graph">
+          <mxGeometry x="60" y="1100" width="230" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="sa_risk" value="&lt;b style='color:#F59E0B;font-size:13px;'&gt;Deal Risk Sentinel&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;Win Prob: 78%&lt;br/&gt;Medium Risk Exposure&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#F59E0B;strokeWidth=1.5;" vertex="1" parent="c_graph">
+          <mxGeometry x="315" y="1100" width="230" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="sa_email" value="&lt;b style='color:#10B981;font-size:13px;'&gt;Email Drafter&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;Personalized Pitch&lt;br/&gt;Auto Resend / SMTP&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#10B981;strokeWidth=1.5;" vertex="1" parent="c_graph">
+          <mxGeometry x="575" y="1100" width="230" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="sa_churn" value="&lt;b style='color:#EF4444;font-size:13px;'&gt;Churn Sentinel&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;ARR at Risk: $180,000&lt;br/&gt;Prescribed Playbooks&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#EF4444;strokeWidth=1.5;" vertex="1" parent="c_graph">
+          <mxGeometry x="835" y="1100" width="230" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="sa_meet" value="&lt;b style='color:#A855F7;font-size:13px;'&gt;Meeting Summary&lt;/b&gt;&lt;br/&gt;&lt;span style='color:#94A3B8;font-size:11px;'&gt;Action items &amp;amp; owners&lt;br/&gt;CRM Timeline Sync&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#A855F7;strokeWidth=1.5;" vertex="1" parent="c_graph">
+          <mxGeometry x="1090" y="1100" width="230" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- CONTAINER 3: Storage, Inference & Auditing -->
+        <mxCell id="c_ext" value="03 / PERSISTENCE, GATEWAY &amp;amp; EVALUATIONS" style="swimlane;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#10B981;strokeWidth=2;fontColor=#34D399;fontStyle=1;fontSize=14;startSize=35;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="2050" y="160" width="700" height="1560" as="geometry" />
+        </mxCell>
+
+        <!-- CP Database -->
+        <mxCell id="db_cp" value="&lt;b style='color:#34D399;font-size:17px;'&gt;Relational CP Database (CAP Theorem)&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style='color:#A7F3D0;font-size:13px;'&gt;PostgreSQL (Production) / SQLite (Development)&lt;br/&gt;&lt;br/&gt;&lt;b style='color:#FFFFFF;'&gt;CRITICAL DESIGN DECISION:&lt;/b&gt;&lt;br/&gt;• Strict ACID Consistency &amp;amp; Partition Tolerance (CP)&lt;br/&gt;• Zero dirty reads on deals, revenue forecasts &amp;amp; contacts&lt;br/&gt;• Atomic commits guarantee 100% CRM record integrity&lt;br/&gt;• &lt;b style='color:#FACC15;'&gt;Consistency strictly trumps Availability in CRM finance!&lt;/b&gt;&lt;/span&gt;" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#064E3B;strokeColor=#34D399;strokeWidth=2.5;align=left;spacingLeft=25;" vertex="1" parent="c_ext">
+          <mxGeometry x="35" y="60" width="630" height="230" as="geometry" />
+        </mxCell>
+
+        <!-- OpenRouter AI Gateway -->
+        <mxCell id="openrouter_gw" value="&lt;b style='color:#38BDF8;font-size:16px;'&gt;OpenRouter AI Gateway (Primary Inference)&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style='color:#E2E8F0;font-size:13px;'&gt;Model: &lt;b style='color:#FACC15;'&gt;openai/gpt-4o-mini&lt;/b&gt;&lt;br/&gt;• Latency: ~1.2s p50 (Near-instant interactive UX)&lt;br/&gt;• Structured Output: 100% Native JSON Object adherence&lt;br/&gt;• Fractional Cost: &lt;b style='color:#34D399;'&gt;$0.00033 / query&lt;/b&gt; (1/30th of a cent!)&lt;br/&gt;• 99.99% SLA Dedicated Pool (Eliminates free-tier 429 stalls)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E1B4B;strokeColor=#6366F1;strokeWidth=2;arcSize=8;align=left;spacingLeft=25;" vertex="1" parent="c_ext">
+          <mxGeometry x="35" y="320" width="630" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- Deterministic Fallback -->
+        <mxCell id="offline_fallback" value="&lt;b style='color:#F59E0B;font-size:16px;'&gt;Deterministic Offline Heuristic Fallback Engine&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style='color:#FEF3C7;font-size:13px;'&gt;Automatic failover on gateway timeout or network partitions&lt;br/&gt;• Regex &amp;amp; NLP pattern extraction for entities and time offsets&lt;br/&gt;• Deterministic multi-step plan generator&lt;br/&gt;• &lt;b style='color:#34D399;'&gt;Guarantees 100% Demo Uptime with Zero HTTP 500s!&lt;/b&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#78350F;strokeColor=#F59E0B;strokeWidth=2;arcSize=8;align=left;spacingLeft=25;" vertex="1" parent="c_ext">
+          <mxGeometry x="35" y="520" width="630" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- Outbound Email Service -->
+        <mxCell id="outbound_email" value="&lt;b style='color:#10B981;font-size:16px;'&gt;Dual-Tier Outbound Email Engine&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style='color:#D1FAE5;font-size:13px;'&gt;• Tier 1: Resend HTTP REST API (Single API key, zero DNS hurdles)&lt;br/&gt;• Tier 2: Resilient SMTP / Gmail Fallback&lt;br/&gt;• &lt;b style='color:#6EE7B7;'&gt;Automatic Transactional Activity Logging&lt;/b&gt; on every dispatch&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#064E3B;strokeColor=#10B981;strokeWidth=2;arcSize=8;align=left;spacingLeft=25;" vertex="1" parent="c_ext">
+          <mxGeometry x="35" y="700" width="630" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- 15-Scenario Eval Suite -->
+        <mxCell id="eval_harness" value="&lt;b style='color:#A855F7;font-size:16px;'&gt;15-Scenario Parametric Evaluation Suite&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&lt;span style='color:#F3E8FF;font-size:13px;'&gt;(agents/evals/runner.py &amp;amp; test_evals.py)&lt;br/&gt;• 100% Intent Classification Accuracy verification&lt;br/&gt;• 100% Graph Step Consistency across compound workflows&lt;br/&gt;• Automated CI regression gating with zero-quota email mocking&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3B0764;strokeColor=#A855F7;strokeWidth=2;arcSize=8;align=left;spacingLeft=25;" vertex="1" parent="c_ext">
+          <mxGeometry x="35" y="870" width="630" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- CONNECTORS / EDGES -->
+        <!-- User to Next.js -->
+        <mxCell id="e1" value="Natural Language" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#818CF8;strokeWidth=2;fontColor=#818CF8;" edge="1" parent="1" source="user_rep" target="nextjs_ui">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Next.js to FastAPI -->
+        <mxCell id="e2" value="HTTP POST /chat" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#38BDF8;strokeWidth=2;fontColor=#38BDF8;" edge="1" parent="1" source="nextjs_ui" target="api_gw">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- FastAPI to SessionStore -->
+        <mxCell id="e3" value="Load Session Context" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#EC4899;strokeWidth=2;fontColor=#EC4899;" edge="1" parent="1" source="api_gw" target="session_store">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- FastAPI to Node 1 -->
+        <mxCell id="e4" value="invoke(AgentState)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#38BDF8;strokeWidth=2.5;fontColor=#38BDF8;" edge="1" parent="1" source="api_gw" target="node1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Node 1 to Node 2 -->
+        <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#38BDF8;strokeWidth=2;" edge="1" parent="1" source="node1" target="node2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Node 2 to Node 3 -->
+        <mxCell id="e6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#38BDF8;strokeWidth=2;" edge="1" parent="1" source="node2" target="node3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1020" y="185" />
+              <mxPoint x="690" y="185" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <!-- Node 3 to Intent Decision -->
+        <mxCell id="e7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#EF4444;strokeWidth=2;" edge="1" parent="1" source="node3" target="dec_intent">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Intent Decision to CRM Action -->
+        <mxCell id="e8" value="Plan[0] is crm_action" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#10B981;strokeWidth=2.5;fontColor=#10B981;" edge="1" parent="1" source="dec_intent" target="node_crm">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="410" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <!-- Intent Decision to Subagent -->
+        <mxCell id="e9" value="Plan[0] is subagent" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#8B5CF6;strokeWidth=2.5;fontColor=#8B5CF6;" edge="1" parent="1" source="dec_intent" target="node_sub">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1040" y="410" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <!-- CRM Action to Step Router -->
+        <mxCell id="e10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#10B981;strokeWidth=2;" edge="1" parent="1" source="node_crm" target="dec_step">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="825" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <!-- Subagent to Step Router -->
+        <mxCell id="e11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#8B5CF6;strokeWidth=2;" edge="1" parent="1" source="node_sub" target="dec_step">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1040" y="825" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <!-- Step Router CYCLIC LOOP to CRM Action -->
+        <mxCell id="e12" value="Next: crm_action (idx &lt; len)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#10B981;strokeWidth=2.5;fontColor=#10B981;" edge="1" parent="1" source="dec_step" target="node_crm">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="690" y="740" />
+              <mxPoint x="480" y="740" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <!-- Step Router CYCLIC LOOP to Subagent -->
+        <mxCell id="e13" value="Next: subagent (idx &lt; len)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#8B5CF6;strokeWidth=2.5;fontColor=#8B5CF6;" edge="1" parent="1" source="dec_step" target="node_sub">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="690" y="740" />
+              <mxPoint x="900" y="740" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <!-- Step Router to Synthesizer -->
+        <mxCell id="e14" value="All Steps Finished (idx == len)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0284C7;strokeWidth=3;fontColor=#0284C7;" edge="1" parent="1" source="dec_step" target="node_synth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
