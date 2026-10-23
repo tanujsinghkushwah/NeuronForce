@@ -1,5 +1,6 @@
 # NeuronForce Multi-Agent LangGraph Dependencies
 langgraph>=1.2.16
+langgraph-cli[inmem]>=0.4.37
 langchain-core>=1.6.13
 httpx>=0.28.1
 pydantic>=2.14.1

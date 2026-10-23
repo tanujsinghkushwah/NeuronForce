@@ -23,6 +23,7 @@ backend/*.sqlite3
 *.sqlite
 *.sqlite3
 .pytest_cache/
+.langgraph_api/
 
 # Node / Frontend
 frontend/node_modules/
